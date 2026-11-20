@@ -35,3 +35,13 @@ Rujukan teknis tambahan yang diperiksa pada lingkungan ini mencakup panduan runt
 Pada 20 November 2026, kontrol akses Site baru menunjukkan satu pemilik pada daftar akses custom. Proyek workbench publik versi 6 diperiksa secara baca-saja. Pratinjau menggunakan HTML, CSS dan JavaScript statis; tidak ada dependensi eksternal atau panggilan AI. Semua masukan dan draf berada di memori halaman hingga dimuat ulang. Data dinamis di-escape saat ditampilkan.
 
 Lulus pada pratinjau browser desktop: dasbor kosong; formulir kosong memunculkan kesalahan; contoh jelas menghasilkan draf Inggris tanpa langkah eksekusi; contoh ambigu meminta tingkat dan format; persetujuan menampilkan jawaban contoh dan status kualitas terpisah; penyimpanan sementara dan pembukaan kembali memulihkan hasil simulasi. Pemeriksaan sintaks JavaScript lulus. CSS memakai navigasi horizontal dan satu kolom pada layar kecil. Pengujian perangkat fisik dan identitas pengunjung kedua masih terbuka. Gerbang MVP dan rilis publik belum tercapai.
+
+## PF-002 · Fase 2 · 20 November 2026
+
+Mesin bawaan adalah Qwen2.5-1.5B-Instruct-q4f32_1-MLC dengan WebLLM 0.2.79. Model berbobot publik dipilih sesuai arahan pemilik untuk jalur tanpa OpenAI Developers. Pengunduhan memakai Hugging Face dan GitHub setelah pengguna mengirim formulir. Inferensi memerlukan WebGPU, sekitar 1,8 GB memori grafis dan konteks 4096 token. Batas kapasitas bisa tercapai sebelum batas karakter antarmuka. Tinjauan semantik memakai permintaan terpisah ke model lokal yang sama. Hasil bukan bukti akurasi benchmark. Studio dan riwayat memakai akses pemilik. Tidak ada token provider pada jalur ini.
+
+Worker menangani akses data, dengan D1 untuk versi dan kunci pemilik dari header identitas Sites. Setiap suntingan menyimpan versi baru dengan induknya. Pengulangan penyimpanan dengan ID yang sama menghasilkan satu versi. Riwayat menampilkan 200 versi terbaru; hapus sesi menghapus semua versinya. Laporan lokal adalah data dari perangkat pemilik dan bukan sertifikasi server. Draf sebelum pengiriman berada di memori tab. Simulasi v1 tetap tersedia di /simulasi/. Ekspor massal, uji pemulihan, benchmark dan eksekusi multi-provider belum tersedia.
+
+Pengujian: enam skenario otomatis dengan respons model terkendali dan SQLite lulus, termasuk klarifikasi, dua revisi maksimum, penolakan struktur tidak valid, pemeriksaan angka dan laporan peringatan. Uji data mencakup dua identitas, versi, penghapusan dan pengiriman ulang. Browser pratinjau tidak menyediakan adapter WebGPU; jalur kesalahan diuji dengan instruksi bebas dan masukan dipertahankan. Inferensi sungguhan dan performa model belum terverifikasi pada perangkat ber-WebGPU. Gerbang MVP tetap terbuka.
+
+Referensi model: https://webllm.mlc.ai/models/

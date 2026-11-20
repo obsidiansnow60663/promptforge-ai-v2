@@ -1,0 +1,37 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {DatabaseSync} from 'node:sqlite';
+import {readFileSync} from 'node:fs';
+import worker from '../dist/server/index.js';
+import {generate} from '../web/pipeline.js';
+const input={source:'Tulis 5 poin untuk tim pemasaran.',lang:'Bahasa Indonesia',domain:'Bisnis',answers:[]};
+const spec={goal:'Tuliskan poin',context:'Tim pemasaran',requirements:[],constraints:['5 poin'],deliverables:['Daftar'],assumptions:[],questions:[]};
+const report={stage:'ready',draft:'Write 5 points for the marketing team in Indonesian.',spec,issues:[],revisions:0};
+const seq=list=>async()=>{assert.ok(list.length);return structuredClone(list.shift())};
+test('clear request passes without execution',async()=>assert.equal((await generate(input,seq([spec,{draft:report.draft},{pass:true,issues:[]}]))).stage,'ready'));
+test('blocking question stops before generation',async()=>assert.equal((await generate(input,seq([{...spec,questions:['Untuk produk apa?']}]))).stage,'clarify'));
+test('critical number failure overrides reviewer and stops after two repairs',async()=>{
+ const bad=[{draft:'Write 15 points.'},{pass:true,issues:[]}];
+ const r=await generate(input,seq([spec,...bad,...bad,...bad]));assert.equal(r.stage,'warning');assert.equal(r.revisions,2);assert.match(r.issues[0],/5/);
+});
+test('incomplete review returns a usable draft with a warning',async()=>{const r=await generate(input,seq([spec,{draft:report.draft},{}]));assert.equal(r.stage,'warning');assert.equal(r.draft,report.draft)});
+test('analysis rejects malformed model output',async()=>assert.rejects(generate(input,seq([{}]))));
+test('owner-isolated saves, immutable versions, safe retries and deletion',async()=>{
+ const sql=new DatabaseSync(':memory:');sql.exec(readFileSync('drizzle/0000_sessions.sql','utf8'));
+ const DB={prepare(q){const s=sql.prepare(q);return {bind(...a){return {run:()=>s.run(...a),all:()=>({results:s.all(...a)}),first:()=>s.get(...a)}}}}};
+ const session=crypto.randomUUID(),requestId=crypto.randomUUID();
+ const call=(path,owner,body)=>worker.fetch(new Request('https://example.org/api/'+path,{headers:{...(owner?{'oai-authenticated-user-id':owner}:{}),'content-type':'application/json',Origin:'https://example.org'},method:body?'POST':'GET',body:body?JSON.stringify(body):undefined}),{DB});
+ const payload={...input,report,session,requestId};
+ assert.equal((await call('history','')).status,401);
+ assert.equal((await (await call('local','a',payload)).json()).version,1);
+ assert.equal((await (await call('local','a',payload)).json()).version,1);
+ assert.equal((await (await call('edit','a',{session,parent:1,draft:'Manual',requestId:crypto.randomUUID()})).json()).version,2);
+ assert.equal((await (await call('history','b')).json()).length,0);
+ const version='version?session='+session+'&version=1';
+ assert.equal((await call(version,'b')).status,404);
+ assert.equal((await (await call(version,'a')).json()).draft,report.draft);
+ assert.equal((await call('delete','b',{session})).status,200);
+ assert.equal((await (await call('history','a')).json()).length,2);
+ assert.equal((await call('delete','a',{session})).status,200);
+ assert.equal((await (await call('history','a')).json()).length,0);
+});
