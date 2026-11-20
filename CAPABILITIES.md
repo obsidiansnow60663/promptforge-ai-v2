@@ -45,3 +45,7 @@ Worker menangani akses data, dengan D1 untuk versi dan kunci pemilik dari header
 Pengujian: enam skenario otomatis dengan respons model terkendali dan SQLite lulus, termasuk klarifikasi, dua revisi maksimum, penolakan struktur tidak valid, pemeriksaan angka dan laporan peringatan. Uji data mencakup dua identitas, versi, penghapusan dan pengiriman ulang. Browser pratinjau tidak menyediakan adapter WebGPU; jalur kesalahan diuji dengan instruksi bebas dan masukan dipertahankan. Inferensi sungguhan dan performa model belum terverifikasi pada perangkat ber-WebGPU. Gerbang MVP tetap terbuka.
 
 Referensi model: https://webllm.mlc.ai/models/
+
+### Uji mesin nyata melalui endpoint kompatibel
+
+D1 deployment privat menyediakan binding DB dan tabel versions. URL privat meminta login ChatGPT. Pipeline juga dijalankan dengan adapter pengujian terhadap endpoint dan model deepseek-v4.1-flash-bansos yang ditentukan pemilik, hanya dengan instruksi sintetis. Pada kasus pengenalan Git, uji pertama berhenti dengan peringatan setelah dua revisi: peninjau meminta jawaban akhir saat menilai prompt Inggris. Setelah tugas peninjau diperjelas, pengujian yang sama menghasilkan tiga respons HTTP 200 dan status ready tanpa revisi. Prompt akhir mempertahankan tepat 5 poin, maksimum 20 kata per poin, audiens mahasiswa baru, Git, dan bahasa jawaban Indonesia. Sampel tunggal ini tidak mengukur mutu Qwen lokal. Endpoint pengujian dan kredensial tidak digunakan oleh aplikasi.
