@@ -1,0 +1,2660 @@
+{
+  "method": "deterministic exact text checks",
+  "datasetVersion": "promptforge-id-1.0.0",
+  "datasetSha256": "3d2f16aad692ac082a497df08c6845f5a53a1a9e8d1da2c70c4cfc5fd18000b5",
+  "initial": {
+    "commit": "62bbb94d91c1601933482fb4530f34b0acb85c0e",
+    "reportSha256": "a91317ae7de908de3ad8912366f0df262166c1a281d4c2f782bc7fd38ffcadd5",
+    "summary": {
+      "direct-id": {
+        "cases": 100,
+        "answered": 100,
+        "markerFound": 97,
+        "markerAbsent": 3,
+        "promptsWithCheckableTokens": 46,
+        "promptsPreservingAllCheckedTokens": 46,
+        "missedTokens": 0,
+        "failures": {}
+      },
+      "literal-en": {
+        "cases": 100,
+        "answered": 100,
+        "markerFound": 98,
+        "markerAbsent": 2,
+        "promptsWithCheckableTokens": 46,
+        "promptsPreservingAllCheckedTokens": 46,
+        "missedTokens": 0,
+        "failures": {}
+      },
+      "promptforge": {
+        "cases": 100,
+        "answered": 39,
+        "markerFound": 37,
+        "markerAbsent": 2,
+        "promptsWithCheckableTokens": 15,
+        "promptsPreservingAllCheckedTokens": 15,
+        "missedTokens": 0,
+        "failures": {
+          "clarify": 48,
+          "provider_incomplete": 7,
+          "warning": 5,
+          "provider_timeout": 1
+        }
+      }
+    }
+  },
+  "updated": {
+    "commit": "bb9778119eec1f6f9a324c222d33076b5ead68a0",
+    "reportSha256": "92f1221478cebee2f66f15b73b3c81d3c28a8a8ce8f71ec21a8ba02b1f9a5509",
+    "summary": {
+      "direct-id": {
+        "cases": 100,
+        "answered": 100,
+        "markerFound": 97,
+        "markerAbsent": 3,
+        "promptsWithCheckableTokens": 46,
+        "promptsPreservingAllCheckedTokens": 46,
+        "missedTokens": 0,
+        "failures": {}
+      },
+      "literal-en": {
+        "cases": 100,
+        "answered": 100,
+        "markerFound": 98,
+        "markerAbsent": 2,
+        "promptsWithCheckableTokens": 46,
+        "promptsPreservingAllCheckedTokens": 46,
+        "missedTokens": 0,
+        "failures": {}
+      },
+      "promptforge": {
+        "cases": 100,
+        "answered": 76,
+        "markerFound": 76,
+        "markerAbsent": 0,
+        "promptsWithCheckableTokens": 34,
+        "promptsPreservingAllCheckedTokens": 34,
+        "missedTokens": 0,
+        "failures": {
+          "clarify": 15,
+          "provider_incomplete": 3,
+          "warning": 4,
+          "provider_timeout": 2
+        }
+      }
+    },
+    "matched": {
+      "direct-id": {
+        "cases": 76,
+        "answered": 76,
+        "markerFound": 73,
+        "markerAbsent": 3,
+        "promptsWithCheckableTokens": 34,
+        "promptsPreservingAllCheckedTokens": 34,
+        "missedTokens": 0,
+        "failures": {}
+      },
+      "literal-en": {
+        "cases": 76,
+        "answered": 76,
+        "markerFound": 74,
+        "markerAbsent": 2,
+        "promptsWithCheckableTokens": 34,
+        "promptsPreservingAllCheckedTokens": 34,
+        "missedTokens": 0,
+        "failures": {}
+      },
+      "promptforge": {
+        "cases": 76,
+        "answered": 76,
+        "markerFound": 76,
+        "markerAbsent": 0,
+        "promptsWithCheckableTokens": 34,
+        "promptsPreservingAllCheckedTokens": 34,
+        "missedTokens": 0,
+        "failures": {}
+      }
+    },
+    "matchedCases": [
+      "programming-01",
+      "programming-03",
+      "programming-04",
+      "programming-05",
+      "programming-06",
+      "programming-07",
+      "programming-08",
+      "programming-09",
+      "programming-10",
+      "programming-11",
+      "programming-12",
+      "programming-14",
+      "programming-17",
+      "programming-18",
+      "programming-19",
+      "programming-20",
+      "automation-01",
+      "automation-03",
+      "automation-04",
+      "automation-05",
+      "automation-06",
+      "automation-07",
+      "automation-08",
+      "automation-09",
+      "automation-12",
+      "automation-13",
+      "automation-17",
+      "automation-18",
+      "automation-19",
+      "automation-20",
+      "research-04",
+      "research-05",
+      "research-07",
+      "research-08",
+      "research-09",
+      "research-10",
+      "research-12",
+      "research-13",
+      "research-14",
+      "research-15",
+      "business-01",
+      "business-03",
+      "business-05",
+      "business-07",
+      "business-08",
+      "business-09",
+      "business-10",
+      "business-11",
+      "business-12",
+      "business-14",
+      "business-15",
+      "content-01",
+      "content-02",
+      "content-03",
+      "content-05",
+      "content-06",
+      "content-08",
+      "content-09",
+      "content-10",
+      "content-11",
+      "content-12",
+      "content-13",
+      "content-14",
+      "content-15",
+      "general-01",
+      "general-02",
+      "general-03",
+      "general-05",
+      "general-06",
+      "general-07",
+      "general-08",
+      "general-09",
+      "general-10",
+      "general-11",
+      "general-13",
+      "general-14"
+    ],
+    "rows": [
+      {
+        "caseId": "programming-01",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-01",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": false,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-01",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-02",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-02",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-02",
+        "variant": "promptforge",
+        "status": "prompt_not_approved",
+        "failure": "clarify",
+        "outputMarker": null,
+        "exactTokenCount": 0,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "programming-03",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-03",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-03",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-04",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-04",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-04",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-05",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-05",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-05",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-06",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-06",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-06",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-07",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-07",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-07",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-08",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-08",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-08",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-09",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-09",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-09",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-10",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-10",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-10",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-11",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-11",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-11",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-12",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": false,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-12",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-12",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-13",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-13",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-13",
+        "variant": "promptforge",
+        "status": "prompt_not_approved",
+        "failure": "provider_incomplete",
+        "outputMarker": null,
+        "exactTokenCount": 0,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "programming-14",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-14",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-14",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-15",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-15",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-15",
+        "variant": "promptforge",
+        "status": "prompt_not_approved",
+        "failure": "clarify",
+        "outputMarker": null,
+        "exactTokenCount": 1,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "programming-16",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-16",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-16",
+        "variant": "promptforge",
+        "status": "prompt_not_approved",
+        "failure": "clarify",
+        "outputMarker": null,
+        "exactTokenCount": 0,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "programming-17",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-17",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-17",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-18",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-18",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-18",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-19",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-19",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-19",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-20",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-20",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-20",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "automation-01",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "automation-01",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "automation-01",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "automation-02",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 3,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "automation-02",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 3,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "automation-02",
+        "variant": "promptforge",
+        "status": "prompt_not_approved",
+        "failure": "warning",
+        "outputMarker": null,
+        "exactTokenCount": 3,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "automation-03",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "automation-03",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "automation-03",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "automation-04",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "automation-04",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "automation-04",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "automation-05",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "automation-05",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "automation-05",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "automation-06",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": false,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "automation-06",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "automation-06",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "automation-07",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "automation-07",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "automation-07",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "automation-08",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "automation-08",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "automation-08",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "automation-09",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "automation-09",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "automation-09",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "automation-10",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "automation-10",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "automation-10",
+        "variant": "promptforge",
+        "status": "prompt_not_approved",
+        "failure": "provider_incomplete",
+        "outputMarker": null,
+        "exactTokenCount": 0,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "automation-11",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "automation-11",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "automation-11",
+        "variant": "promptforge",
+        "status": "prompt_not_approved",
+        "failure": "clarify",
+        "outputMarker": null,
+        "exactTokenCount": 0,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "automation-12",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "automation-12",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "automation-12",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "automation-13",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "automation-13",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "automation-13",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "automation-14",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "automation-14",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "automation-14",
+        "variant": "promptforge",
+        "status": "prompt_not_approved",
+        "failure": "warning",
+        "outputMarker": null,
+        "exactTokenCount": 0,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "automation-15",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "automation-15",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "automation-15",
+        "variant": "promptforge",
+        "status": "prompt_not_approved",
+        "failure": "clarify",
+        "outputMarker": null,
+        "exactTokenCount": 1,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "automation-16",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "automation-16",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "automation-16",
+        "variant": "promptforge",
+        "status": "prompt_not_approved",
+        "failure": "clarify",
+        "outputMarker": null,
+        "exactTokenCount": 0,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "automation-17",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "automation-17",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "automation-17",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "automation-18",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "automation-18",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "automation-18",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "automation-19",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "automation-19",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "automation-19",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "automation-20",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "automation-20",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "automation-20",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "research-01",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 2,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "research-01",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 2,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "research-01",
+        "variant": "promptforge",
+        "status": "prompt_not_approved",
+        "failure": "clarify",
+        "outputMarker": null,
+        "exactTokenCount": 2,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "research-02",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "research-02",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "research-02",
+        "variant": "promptforge",
+        "status": "prompt_not_approved",
+        "failure": "clarify",
+        "outputMarker": null,
+        "exactTokenCount": 0,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "research-03",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "research-03",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "research-03",
+        "variant": "promptforge",
+        "status": "prompt_not_approved",
+        "failure": "provider_timeout",
+        "outputMarker": null,
+        "exactTokenCount": 0,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "research-04",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "research-04",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "research-04",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "research-05",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "research-05",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "research-05",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "research-06",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "research-06",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "research-06",
+        "variant": "promptforge",
+        "status": "prompt_not_approved",
+        "failure": "clarify",
+        "outputMarker": null,
+        "exactTokenCount": 0,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "research-07",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "research-07",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "research-07",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "research-08",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "research-08",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "research-08",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "research-09",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "research-09",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "research-09",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "research-10",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "research-10",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "research-10",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "research-11",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "research-11",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "research-11",
+        "variant": "promptforge",
+        "status": "prompt_not_approved",
+        "failure": "clarify",
+        "outputMarker": null,
+        "exactTokenCount": 1,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "research-12",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "research-12",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "research-12",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "research-13",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "research-13",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "research-13",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "research-14",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "research-14",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "research-14",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "research-15",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "research-15",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "research-15",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "business-01",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "business-01",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "business-01",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "business-02",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "business-02",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "business-02",
+        "variant": "promptforge",
+        "status": "prompt_not_approved",
+        "failure": "provider_timeout",
+        "outputMarker": null,
+        "exactTokenCount": 0,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "business-03",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "business-03",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "business-03",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "business-04",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "business-04",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "business-04",
+        "variant": "promptforge",
+        "status": "prompt_not_approved",
+        "failure": "clarify",
+        "outputMarker": null,
+        "exactTokenCount": 0,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "business-05",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": false,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "business-05",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "business-05",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "business-06",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "business-06",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "business-06",
+        "variant": "promptforge",
+        "status": "prompt_not_approved",
+        "failure": "clarify",
+        "outputMarker": null,
+        "exactTokenCount": 1,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "business-07",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "business-07",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "business-07",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "business-08",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "business-08",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "business-08",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "business-09",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "business-09",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "business-09",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "business-10",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "business-10",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "business-10",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "business-11",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "business-11",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "business-11",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "business-12",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "business-12",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "business-12",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "business-13",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "business-13",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "business-13",
+        "variant": "promptforge",
+        "status": "prompt_not_approved",
+        "failure": "provider_incomplete",
+        "outputMarker": null,
+        "exactTokenCount": 1,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "business-14",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "business-14",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "business-14",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "business-15",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "business-15",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "business-15",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "content-01",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "content-01",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "content-01",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "content-02",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "content-02",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "content-02",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "content-03",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "content-03",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "content-03",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "content-04",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "content-04",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "content-04",
+        "variant": "promptforge",
+        "status": "prompt_not_approved",
+        "failure": "warning",
+        "outputMarker": null,
+        "exactTokenCount": 1,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "content-05",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "content-05",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "content-05",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "content-06",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "content-06",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "content-06",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "content-07",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 2,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "content-07",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 2,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "content-07",
+        "variant": "promptforge",
+        "status": "prompt_not_approved",
+        "failure": "warning",
+        "outputMarker": null,
+        "exactTokenCount": 2,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "content-08",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "content-08",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "content-08",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "content-09",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "content-09",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "content-09",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "content-10",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "content-10",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "content-10",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "content-11",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "content-11",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "content-11",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "content-12",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "content-12",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "content-12",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "content-13",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "content-13",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "content-13",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "content-14",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "content-14",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "content-14",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "content-15",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "content-15",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": false,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "content-15",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "general-01",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "general-01",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "general-01",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "general-02",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "general-02",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "general-02",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "general-03",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "general-03",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "general-03",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "general-04",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "general-04",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "general-04",
+        "variant": "promptforge",
+        "status": "prompt_not_approved",
+        "failure": "clarify",
+        "outputMarker": null,
+        "exactTokenCount": 1,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "general-05",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "general-05",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "general-05",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "general-06",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "general-06",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "general-06",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "general-07",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "general-07",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "general-07",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "general-08",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "general-08",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "general-08",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "general-09",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 2,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "general-09",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 2,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "general-09",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 2,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "general-10",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "general-10",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "general-10",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "general-11",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "general-11",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "general-11",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 0,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "general-12",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 2,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "general-12",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 2,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "general-12",
+        "variant": "promptforge",
+        "status": "prompt_not_approved",
+        "failure": "clarify",
+        "outputMarker": null,
+        "exactTokenCount": 2,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "general-13",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "general-13",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "general-13",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "general-14",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "general-14",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "general-14",
+        "variant": "promptforge",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "general-15",
+        "variant": "direct-id",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "general-15",
+        "variant": "literal-en",
+        "status": "answered",
+        "outputMarker": true,
+        "exactTokenCount": 1,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "general-15",
+        "variant": "promptforge",
+        "status": "prompt_not_approved",
+        "failure": "clarify",
+        "outputMarker": null,
+        "exactTokenCount": 1,
+        "missedPromptTokens": null
+      }
+    ]
+  },
+  "e2e": [
+    {
+      "name": "git-exact-count",
+      "generation": "ready",
+      "review": "validated",
+      "verifiedCoreConstraints": true,
+      "savedAndRecovered": true
+    },
+    {
+      "name": "explicit-english",
+      "generation": "ready",
+      "review": "validated",
+      "verifiedCoreConstraints": true,
+      "savedAndRecovered": true
+    },
+    {
+      "name": "date-identifier-percent",
+      "generation": "ready",
+      "review": "validated",
+      "verifiedCoreConstraints": true,
+      "savedAndRecovered": true
+    },
+    {
+      "name": "timed-video-without-invented-statistics",
+      "generation": "ready",
+      "review": "validated",
+      "verifiedCoreConstraints": true,
+      "savedAndRecovered": true
+    },
+    {
+      "name": "clarify-and-table",
+      "generation": "ready",
+      "review": "warning",
+      "verifiedCoreConstraints": true,
+      "savedAndRecovered": true
+    }
+  ]
+}
