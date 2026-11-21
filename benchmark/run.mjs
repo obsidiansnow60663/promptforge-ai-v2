@@ -57,8 +57,31 @@ function validateRatings(review, item) {
 const fixtureScore = keys => Object.fromEntries(keys.map(key => [key, 100]));
 if (sourceReport && (sourceReport.datasetVersion !== datasetVersion || sourceReport.datasetSha256 !== datasetSha256 ||
   !Array.isArray(sourceReport.rows))) throw Error('Dataset laporan asal tidak cocok.');
+const baselinePath = getOption('reuse-baselines');
+const baselineBytes = baselinePath ? await readFile(baselinePath) : null;
+const baselineReport = baselineBytes ? JSON.parse(baselineBytes) : null;
+const baselineRows = new Map();
+if (baselineReport) {
+  if (fixture || sourceReport || baselineReport.method !== 'provider requests' || baselineReport.datasetSha256 !== datasetSha256 ||
+    baselineReport.settings?.maxOutputTokens !== maximumTokens || baselineReport.settings?.sampling !== 'provider default' ||
+    JSON.stringify(baselineReport.settings?.executor) !== JSON.stringify(executor) ||
+    JSON.stringify(baselineReport.settings?.optimizer) !== JSON.stringify(optimizer) ||
+    JSON.stringify(baselineReport.settings?.judge) !== JSON.stringify(automatedOnly ? null : judge)) {
+    throw Error('Baseline harus memakai dataset, model dan pengaturan eksekusi yang sama.');
+  }
+  for (const row of baselineReport.rows) {
+    if (!variants.slice(0, 2).includes(row.variant)) continue;
+    const key = row.caseId + '/' + row.variant;
+    if (baselineRows.has(key)) throw Error('Baseline mengandung duplikat.');
+    baselineRows.set(key, row);
+  }
+  if (selected.some(item => variants.slice(0, 2).some(variant => !baselineRows.has(item.id + '/' + variant)))) {
+    throw Error('Baseline tidak memuat kedua jalur untuk semua kasus yang dipilih.');
+  }
+}
+
 const checkpointKey = fingerprint(JSON.stringify({ datasetSha256, fixture, automatedOnly, executor, optimizer, judge,
-  maximumTokens, commit: process.env.BENCH_COMMIT ?? null }));
+  maximumTokens, baselineSha256: baselineBytes ? fingerprint(baselineBytes) : null, commit: process.env.BENCH_COMMIT ?? null }));
 if (checkpoint && !process.env.BENCH_COMMIT) throw Error('Setel BENCH_COMMIT ketika menggunakan checkpoint.');
 if (checkpoint) await mkdir(checkpoint, { recursive: true });
 
@@ -89,7 +112,7 @@ async function runCase(item) {
   const prompts = [item.source];
   const preparationErrors = [];
   try {
-    prompts[1] = fixture ? 'Fixture literal ' + item.marker :
+    if (!baselineReport) prompts[1] = fixture ? 'Fixture literal ' + item.marker :
       await call(optimizer, 'Translate the user text literally into English. Preserve details and formatting. Output the translation only.', item.source);
   } catch (error) { preparationErrors[1] = error.code ?? 'translation_failed'; }
   try {
@@ -110,6 +133,8 @@ async function runCase(item) {
   } catch (error) { preparationErrors[2] = error.code ?? 'optimization_failed'; }
   for (let index = 0; index < variants.length; index++) {
     const variant = variants[index];
+    const baseline = baselineRows.get(item.id + '/' + variant);
+    if (baseline) { answers.push(baseline); continue; }
     const prompt = prompts[index];
     const row = { caseId: item.id, category: item.category, variant };
     answers.push(row);
@@ -147,7 +172,9 @@ async function runCase(item) {
       row.failure = error.code ?? (row.answer ? 'invalid_review' : 'execution_error');
     }
   }
-  if (!fixture) for (const row of answers.slice(-variants.length)) row.preparation = stages.get(optimizer);
+  if (!fixture) for (const row of answers.filter(row => !baselineReport || row.variant === 'promptforge')) {
+    row.preparation = stages.get(optimizer);
+  }
   if (checkpointPath) {
     const temporary = checkpointPath + '.tmp';
     await writeFile(temporary, JSON.stringify({ key: checkpointKey, rows: answers }));
@@ -211,6 +238,9 @@ const report = {
   limitations: ['Penanda literal adalah indikator mekanis; gunakan penilaian manusia untuk mengkalibrasi penilai.',
     fixture ? 'Skor fixture hanya menguji alur pelaporan.' : 'Kondisi sampling menggunakan pengaturan default provider.',
     ...(automatedOnly ? ['Jawaban belum dinilai model independen.'] : [])],
+  baseline: sourceReport?.baseline ?? (baselineReport ? {
+    sha256: fingerprint(baselineBytes), workflowCommit: baselineReport.workflowCommit, variants: variants.slice(0, 2),
+  } : null),
   summary, rows: answers,
 };
 await writeFile(reportPath, JSON.stringify(report, null, 2) + '\n');
