@@ -1,17 +1,18 @@
 # Evaluasi PromptForge
 
-Dataset promptforge-id-1.0.0 memuat 100 instruksi sintetis. Kategori:
-pemrograman (20), AI dan otomasi (20), riset (15), bisnis (15),
-pembuatan konten (15), dan tugas umum (15). Setiap kasus memuat tujuan,
-batasan, format, bahasa, rubrik, dan kondisi kegagalan kritis.
+Dataset promptforge-id-1.0.0 memuat 100 instruksi sintetis dalam kategori
+pemrograman, AI dan otomasi, riset, bisnis, pembuatan konten, dan tugas umum.
+Setiap kasus memuat tujuan, batasan, format, bahasa, rubrik, dan kondisi
+kegagalan kritis.
 
-Runner proyek menguji tiga varian dengan target eksekusi, bahasa, dan batas
-token yang sama: teks Indonesia asli, terjemahan Inggris harfiah, serta
-prompt teroptimasi. Penilai dengan target berbeda mengukur mutu prompt
-dan jawaban secara terpisah. Penilaian manusia menggunakan rubrik yang
-sama. Laporan menyimpan versi dataset, model aktual yang dilaporkan
-provider, pengaturan, waktu, dan token.
+Pengujian memakai tiga varian dengan model eksekusi, bahasa dan batas token
+yang sama. Variannya adalah instruksi Indonesia asli, terjemahan Inggris
+harfiah, dan prompt teroptimasi. Putaran awal memakai API ArxPay sungguhan.
+Kedua baseline menghasilkan 100 dari 100 jawaban. PromptForge versi awal
+menghasilkan 39 dari 100, terutama karena klarifikasi menghentikan kasus.
 
-Status: 300 baris pengujian pelaporan menggunakan fixture sintetis.
-Panggilan provider dan penilaian manusia masih diperlukan untuk mengukur
-fidelitas, mutu bahasa, dan keberhasilan tugas pada seluruh dataset.
+Audit otomatis memeriksa literal pada prompt dan penanda keluaran. Uji
+end-to-end terpisah menjalankan draf tersimpan, adaptasi, review, serta
+pemulihan cadangan pada data sintetis. Hasil per putaran dan keterbatasan
+tercatat di docs/quality-audit.md dalam repositori Studio. Penilaian manusia
+dan pembuktian target mutu blueprint masih terbuka.

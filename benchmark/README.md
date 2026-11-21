@@ -34,3 +34,5 @@ node scripts/self-check.mjs REPORT_E2E.json
 ```
 
 Uji end-to-end memerlukan `ARXPAY_API_KEY` dari environment. Ia memakai Worker dan database SQLite sementara dengan instruksi sintetis, tanpa mengambil data Studio. Uji mencakup klarifikasi, bahasa yang dipilih di instruksi, batasan persis, restore dan isolasi pemilik. Runner lama dan versi perbaikan dicatat dengan commit masing-masing.
+
+Setelah mengubah optimizer, `--reuse-baselines REPORT.json` menjalankan ulang jalur teroptimasi sambil mempertahankan dua baseline identik. Runner memeriksa snapshot dataset, model, batas token dan sampling, serta merekam sidik laporan baseline.

@@ -61,3 +61,7 @@ D1 menyimpan eksekusi yang tertaut pada versi prompt, hasil mentah, status adapt
 Pemilik memilih mesin DeepSeek melalui endpoint Chat Completions ArxPay. Bila secret `ARXPAY_API_KEY` aktif, Generator dan Klarifikasi menggunakan Worker tanpa WebGPU. Qwen lokal tetap bisa dipilih di Pengaturan. UI menyebut pemrosesan eksternal sebelum pengiriman. ArxPay juga tersedia sebagai pilihan eksekusi setelah persetujuan versi. USD, tarif dan kebijakan retensi provider tidak diukur.
 
 Pipeline yang sama menjalankan analisis, klarifikasi, optimasi bahasa Inggris, dan review. Maksimal satu koreksi struktur dan dua revisi semantik. Worker membatasi satu penyusunan aktif per pemilik dan enam permintaan per menit, lalu melindungi retry dengan ID dan sidik masukan. Secret tersimpan di Sites dan hanya dikirim ke host provider tetap. Arsip cadangan tidak membawa kredensial, sidik masukan, atau antrean kerja agen.
+
+## PF-005 · Audit mutu end-to-end · 21 November 2026
+
+Uji mandiri meliputi benchmark live 100 kasus dan uji Worker dengan instruksi sintetis. Perubahan mengikuti §15.1, §15.5, §15.7 dan AT-01–05, AT-10, AT-17–18. Studio mempertahankan bahasa jawaban yang dikutip dari instruksi, memperketat literal, membatasi klarifikasi pada informasi material, menampilkan opsi asumsi sebelum pengguna menyetujuinya, dan memberi peninjauan tambahan untuk respons penilai yang tidak lengkap. Tidak ada perluasan audiens, akses basis data, atau scope secret. Perubahan dan pengujian diminta pemilik. Lihat [audit mutu](docs/quality-audit.md) untuk hasil dan DoD yang masih terbuka.
