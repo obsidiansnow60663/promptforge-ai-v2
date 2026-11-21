@@ -29,7 +29,7 @@ function onlyKeys(value, keys) {
 }
 
 function validTarget(target) {
-  return onlyKeys(target, ['provider', 'model']) && ['openai', 'anthropic', 'gemini'].includes(target.provider) && str(target.model, 120);
+  return onlyKeys(target, ['provider', 'model']) && ['openai', 'anthropic', 'gemini', 'arxpay'].includes(target.provider) && str(target.model, 120);
 }
 
 function validTrace(trace) {

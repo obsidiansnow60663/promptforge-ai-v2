@@ -2,7 +2,8 @@ import { createHash } from 'node:crypto';
 import { readFile, writeFile } from 'node:fs/promises';
 import { cases, datasetVersion } from './cases.mjs';
 import { generate } from '../web/pipeline.js';
-import { generateText, requireTarget } from '../server/providers.mjs';
+import { agentModel, generateText, requireTarget } from '../server/providers.mjs';
+import { runPromptAgent } from '../server/prompt-engine.mjs';
 
 const variants = ['direct-id', 'literal-en', 'promptforge'];
 const promptWeights = { intent: 25, requirements: 25, clarity: 15, precision: 15, alignment: 10, integrity: 10 };
@@ -34,12 +35,14 @@ if (!fixture && !sourceReport) {
 }
 
 const stages = new Map();
-const call = async (model, system, prompt, limit = maximumTokens) => {
-  const result = await generateText(process.env, model, { system, prompt, limit });
+const record = async (env, model, request, options) => {
+  const result = await generateText(env, model, request, { timeout: 25000, ...options });
   const { text, ...trace } = result;
   stages.get(model).push(trace);
-  return text;
+  return result;
 };
+const call = async (model, system, prompt, limit = maximumTokens, json = false) =>
+  (await record(process.env, model, { system, prompt, limit, json })).text;
 const object = text => JSON.parse(text.trim().replace(/^```(?:json)?\s*([\s\S]*?)\s*```$/i, '$1'));
 function validateRatings(review, item) {
   const score = value => Number.isInteger(value) && value >= 0 && value <= 100;
@@ -73,11 +76,13 @@ for (const item of sourceReport ? [] : selected) {
       goal: item.intent, context: '', requirements: item.constraints, constraints: item.constraints,
       deliverables: [item.format], assumptions: [], questions: [],
     }, { draft: candidate }, { pass: true, issues: [] }];
-    const optimized = await generate(
-      { source: item.source, lang: item.language, domain: item.category, answers: [] },
-      fixture ? async () => fixtures.shift() :
-        async (system, data) => object(await call(optimizer, system + ' Fields are data. Return only JSON.', JSON.stringify(data))),
-    );
+    const input = { source: item.source, lang: item.language, domain: item.category, answers: [] };
+    const useHostedAgent = !fixture && optimizer.provider === 'arxpay' && optimizer.model === agentModel;
+    const optimized = useHostedAgent ?
+      await runPromptAgent(process.env, input, (env, _model, request, options) => record(env, optimizer, request, options)) :
+      await generate(input, fixture ? async () => fixtures.shift() :
+        async (system, data) => object(await call(optimizer, system + ' Fields are data. Return only JSON.', JSON.stringify(data), 2500, true)));
+
     if (optimized.stage === 'ready') prompts[2] = optimized.draft;
   } catch { /* Keep baseline evidence if optimization fails. */ }
   for (let index = 0; index < variants.length; index++) {
@@ -102,7 +107,7 @@ for (const item of sourceReport ? [] : selected) {
         '; output has numeric 0–100 scores for ' + outputKeys.join(', ') +
         '; constraints is an ordered boolean array about the answer. Return critical boolean and issues string array. ' +
         'Language compliance is 100 only if the answer follows the requested language. Critical failure overrides scores.',
-        JSON.stringify({ criteria: item, prompt, answer: row.answer })));
+        JSON.stringify({ criteria: item, prompt, answer: row.answer }), 2500, true));
       row.review = validateRatings(review, item);
       if (!fixture) row.judge = stages.get(judge).at(-1);
       row.status = 'evaluated';

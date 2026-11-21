@@ -5,6 +5,7 @@ import { catalog, generateText } from '../server/providers.mjs';
 import { existing, openaiReply, runtime } from './runtime.mjs';
 
 const env = {
+  ARXPAY_API_KEY: 'fixture-arxpay',
   OPENAI_API_KEY: 'fixture-openai', OPENAI_MODELS: 'fixture',
   ANTHROPIC_API_KEY: 'fixture-anthropic', ANTHROPIC_MODELS: 'fixture',
   GEMINI_API_KEY: 'fixture-gemini', GEMINI_MODELS: 'fixture',
@@ -45,7 +46,7 @@ for (const [provider, [host, header, credential, reply]] of Object.entries(contr
 
 test('status reports configuration without keys and rejects unlisted models', async () => {
   assert.ok(catalog(env).every(provider => provider.configured));
-  assert.doesNotMatch(JSON.stringify(catalog(env)), /fixture-openai|fixture-gemini/);
+  assert.doesNotMatch(JSON.stringify(catalog(env)), /fixture-openai|fixture-gemini|fixture-arxpay/);
   await assert.rejects(generateText(env, { ...target, model: '../elsewhere' }, request), { code: 'invalid_model' });
   await assert.rejects(generateText({}, target, request), { code: 'provider_unconfigured' });
 });

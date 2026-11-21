@@ -1,8 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {DatabaseSync} from 'node:sqlite';
-import {readFileSync} from 'node:fs';
-import worker from '../dist/server/index.js';
+import { runtime } from './runtime.mjs';
 import {generate} from '../web/pipeline.js';
 const input={source:'Tulis 5 poin untuk tim pemasaran.',lang:'Bahasa Indonesia',domain:'Bisnis',answers:[]};
 const spec={goal:'Tuliskan poin',context:'Tim pemasaran',requirements:[],constraints:['5 poin'],deliverables:['Daftar'],assumptions:[],questions:[]};
@@ -16,11 +14,10 @@ test('critical number failure overrides reviewer and stops after two repairs',as
 });
 test('incomplete review returns a usable draft with a warning',async()=>{const r=await generate(input,seq([spec,{draft:report.draft},{}]));assert.equal(r.stage,'warning');assert.equal(r.draft,report.draft)});
 test('analysis rejects malformed model output',async()=>assert.rejects(generate(input,seq([{}]))));
-test('owner-isolated saves, immutable versions, safe retries and deletion',async()=>{
- const sql=new DatabaseSync(':memory:');sql.exec(readFileSync('drizzle/0000_sessions.sql','utf8'));
- const DB={prepare(q){const s=sql.prepare(q);return {bind(...a){return {run:()=>s.run(...a),all:()=>({results:s.all(...a)}),first:()=>s.get(...a)}}}}};
+test('owner-isolated saves, immutable versions, safe retries and deletion',async t=>{
+ const fixture=runtime(t);
  const session=crypto.randomUUID(),requestId=crypto.randomUUID();
- const call=(path,owner,body)=>worker.fetch(new Request('https://example.org/api/'+path,{headers:{...(owner?{'oai-authenticated-user-id':owner}:{}),'content-type':'application/json',Origin:'https://example.org'},method:body?'POST':'GET',body:body?JSON.stringify(body):undefined}),{DB});
+ const call=(path,owner,body)=>fixture.call(path,body,owner);
  const payload={...input,report,session,requestId};
  assert.equal((await call('history','')).status,401);
  assert.equal((await (await call('local','a',payload)).json()).version,1);

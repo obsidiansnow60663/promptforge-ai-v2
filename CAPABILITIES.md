@@ -55,3 +55,9 @@ D1 deployment privat menyediakan binding DB dan tabel versions. URL privat memin
 Implementasi mempertahankan Worker native, WebLLM, dan binding D1 `DB`. Build membundel modul server menjadi entrypoint Worker. Provider memakai HTTPS dengan endpoint tetap dan katalog model per lingkungan. Sites menyimpan rahasia, sementara browser menerima nama dan ketersediaan provider. Daftar konfigurasi produksi kosong ketika diperiksa. Akses HTTPS dari Worker ke provider masih belum dibuktikan oleh panggilan nyata. Streaming berada di luar alur ini.
 
 D1 menyimpan eksekusi yang tertaut pada versi prompt, hasil mentah, status adaptasi/peninjauan, metrik, dan umpan balik. Impor dan ekspor JSON berbasis pemilik mencakup record tersebut. Riwayat versi privat ditinjau melalui kontrol akses Sites. Bukti pengujian, prosedur rotasi serta pemulihan, dan kriteria yang masih terbuka dicatat di [dokumen verifikasi](docs/verification.md).
+
+## PF-004 · Agen server ArxPay · 21 November 2026
+
+Pemilik memilih mesin DeepSeek melalui endpoint Chat Completions ArxPay. Bila secret `ARXPAY_API_KEY` aktif, Generator dan Klarifikasi menggunakan Worker tanpa WebGPU. Qwen lokal tetap bisa dipilih di Pengaturan. UI menyebut pemrosesan eksternal sebelum pengiriman. ArxPay juga tersedia sebagai pilihan eksekusi setelah persetujuan versi. USD, tarif dan kebijakan retensi provider tidak diukur.
+
+Pipeline yang sama menjalankan analisis, klarifikasi, optimasi bahasa Inggris, dan review. Maksimal satu koreksi struktur dan dua revisi semantik. Worker membatasi satu penyusunan aktif per pemilik dan enam permintaan per menit, lalu melindungi retry dengan ID dan sidik masukan. Secret tersimpan di Sites dan hanya dikirim ke host provider tetap. Arsip cadangan tidak membawa kredensial, sidik masukan, atau antrean kerja agen.

@@ -56,3 +56,11 @@
 | Provider dan mutu | Pengaturan runtime belum berisi kredensial atau daftar model. Tidak ada panggilan provider nyata pada Fase 3–6 dalam sesi ini. Mutu jawaban dan hasil benchmark masih memerlukan data live dan penilai manusia. |
 
 URL teruji: [PromptForge AI Studio](https://promptforge-studio.pearlymonkey32.chatgpt.site).
+
+## Verifikasi agen server ArxPay
+
+- Worker memakai model yang diminta `deepseek-v4.1-flash-bansos`. Respons live melaporkan model aktual `deepseek-v4.1-flash`. Generator memilih mesin ini bila secret tersedia. Qwen lokal menjadi pilihan di Pengaturan.
+- Uji Git dengan API nyata dari Worker yang dijalankan lokal lulus dari analisis sampai validasi jawaban. Jawaban berbahasa Indonesia memuat tepat 5 poin bernomor dengan 11, 13, 10, 11 dan 12 kata. Versi yang sama dibaca kembali dan pemulihan JSON di SQLite berhasil. Pengiriman ulang dengan ID yang sama mengembalikan draf tersimpan tanpa panggilan provider baru.
+- Loop perbaikan menangani struktur analisis yang tidak konsisten, respons audit yang terpotong, batas waktu eksekusi model, pertanyaan klarifikasi berlebih, serta instruksi internal yang sempat ikut tertulis di draf. Uji Python memperlihatkan bahwa asumsi dan kekurangan teknis tetap diberi peringatan meski kegagalan batas waktu teratasi.
+- 28 tes otomatis lulus. Empat tes tambahan memeriksa koreksi struktur dan semantik, kredensial hanya ke endpoint tetap, permintaan ulang saat job aktif, klarifikasi, isolasi pemilik dan galat konfigurasi. Relay preview tetap gagal dan browser cloud belum dapat dimulai.
+- Bukti live ArxPay memenuhi sebagian skenario provider dan bahasa. Pengetesan endpoint OpenAI, Anthropic dan Gemini secara langsung, benchmark live seluruh dataset, penilaian manusia, serta alur browser yang diautentikasi belum selesai.
