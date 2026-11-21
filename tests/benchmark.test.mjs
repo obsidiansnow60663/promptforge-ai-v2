@@ -30,3 +30,21 @@ test('benchmark covers 100 unique cases and three equivalent fixture tracks with
     assert.equal(summary.humanReviewed, 0);
   }
 });
+
+test('parallel benchmark writes deterministic checkpoints and rejects a mismatched workflow commit', async t => {
+  const dir = await mkdtemp(join(tmpdir(), 'promptforge-resume-'));
+  t.after(() => rm(dir, { recursive: true, force: true }));
+  const output = join(dir, 'report.json');
+  const checkpoints = join(dir, 'cases');
+  const execute = (commit, jobs) => promisify(execFile)(process.execPath, [
+    'benchmark/run.mjs', '--case', 'content-01,programming-09', '--jobs', String(jobs),
+    '--checkpoint', checkpoints, '--out', output,
+  ], { env: { ...process.env, BENCH_COMMIT: commit } });
+  await execute('checkpoint-fixture', 2);
+  const before = await readFile(output, 'utf8');
+  const expected = JSON.parse(before).rows.map(row => row.caseId);
+  assert.deepEqual(expected, ['programming-09', 'programming-09', 'programming-09', 'content-01', 'content-01', 'content-01']);
+  await execute('checkpoint-fixture', 1);
+  assert.equal(await readFile(output, 'utf8'), before);
+  await assert.rejects(execute('different-workflow', 2), /Konfigurasi checkpoint berubah/);
+});

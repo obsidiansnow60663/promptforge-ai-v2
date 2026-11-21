@@ -20,3 +20,17 @@ Semua varian menggunakan eksekutor, bahasa, batas keluaran dan sampling default 
 Untuk evaluasi manusia, buat dokumen JSON dengan `datasetVersion`, `reportSha256` (SHA-256 byte laporan asli), dan `reviews`. Setiap entri `reviews` memiliki `caseId`, `variant`, `prompt`, `output`, `constraints`, `issues` dan `critical`. Gunakan kunci rubrik yang sama seperti `review` dalam laporan. Nilai dimensi 0–100, dengan kepatuhan bahasa 100 hanya bila benar. Tandai batasan gagal secara eksplisit dan simpan penilaian terpisah dari hasil otomatis. Gabungkan penilaian dengan `node benchmark/run.mjs --report LAPORAN_ASLI --human PENILAIAN --out LAPORAN_GABUNGAN`. Runner memeriksa sidik laporan dan memakai jawaban yang sudah tersimpan.
 
 Target 95% preservasi, kepatuhan bahasa dan keberhasilan tugas masih belum diukur dengan provider dan penilai manusia.
+
+## Uji mandiri dan audit deterministik
+
+Pilih beberapa kasus dengan `--case programming-09,content-01`. Untuk seluruh dataset, `--jobs` menerima 1–8 kasus paralel. Opsi `--checkpoint PATH` menyimpan hasil per kasus dan dapat dijalankan ulang dengan dataset, model, metode, dan `BENCH_COMMIT` yang sama. Gunakan direktori baru setelah perubahan workflow atau kriteria.
+
+Gunakan `--automated-only` jika model penilai yang berbeda belum tersedia. Runner membuat jawaban nyata sekaligus menyimpan kegagalan atau kebutuhan klarifikasi. Kolom peringkat dan kelulusan manual tetap kosong. Audit dari laporan live memeriksa token persis pada prompt dan satu penanda teks pada jawaban, lalu memberi ringkasan seluruh percobaan dan subset yang memiliki jawaban di ketiga varian. Jangan menafsirkan penanda sebagai skor mutu semantik.
+
+```sh
+node benchmark/check-literals.mjs REPORT_LIVE.json AUDIT.json
+npm run build
+node scripts/self-check.mjs REPORT_E2E.json
+```
+
+Uji end-to-end memerlukan `ARXPAY_API_KEY` dari environment. Ia memakai Worker dan database SQLite sementara dengan instruksi sintetis, tanpa mengambil data Studio. Uji mencakup klarifikasi, bahasa yang dipilih di instruksi, batasan persis, restore dan isolasi pemilik. Runner lama dan versi perbaikan dicatat dengan commit masing-masing.

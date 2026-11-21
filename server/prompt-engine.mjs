@@ -36,10 +36,15 @@ export async function runPromptAgent(env, input, ask = generateText) {
       'proceed and choose illustrative examples without treating their exact subject as a blocker. For a general learning plan, ' +
       'a stated audience, topic, duration and deliverable are sufficient. Do not require hours or a specialization unless the user makes them necessary. ' +
       'For examples, templates, methods, or starter code, use clearly labelled synthetic data and placeholders when concrete details are unspecified. ' +
-      'Ask for missing material only when the task requires editing, analyzing, or summarizing specific real material that has not been provided, or proceeding would violate a constraint.' :
+      'Ask for missing material only when the task requires editing, analyzing, or summarizing specific real material that has not been provided, or proceeding would violate a constraint. ' +
+      'Keep explicit scope and constraints separate from optional implementation choices.' :
       stage === 'draft' ? 'The draft value itself must be in English and ready to execute immediately. Do not put workflow instructions about waiting or generating a prompt inside it. ' +
-        'Use concise natural English and translate units; preserve the digits and true identifiers exactly. Avoid repeating constraints.' :
-        'Mark any draft that asks the executor to wait, rewrite the prompt, or defer the user task as a critical failure.');
+        'Use concise natural English and translate units; preserve the digits and true identifiers exactly. Avoid repeating constraints. ' +
+        'Do not turn examples, unrequested technical choices, or default assumptions into mandatory scope restrictions. ' +
+        'Preserve generic file types, roles and processes as given unless a narrower scope is explicitly requested.' :
+        'Mark any draft that asks the executor to wait, rewrite the prompt, or defer the user task as a critical failure. ' +
+        'Check for new scope qualifiers such as only, exactly, lowercase, a particular platform, or mandatory steps. ' +
+        'Flag any such restriction that narrows the task without evidence in the source or clarification answers.');
     const request = async corrective => {
       const remaining = deadline - Date.now();
       if (remaining < 1000) throw new Problem(502, 'Waktu penyusunan prompt habis.', 'prompt_timeout');
