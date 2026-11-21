@@ -18,12 +18,15 @@ function executionLookup(db, owner, id) {
 
 export async function execute(db, env, owner, input) {
   const { session, version, requestId, target } = input;
+  const assessmentTarget = input.assessmentTarget ?? target;
   const lookup = executionLookup(db, owner, requestId);
   const previous = await lookup.first();
   if (previous) {
     const result = present(previous);
     if (previous.session !== session || previous.version !== version ||
-      result.target.provider !== target?.provider || result.target.model !== target?.model) {
+      result.target.provider !== target?.provider || result.target.model !== target?.model ||
+      (result.assessmentTarget ?? result.target).provider !== assessmentTarget?.provider ||
+      (result.assessmentTarget ?? result.target).model !== assessmentTarget?.model) {
       throw new Problem(409, 'Permintaan ini sudah dipakai untuk eksekusi lain.');
     }
     if (result.status === 'running' && Date.now() - Date.parse(result.created) > 120000) {
@@ -33,6 +36,7 @@ export async function execute(db, env, owner, input) {
   }
 
   requireTarget(env, target);
+  requireTarget(env, assessmentTarget);
   const row = await db.prepare('SELECT payload FROM versions WHERE owner=? AND session=? AND version=?')
     .bind(owner, session, version).first();
   if (!row) throw new Problem(404, 'Versi prompt tidak ditemukan.');
@@ -42,7 +46,11 @@ export async function execute(db, env, owner, input) {
   }
 
   const created = new Date().toISOString();
-  const data = { target: { provider: target.provider, model: target.model }, language: approved.lang };
+  const data = {
+    target: { provider: target.provider, model: target.model },
+    assessmentTarget: { provider: assessmentTarget.provider, model: assessmentTarget.model },
+    language: approved.lang,
+  };
   const claim = await db.prepare(
     `INSERT INTO executions(owner,session,version,request_id,created,status,payload)
      SELECT ?,?,?,?,?, 'running', ?
@@ -66,7 +74,7 @@ export async function execute(db, env, owner, input) {
     });
     await db.prepare("UPDATE executions SET payload=? WHERE owner=? AND request_id=? AND status='running'")
       .bind(JSON.stringify(data), owner, requestId).run();
-    data.output = await adaptOutput(env, target, { raw: data.raw, approved });
+    data.output = await adaptOutput(env, assessmentTarget, { raw: data.raw, approved });
     status = data.output.status === 'validated' ? 'complete' : 'warning';
   } catch (error) {
     data.error = error instanceof Problem ? { code: error.code, message: error.message } :
@@ -79,4 +87,13 @@ export async function execute(db, env, owner, input) {
   const saved = await lookup.first();
   if (!saved) throw new Problem(404, 'Sesi sudah dihapus.');
   return present(saved);
+}
+
+export async function saveFeedback(db, owner, { session, version, executionId, useful, comment }) {
+  const result = await db.prepare(
+    `UPDATE executions SET payload=json_set(payload, '$.feedback', json(?))
+     WHERE owner=? AND session=? AND version=? AND request_id=? AND status IN ('complete','warning')`,
+  ).bind(JSON.stringify({ useful, comment }), owner, session, version, executionId).run();
+  if (!(result.meta?.changes ?? result.changes)) throw new Problem(404, 'Hasil eksekusi tidak ditemukan.');
+  return { saved: true };
 }

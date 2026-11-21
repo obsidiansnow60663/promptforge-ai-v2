@@ -112,3 +112,28 @@ test('execution requires confirmation, persists by owner/version and reuses its 
   await call('delete', { session: prompt.session });
   assert.deepEqual(await (await call(path)).json(), []);
 });
+
+test('comparison can use one assessment target and owner-only feedback updates the saved result', async t => {
+  const { call } = runtime(t, env);
+  const prompt = existing();
+  const execution = { session: prompt.session, version: 1, requestId: crypto.randomUUID(), target, confirm: true,
+    assessmentTarget: { provider: 'anthropic', model: 'fixture' } };
+  const origins = [];
+  t.mock.method(globalThis, 'fetch', async url => {
+    origins.push(new URL(url).hostname);
+    if (origins.length === 1) return openaiReply('Halo');
+    const text = origins.length === 2 ? JSON.stringify({ answer: 'Halo', warnings: [] }) : JSON.stringify({
+      critical: false, issues: [], dimensions: Object.fromEntries(outputDimensions.map(key => [key, true])),
+    });
+    return Response.json({ content: [{ type: 'text', text }], stop_reason: 'end_turn' });
+  });
+  await call('existing', prompt);
+  const result = await (await call('execute', execution)).json();
+  assert.equal(result.status, 'complete');
+  assert.deepEqual(origins, ['api.openai.com', 'api.anthropic.com', 'api.anthropic.com']);
+  const feedback = { session: prompt.session, version: 1, executionId: result.id, useful: false, comment: 'Perlu contoh.' };
+  assert.equal((await call('feedback', feedback, 'visitor')).status, 404);
+  assert.equal((await call('feedback', feedback)).status, 200);
+  const [record] = await (await call('executions?session=' + prompt.session + '&version=1')).json();
+  assert.deepEqual(record.feedback, { useful: false, comment: 'Perlu contoh.' });
+});

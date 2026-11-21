@@ -4,3 +4,6 @@
 .answer { white-space: pre-wrap; overflow-wrap: anywhere; font: inherit; }
 .execution summary, .execution label { overflow-wrap: anywhere; }
 .execution-check { display: flex; align-items: baseline; gap: .45rem; }
+.compare-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.compare-grid > * { min-width: 0; }
+@media (max-width: 760px) { .compare-grid { grid-template-columns: 1fr; } }

@@ -1,3 +1,4 @@
+import { comparisonView } from './comparison.js';
 import { executionCards, selectedTarget, targets } from './execution.js';
 'use strict';
 const main=document.querySelector('main');
@@ -19,7 +20,7 @@ const domains=['Umum','Pemrograman','Otomasi','Riset','Bisnis','Konten','Analisi
 const languages=['Bahasa Indonesia','English'];
 let defaultLanguage='Bahasa Indonesia';
 function newSession(){return {session:crypto.randomUUID(),source:'',domain:'Umum',lang:defaultLanguage,answers:[],questions:[],result:null,requestId:null,mode:'generate',runs:[],runError:'',target:null}}
-let work=newSession(),historyRows=[],historyError='',settings=null,settingsError='',busy='',error='',notice='',pendingDelete=null;
+let work=newSession(),historyRows=[],historyError='',settings=null,settingsError='',busy='',error='',notice='',pendingDelete=null,comparison=null,comparisonVersion=null;
 const links={hasil:'Tinjau prompt',klarifikasi:'Klarifikasi',...labels};
 const route=()=>Object.hasOwn(links,location.hash.slice(1))?location.hash.slice(1):'dasbor';
 function go(page){if(route()===page)render();else location.hash=page}
@@ -61,13 +62,22 @@ function generator(){
 }
 function clarification(){return title('Klarifikasi','Lengkapi detail yang memengaruhi hasil. Jawaban sebelumnya dapat disunting.')+'<form id="clarify" class="panel"><details><summary>Instruksi asli</summary><p>'+esc(work.source)+'</p></details>'+work.answers.map((a,i)=>'<div class="group"><label for="q'+i+'">'+esc(a.question)+'</label><input id="q'+i+'" data-answer="'+i+'" required maxlength="1500" value="'+esc(a.answer)+'"></div>').join('')+message()+'<div class="actions"><button class="primary">Lanjutkan peninjauan</button><a href="#generator">Ubah instruksi</a></div></form>'}
 function items(values){return values.length?'<ul>'+values.map(s=>'<li>'+esc(s)+'</li>').join('')+'</ul>':'<p class="muted">Tidak teridentifikasi.</p>'}
+function promptVersions(r){
+ const others=historyRows.filter(row=>row.session===work.session&&row.version!==r.version);
+ if(!others.length)return '';
+ const previous=comparisonVersion?.session===work.session&&comparisonVersion?.version!==r.version?comparisonVersion:null;
+ return '<section class="panel execution"><h2>Bandingkan versi prompt</h2><div class="actions">'+
+  others.map(row=>'<button data-compare-version="'+esc(row.version)+'">Bandingkan v'+esc(row.version)+'</button>').join('')+'</div>'+
+  (previous?'<div class="grid compare-grid"><div><h3>Versi '+esc(previous.version)+'</h3><pre class="answer">'+esc(previous.draft)+'</pre></div>'+
+    '<div><h3>Versi '+esc(r.version)+'</h3><pre class="answer">'+esc(r.draft)+'</pre></div></div>':'')+'</section>';
+}
 function result(){
  const r=work.result;if(!r)return empty('Belum ada hasil','Pilih sesi di Riwayat atau buat prompt.');
- return title('Tinjau prompt','Versi '+esc(r.version)+' · '+esc(r.model))+'<section class="panel"><h2>'+esc(r.spec.goal)+'</h2><p>'+esc(r.spec.context)+'</p><details><summary>Instruksi dan jawaban klarifikasi</summary><p>'+esc(work.source)+'</p>'+items(work.answers.map(a=>a.question+' — '+a.answer))+'</details>'+[['Kebutuhan',r.spec.requirements],['Batasan',r.spec.constraints],['Hasil yang diminta',r.spec.deliverables],['Asumsi',r.spec.assumptions]].map(([k,v])=>'<details><summary>'+k+'</summary>'+items(v)+'</details>').join('')+'<div class="group"><label for="draft">'+(r.model==='Prompt manual'?'Prompt yang tersimpan':'Prompt bahasa Inggris')+'</label><textarea class="mono" id="draft" '+(work.unsaved?'readonly':'')+'>'+esc(work.edited??r.draft)+'</textarea></div><p id="review" class="'+(r.stage==='ready'&&work.edited==null?'status':'note')+'">'+(work.edited!=null?'Suntingan belum ditinjau.':r.stage==='ready'?'Lolos pemeriksaan nilai dan tinjauan model lokal.':esc(r.issues.join(' ')))+'</p><p class="muted">Revisi otomatis '+esc(r.revisions)+' dari 2. Peninjau menggunakan model yang sama dalam permintaan terpisah.</p>'+message()+'<div class="actions"><button id="copy">Salin prompt</button>'+(work.unsaved?'<button id="retrySave">Coba simpan kembali</button>':'<button id="save">Simpan versi suntingan</button>')+'<a href="#generator">Kembali ke instruksi</a><button id="delete">Hapus sesi</button></div><p role="status" id="notice">'+esc(notice)+'</p>'+(pendingDelete===work.session?'<div class="note">Hapus semua versi sesi ini? <button id="confirmDelete">Ya, hapus sesi</button> <button id="cancelDelete">Batal</button></div>':'')+'</section>'+executionView(r);
+ return title('Tinjau prompt','Versi '+esc(r.version)+' · '+esc(r.model))+'<section class="panel"><h2>'+esc(r.spec.goal)+'</h2><p>'+esc(r.spec.context)+'</p><details><summary>Instruksi dan jawaban klarifikasi</summary><p>'+esc(work.source)+'</p>'+items(work.answers.map(a=>a.question+' — '+a.answer))+'</details>'+[['Kebutuhan',r.spec.requirements],['Batasan',r.spec.constraints],['Hasil yang diminta',r.spec.deliverables],['Asumsi',r.spec.assumptions]].map(([k,v])=>'<details><summary>'+k+'</summary>'+items(v)+'</details>').join('')+'<div class="group"><label for="draft">'+(r.model==='Prompt manual'?'Prompt yang tersimpan':'Prompt bahasa Inggris')+'</label><textarea class="mono" id="draft" '+(work.unsaved?'readonly':'')+'>'+esc(work.edited??r.draft)+'</textarea></div><p id="review" class="'+(r.stage==='ready'&&work.edited==null?'status':'note')+'">'+(work.edited!=null?'Suntingan belum ditinjau.':r.stage==='ready'?'Lolos pemeriksaan nilai dan tinjauan model lokal.':esc(r.issues.join(' ')))+'</p><p class="muted">Revisi otomatis '+esc(r.revisions)+' dari 2. Peninjau menggunakan model yang sama dalam permintaan terpisah.</p>'+message()+'<div class="actions"><button id="copy">Salin prompt</button>'+(work.unsaved?'<button id="retrySave">Coba simpan kembali</button>':'<button id="save">Simpan versi suntingan</button>')+'<a href="#generator">Kembali ke instruksi</a><button id="delete">Hapus sesi</button></div><p role="status" id="notice">'+esc(notice)+'</p>'+(pendingDelete===work.session?'<div class="note">Hapus semua versi sesi ini? <button id="confirmDelete">Ya, hapus sesi</button> <button id="cancelDelete">Batal</button></div>':'')+'</section>'+executionView(r)+promptVersions(r);
 }
 function render(){
  const page=route();document.title=links[page]+' · PromptForge AI';document.querySelector('#crumb').textContent=links[page];for(const a of nav.querySelectorAll('a'))a.classList.toggle('current',a.hash==='#'+(['hasil','klarifikasi'].includes(page)?'generator':page));
- const views={dasbor:dashboard,generator,klarifikasi:clarification,hasil:result,riwayat:()=>title('Riwayat sesi','200 versi terbaru milik akun Anda.')+message()+'<section class="panel">'+historyView(200)+'</section>',pengaturan:()=>title('Pengaturan','Konfigurasi mesin dan preferensi untuk draf baru.')+'<section class="panel"><h2>Mesin bahasa</h2><p>'+availability()+'</p><div class="group"><label for="defaultLang">Bahasa jawaban di tab ini</label><select id="defaultLang">'+options(languages,defaultLanguage)+'</select></div></section>',bantuan:()=>title('Bantuan','Cara menggunakan Studio privat.')+'<section class="panel"><p>Susun & tinjau prompt menjalankan model publik di perangkat Anda. Setelah klarifikasi yang diperlukan, sistem meninjau draf dan mencoba maksimal dua revisi. Hasil berperingatan tetap dapat dibaca dan disunting.</p><p>Setiap hasil dan suntingan yang disimpan memiliki nomor versi. Hapus sesi untuk menghapus semua versinya. Draf sebelum dikirim hanya ada di tab ini.</p><p><a href="/register.txt">Register kapabilitas</a> · <a href="/simulasi/">Simulasi lokal</a></p></section>',perbandingan:()=>title('Perbandingan model','Evaluasi lintas model direncanakan pada fase 5.'),templat:()=>title('Templat','Pustaka templat belum tersedia.')};
+ const views={dasbor:dashboard,generator,klarifikasi:clarification,hasil:result,riwayat:()=>title('Riwayat sesi','200 versi terbaru milik akun Anda.')+message()+'<section class="panel">'+historyView(200)+'</section>',pengaturan:()=>title('Pengaturan','Konfigurasi mesin dan preferensi untuk draf baru.')+'<section class="panel"><h2>Mesin bahasa</h2><p>'+availability()+'</p><div class="group"><label for="defaultLang">Bahasa jawaban di tab ini</label><select id="defaultLang">'+options(languages,defaultLanguage)+'</select></div></section>',bantuan:()=>title('Bantuan','Cara menggunakan Studio privat.')+'<section class="panel"><p>Susun & tinjau prompt menjalankan model publik di perangkat Anda. Setelah klarifikasi yang diperlukan, sistem meninjau draf dan mencoba maksimal dua revisi. Hasil berperingatan tetap dapat dibaca dan disunting.</p><p>Setiap hasil dan suntingan yang disimpan memiliki nomor versi. Hapus sesi untuk menghapus semua versinya. Draf sebelum dikirim hanya ada di tab ini.</p><p><a href="/register.txt">Register kapabilitas</a> · <a href="/simulasi/">Simulasi lokal</a></p></section>',perbandingan:()=>title('Perbandingan model','Uji model berbeda dengan prompt yang sama.')+message()+comparisonView({settings,history:historyRows,comparison,escape:esc}),templat:()=>title('Templat','Pustaka templat belum tersedia.')};
  main.innerHTML=busy?'<section class="panel" role="status"><h2>'+esc(busy)+'</h2><p>Tunggu hingga proses selesai.</p></section>':views[page]();if(work.target&&document.querySelector('#target'))document.querySelector('#target').value=work.target;
  main.focus({preventScroll:true});
 }
@@ -108,6 +118,31 @@ async function runVersion(form){
 }
 document.addEventListener('submit',e=>{
  e.preventDefault();
+ if(e.target.id==='compare'){
+  const form=e.target;
+  const first=selectedTarget(form.querySelector('#firstModel')),second=selectedTarget(form.querySelector('#secondModel'));
+  const assessmentTarget=selectedTarget(form.querySelector('#reviewModel'));
+  const [session,rawVersion]=form.querySelector('#compareVersion').value.split('/');
+  const version=Number(rawVersion),confirm=form.querySelector('#confirmCompare').checked;
+  task('Menjalankan kedua model…',async()=>{
+   if(first.provider===second.provider&&first.model===second.model)throw Error('Pilih dua model yang berbeda.');
+   const results=await Promise.allSettled([first,second].map(target=>
+    api('execute',{session,version,confirm,target,assessmentTarget,requestId:crypto.randomUUID()})));
+   comparison={version,runs:[],errors:[]};
+   for(const [index,result] of results.entries()){
+    if(result.status==='fulfilled')comparison.runs.push(result.value);
+    else comparison.errors.push([first,second][index].model+' · '+result.reason.message);
+   }
+  });return;
+ }
+ if(e.target.dataset.feedback){
+  const form=e.target,fields=new FormData(form);
+  task('Menyimpan umpan balik…',async()=>{
+   await api('feedback',{session:work.session,version:work.result.version,executionId:form.dataset.feedback,
+    useful:fields.get('useful')==='yes',comment:fields.get('comment')});
+   await refreshRuns();notice='Umpan balik tersimpan.';
+  });return;
+ }
  if(e.target.id==='execute'){runVersion(e.target);return}
  if(e.target.id==='existing'){
   task('Menyimpan prompt…',async()=>{
@@ -125,6 +160,12 @@ document.addEventListener('click',async e=>{
  if(b.matches('.skip')){e.preventDefault();main.focus();return}
  if(busy){if(!b.href||b.hash)e.preventDefault();return}
  if(b.id==='new'||b.dataset.mode){e.preventDefault();work=newSession();work.mode=b.dataset.mode??'generate';error='';go('generator')}
+ if(b.dataset.compareVersion){
+  await task('Membuka versi pembanding…',async()=>{
+   const version=Number(b.dataset.compareVersion);
+   comparisonVersion={...await api('version?session='+encodeURIComponent(work.session)+'&version='+version),session:work.session,version};
+  });
+ }
  if(b.dataset.open){await task('Membuka versi…',async()=>{const ver=Number(b.dataset.version),id=b.dataset.open;const r=await api('version?session='+encodeURIComponent(id)+'&version='+ver);work={...newSession(),...r,session:id,result:{...r,version:ver}};await refreshRuns();go('hasil')})}
  if(b.id==='refreshRuns')await task('Memuat hasil…',refreshRuns);
  if(b.id==='refresh')await task('Memuat riwayat…',refreshHistory);

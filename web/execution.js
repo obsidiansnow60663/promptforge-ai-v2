@@ -28,7 +28,20 @@ export function selectedTarget(element) {
   return { provider, model };
 }
 
-export function executionCards(records, escape) {
+function feedbackForm(record, escape) {
+  if (!['complete', 'warning'].includes(record.status)) return '';
+  const current = record.feedback;
+  return '<details><summary>Umpan balik' + (current ? ' tersimpan' : '') + '</summary>' +
+    '<form data-feedback="' + escape(record.id) + '"><div class="group"><label for="useful-' + escape(record.id) +
+    '">Apakah hasil membantu?</label><select id="useful-' + escape(record.id) + '" name="useful" required>' +
+    '<option value="">Pilih</option><option value="yes"' + (current?.useful === true ? ' selected' : '') +
+    '>Ya</option><option value="no"' + (current?.useful === false ? ' selected' : '') + '>Tidak</option></select></div>' +
+    '<div class="group"><label for="comment-' + escape(record.id) + '">Catatan (opsional)</label><textarea id="comment-' +
+    escape(record.id) + '" name="comment" maxlength="1000" rows="2">' + escape(current?.comment ?? '') +
+    '</textarea></div><button>Simpan umpan balik</button></form></details>';
+}
+
+export function executionCards(records, escape, { feedback = true } = {}) {
   return records.map(record => {
     const raw = record.raw;
     const exceptional = record.status === 'failed' || record.status === 'warning';
@@ -40,7 +53,7 @@ export function executionCards(records, escape) {
       (raw ? '<p class="muted">' + escape(
         'Model aktual ' + (raw.model ?? 'tidak dilaporkan') + ' · ' + locale.format(raw.latencyMs) +
         ' ms · Token masuk / keluar ' + (raw.usage.input ?? '—') + ' / ' + (raw.usage.output ?? '—') +
-        ' · ' + new Date(record.created).toLocaleString('id-ID')) + '</p><details open><summary>Respons mentah provider</summary>' +
-        '<pre class="answer">' + escape(raw.text) + '</pre></details>' : '') + '</article>';
+        ' · ' + new Date(record.created).toLocaleString('id-ID')) + '</p><details><summary>Respons mentah provider</summary>' +
+        '<pre class="answer">' + escape(raw.text) + '</pre></details>' : '') + (feedback ? feedbackForm(record, escape) : '') + '</article>';
   }).join('');
 }

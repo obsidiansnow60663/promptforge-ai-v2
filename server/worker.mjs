@@ -1,5 +1,5 @@
 import { catalog, Problem } from './providers.mjs';
-import { execute, listExecutions } from './executions.mjs';
+import { execute, listExecutions, saveFeedback } from './executions.mjs';
 const MODEL='Qwen2.5-1.5B-Instruct-q4f32_1-MLC';
 const invalid=()=>{throw new Problem(400,'Periksa isian dan coba kembali.')};
 function str(x,max){return typeof x==='string' && x.trim().length>0 && x.length<=max}
@@ -42,6 +42,10 @@ async function route(req,env){
  if(!b||!uuid(b.session))invalid();
  if(path==='/api/delete'){
   await db.prepare('DELETE FROM versions WHERE owner=? AND session=?').bind(owner,b.session).run();return json({deleted:true})
+ }
+ if(path==='/api/feedback'){
+  if(!validVersion(b.version)||!uuid(b.executionId)||typeof b.useful!=='boolean'||typeof b.comment!=='string'||b.comment.length>1000)invalid();
+  return json(await saveFeedback(db,owner,b));
  }
  if(!uuid(b.requestId))invalid();
  if(path==='/api/execute'){
