@@ -71,7 +71,9 @@ async function route(req,env){
  if(path==='/api/generate')return json(await generatePrompt(db,env,owner,b,validateInput(b),data=>saveVersion(db,owner,b,data)));
  let data;
  if(path==='/api/local'){
-  data={...validateInput(b),...validateReport(b.report),model:MODEL};
+  const input=validateInput(b);
+  const lang=['Bahasa Indonesia','English'].includes(b.report?.lang)?b.report.lang:input.lang;
+  data={...input,lang,...validateReport(b.report),model:MODEL};
  }else if(path==='/api/existing'){
   const input=validateInput(b);
   if(!str(b.draft,32000))invalid();

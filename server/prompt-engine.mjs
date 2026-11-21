@@ -9,7 +9,7 @@ export function promptAgent(env) {
 }
 
 const schemas = {
-  analysis: '{ "goal": "text", "context": "text", "requirements": [], "constraints": [], "deliverables": [], "assumptions": [], "questions": [] }',
+  analysis: '{ "goal": "text", "context": "text", "requirements": [], "constraints": [], "deliverables": [], "assumptions": [], "questions": [], "answerLanguage": "", "languageEvidence": "" }',
   draft: '{ "draft": "text" }',
   review: '{ "pass": true, "issues": [] }',
 };
@@ -34,27 +34,37 @@ export async function runPromptAgent(env, input, ask = generateText) {
       (stage === 'analysis' ? 'Ask only the questions whose answers materially change the outcome. Prefer one or two and use at most three. ' +
       'Combine related questions. Keep non-critical preferences optional as assumptions. If prior answers supply the audience, purpose and scope, ' +
       'proceed and choose illustrative examples without treating their exact subject as a blocker. For a general learning plan, ' +
-      'a stated audience, topic, duration and deliverable are sufficient. Do not require hours or a specialization unless the user makes them necessary.' :
+      'a stated audience, topic, duration and deliverable are sufficient. Do not require hours or a specialization unless the user makes them necessary. ' +
+      'For examples, templates, methods, or starter code, use clearly labelled synthetic data and placeholders when concrete details are unspecified. ' +
+      'Ask for missing material only when the task requires editing, analyzing, or summarizing specific real material that has not been provided, or proceeding would violate a constraint.' :
       stage === 'draft' ? 'The draft value itself must be in English and ready to execute immediately. Do not put workflow instructions about waiting or generating a prompt inside it. ' +
         'Use concise natural English and translate units; preserve the digits and true identifiers exactly. Avoid repeating constraints.' :
         'Mark any draft that asks the executor to wait, rewrite the prompt, or defer the user task as a critical failure.');
-    const request = async extra => {
+    const request = async corrective => {
       const remaining = deadline - Date.now();
       if (remaining < 1000) throw new Problem(502, 'Waktu penyusunan prompt habis.', 'prompt_timeout');
+      const extra = corrective ?
+        ' The previous response was incomplete or did not match the JSON schema. Return a shorter valid object that preserves the original instruction.' : '';
       const response = await ask(env, target, {
-        system: instruction + extra, prompt, limit: 2500, json: true,
-      }, { timeout: Math.min(25000, Math.floor(remaining / 2)) });
+        system: instruction + extra, prompt, limit: corrective ? 4096 : 2500, json: true,
+        thinking: corrective && stage === 'analysis' ? false : undefined,
+      }, { timeout: Math.min(28000, Math.floor(remaining / 2)) });
       actualModel = response.model ?? actualModel;
       try {
-        return JSON.parse(response.text.trim().replace(/^```(?:json)?\s*([\s\S]*?)\s*```$/i, '$1'));
+        return JSON.parse(response.text.trim().replace(/^\x60\x60\x60(?:json)?\s*([\s\S]*?)\s*\x60\x60\x60$/i, '$1'));
       } catch {
         return null;
       }
     };
-    let reply = await request('');
+    let reply;
+    try {
+      reply = await request(false);
+    } catch (error) {
+      if (error?.code !== 'provider_incomplete' || repaired) throw error;
+    }
     if (!validReply(stage, reply) && !repaired) {
       repaired = true;
-      reply = await request(' The previous response did not match the required JSON schema. Correct the structure and preserve the original instruction.');
+      reply = await request(true);
     }
     if (!validReply(stage, reply)) {
       throw new Problem(502, 'Mesin prompt mengembalikan format yang tidak dapat dibaca. Coba kembali.', 'prompt_format');
@@ -62,7 +72,7 @@ export async function runPromptAgent(env, input, ask = generateText) {
     return reply;
   });
   if (report.stage === 'clarify') return { stage: 'clarify', spec: { questions: report.spec.questions } };
-  return { ...input, ...validateReport(report), model: actualModel ?? agentModel };
+  return { ...input, lang: report.lang, ...validateReport(report), model: actualModel ?? agentModel };
 }
 
 function ageLimit(ms) {

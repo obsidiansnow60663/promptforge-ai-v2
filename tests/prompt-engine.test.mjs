@@ -91,3 +91,21 @@ test('missing provider configuration returns a recoverable error without saving 
   assert.equal((await response.json()).code, 'prompt_unconfigured');
   assert.deepEqual(await (await call('history')).json(), []);
 });
+
+
+test('an incomplete provider response gets one bounded structure repair', async () => {
+  let calls = 0;
+  const result = await runPromptAgent(configuration, input, async (_env, _target, request) => {
+    calls++;
+    if (calls === 1) throw Object.assign(Error('truncated response'), { code: 'provider_incomplete' });
+    if (calls === 2) {
+      assert.equal(request.limit, 4096);
+      assert.equal(request.thinking, false);
+      return { text: JSON.stringify(spec) };
+    }
+    assert.equal(request.limit, 2500);
+    return { text: JSON.stringify(calls === 3 ? draft : { pass: true, issues: [] }) };
+  });
+  assert.equal(calls, 4);
+  assert.equal(result.stage, 'ready');
+});
