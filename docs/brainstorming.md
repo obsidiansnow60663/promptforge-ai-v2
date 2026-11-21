@@ -55,3 +55,5 @@ Pemilik dapat menyimpan nama tampilan per ID model terkonfigurasi melalui **Peng
 Generator menerima subbidang opsional dan menyimpannya bersama versi prompt (§9.2). Subbidang mengikuti versi saat diekspor atau dipulihkan. Arsip lama tanpa subbidang tetap didukung.
 
 45 tes lokal lulus. Chromium lokal dengan respons provider tiruan menguji penyimpanan nama, pembacaan sesudah muat ulang, nama tampilan di pilihan eksekusi, nilai ID asli yang dipilih, penghapusan nama, dan pembukaan kembali hasil. Uji ArxPay nyata terpisah mengembalikan HTTP 429 `key_daily_cap` tanpa waktu reset pada pemeriksaan satu panggilan. Bukti benchmark lengkap, penilaian manusia, pembandingan dua model nyata, dan sesi browser produksi sebagai pemilik masih terbuka.
+
+Sites menerbitkan v15 dari commit `2d594f16fa3b155e0a22d35c1d8162aa61b3871d` dengan akses khusus pemilik. Sites mendeteksi tabel D1 `arxpay_model_names`. Aset form dan subbidang mengembalikan HTTP 200 melalui akses layanan. Halaman anonim dan API nama model tanpa identitas pengunjung mengembalikan 401. Uji browser sebagai pemilik di URL produksi tertahan karena browser bersama gagal dimulai.
