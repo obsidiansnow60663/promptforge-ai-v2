@@ -1,3 +1,4 @@
+import { hasPromptScores, promptWeights, weightedPromptScore } from '../web/quality.js';
 import { Problem } from './providers.mjs';
 
 export const invalid = () => { throw new Problem(400, 'Periksa isian dan coba kembali.'); };
@@ -6,12 +7,29 @@ export const strings = value => Array.isArray(value) && value.length <= 40 && va
 export const uuid = value => typeof value === 'string' && /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/.test(value);
 export const validVersion = value => Number.isSafeInteger(value) && value > 0;
 
+export function validateSystemInstructions(value) {
+  if (value === undefined) return '';
+  if (typeof value !== 'string' || value.length > 2000) invalid();
+  return value.trim();
+}
+
 export function validateInput(body) {
   if (!str(body?.source, 12000) || !str(body.domain, 80) || !['Bahasa Indonesia', 'English'].includes(body.lang) ||
     !Array.isArray(body.answers) || body.answers.length > 12 ||
     !body.answers.every(item => item && str(item.question, 500) && str(item.answer, 1500))) invalid();
-  return { source: body.source, domain: body.domain, lang: body.lang,
+  const systemInstructions = validateSystemInstructions(body.systemInstructions);
+  return { source: body.source, domain: body.domain, lang: body.lang, ...(systemInstructions ? { systemInstructions } : {}),
     answers: body.answers.map(({ question, answer }) => ({ question, answer })) };
+}
+
+export function validateAssessment(value) {
+  if (value === undefined) return undefined;
+  if (!value || typeof value.critical !== 'boolean' ||
+      (value.dimensions !== null && !hasPromptScores(value.dimensions))) invalid();
+  const dimensions = value.dimensions && Object.fromEntries(Object.keys(promptWeights).map(key=>[key,value.dimensions[key]]));
+  const score = dimensions ? weightedPromptScore(dimensions) : null;
+  if (value.score !== score) invalid();
+  return { critical: value.critical, dimensions, score };
 }
 
 export function validateReport(report, allowEdited = false) {
@@ -21,9 +39,11 @@ export function validateReport(report, allowEdited = false) {
   if (!spec || !str(spec.goal, 2000) || typeof spec.context !== 'string' || spec.context.length > 5000 ||
     !keys.slice(2).every(key => strings(spec[key])) || !str(report.draft, 32000) || !strings(report.issues) ||
     !stages.includes(report.stage) || !Number.isInteger(report.revisions) || report.revisions < 0 || report.revisions > 2) invalid();
+  const assessment = validateAssessment(report.assessment);
   return {
+    ...(assessment ? { assessment } : {}),
     spec: Object.fromEntries(keys.map(key => [key, spec[key]])), draft: report.draft,
-    stage: report.issues.length && report.stage === 'ready' ? 'warning' : report.stage,
+    stage: (report.issues.length || assessment?.critical) && report.stage === 'ready' ? 'warning' : report.stage,
     issues: report.issues, revisions: report.revisions,
   };
 }

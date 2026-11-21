@@ -7,3 +7,13 @@
 .compare-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .compare-grid > * { min-width: 0; }
 @media (max-width: 760px) { .compare-grid { grid-template-columns: 1fr; } }
+.metric-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr)); gap: 1rem; margin-block: 1rem; }
+.metric-list div { display: grid; gap: .25rem; }
+.metric-list dt { color: var(--muted, #526070); font-size: .9rem; }
+.metric-list dd { margin: 0; font-size: 1.25rem; font-weight: 650; }
+.table-scroll { overflow-x: auto; margin-block: .75rem; }
+.table-scroll table { border-collapse: collapse; width: 100%; text-align: left; }
+.table-scroll th, .table-scroll td { padding: .65rem .55rem; border-bottom: 1px solid var(--line, #d8dee6); vertical-align: top; }
+.table-scroll td { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.template-card { display: flex; flex-direction: column; align-items: flex-start; }
+.template-card button { margin-top: auto; }

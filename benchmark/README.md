@@ -8,7 +8,7 @@ node benchmark/run.mjs --out /tmp/promptforge-fixture.json
 
 Fixture memeriksa penyusunan dataset, jalur optimasi dengan jawaban terkontrol, validasi rubrik dan struktur laporan. Skor fixture diganti dengan `null` pada ringkasan klaim mutu.
 
-Untuk uji provider yang telah diotorisasi, sediakan variabel rahasia dalam environment eksekusi dan daftarkan model pada `OPENAI_MODELS`, `ANTHROPIC_MODELS` atau `GEMINI_MODELS`. Untuk tiap awalan `BENCH_EXEC`, `BENCH_OPT` dan `BENCH_JUDGE`, tetapkan variabel berakhiran `_PROVIDER` dan `_MODEL`. Mesin penilai harus berbeda dari eksekutor dan optimizer. Uji satu kasus sebelum menjalankan semua 100 kasus. Setel `BENCH_COMMIT` untuk mencatat commit sumber.
+Untuk uji provider yang telah diotorisasi, sediakan variabel rahasia dalam environment eksekusi dan daftarkan model tambahan pada `ARXPAY_MODELS`. Untuk ArxPay, nilai *_PROVIDER adalah `arxpay`. Untuk tiap awalan `BENCH_EXEC`, `BENCH_OPT` dan `BENCH_JUDGE`, tetapkan variabel berakhiran `_PROVIDER` dan `_MODEL`. Mesin penilai harus berbeda dari eksekutor dan optimizer. Uji satu kasus sebelum menjalankan semua 100 kasus. Setel `BENCH_COMMIT` untuk mencatat commit sumber.
 
 ```sh
 node benchmark/run.mjs --live --case programming-01 --out /tmp/promptforge-smoke.json

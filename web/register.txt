@@ -65,3 +65,7 @@ Pipeline yang sama menjalankan analisis, klarifikasi, optimasi bahasa Inggris, d
 ## PF-005 · Audit mutu end-to-end · 21 November 2026
 
 Uji mandiri meliputi benchmark live 100 kasus dan uji Worker dengan instruksi sintetis. Perubahan mengikuti §15.1, §15.5, §15.7 dan AT-01–05, AT-10, AT-17–18. Studio mempertahankan bahasa jawaban yang dikutip dari instruksi, memperketat literal, membatasi klarifikasi pada informasi material, menampilkan opsi asumsi sebelum pengguna menyetujuinya, dan memberi peninjauan tambahan untuk respons penilai yang tidak lengkap. Tidak ada perluasan audiens, akses basis data, atau scope secret. Perubahan dan pengujian diminta pemilik. Lihat [audit mutu](docs/quality-audit.md) untuk hasil dan DoD yang masih terbuka.
+
+## PF-006 · Lingkup brainstorming · 21 November 2026
+
+Blueprint aktif v2.1 memakai ArxPay untuk eksekusi server. Adapter langsung vendor lain dikeluarkan dari lingkup. Penambahan mencakup dasbor evaluasi, skor mutu per dimensi dengan gerbang kritis, instruksi sistem opsional per versi, pustaka templat, dan status serta pembatalan proses server. Catatan fitur dan batas verifikasi berada di [docs/brainstorming.md](docs/brainstorming.md).

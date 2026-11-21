@@ -51,7 +51,7 @@ export const existing = (session = crypto.randomUUID()) => ({
   lang: 'Bahasa Indonesia', domain: 'Umum', answers: [],
 });
 
-export const openaiReply = text => Response.json({
-  status: 'completed', model: 'fixture-2026', usage: { input_tokens: 10, output_tokens: 4 },
-  output: [{ type: 'message', content: [{ type: 'output_text', text }] }],
+export const arxReply = text => Response.json({
+  model: 'fixture-2026', usage: { prompt_tokens: 10, completion_tokens: 4 },
+  choices: [{ finish_reason: 'stop', message: { content: text } }],
 });

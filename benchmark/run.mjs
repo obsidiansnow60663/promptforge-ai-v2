@@ -3,11 +3,11 @@ import { join } from 'node:path';
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import { cases, datasetVersion } from './cases.mjs';
 import { generate } from '../web/pipeline.js';
-import { agentModel, generateText, requireTarget } from '../server/providers.mjs';
+import { promptWeights, weightedPromptScore } from '../web/quality.js';
+import { configuredAgentModel, generateText, requireTarget } from '../server/providers.mjs';
 import { runPromptAgent } from '../server/prompt-engine.mjs';
 
 const variants = ['direct-id', 'literal-en', 'promptforge'];
-const promptWeights = { intent: 25, requirements: 25, clarity: 15, precision: 15, alignment: 10, integrity: 10 };
 const outputKeys = ['taskSuccess', 'factualAccuracy', 'naturalness', 'format', 'terminology', 'audience', 'languageCompliance'];
 const getOption = name => {
   const index = process.argv.indexOf('--' + name);
@@ -49,7 +49,7 @@ function validateRatings(review, item) {
     !outputKeys.every(key => score(review.output?.[key])) ||
     !Array.isArray(review.constraints) || review.constraints.length !== item.constraints.length ||
     !review.constraints.every(value => typeof value === 'boolean')) throw Error('Malformed evaluation');
-  const promptScore = Object.entries(promptWeights).reduce((sum, [key, weight]) => sum + review.prompt[key] * weight / 100, 0);
+  const promptScore = weightedPromptScore(review.prompt);
   const critical = review.critical || review.constraints.includes(false) || review.output.languageCompliance < 100;
   return { ...review, promptScore, critical, accepted: !critical };
 }
@@ -123,7 +123,7 @@ async function runCase(item) {
       deliverables: [item.format], assumptions: [], questions: [],
     }, { draft: candidate }, { pass: true, issues: [] }];
     const input = { source: item.source, lang: item.language, domain: item.category, answers: [] };
-    const useHostedAgent = !fixture && optimizer.provider === 'arxpay' && optimizer.model === agentModel;
+    const useHostedAgent = !fixture && optimizer.provider === 'arxpay' && optimizer.model === configuredAgentModel(process.env);
     const optimized = useHostedAgent ?
       await runPromptAgent(process.env, input, (env, _model, request, options) => record(env, optimizer, request, options)) :
       await generate(input, fixture ? async () => fixtures.shift() :

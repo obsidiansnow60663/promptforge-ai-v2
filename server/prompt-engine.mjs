@@ -1,17 +1,16 @@
+import { generationCancelled } from './operations.mjs';
 import { generate } from '../web/pipeline.js';
-import { agentModel, generateText, Problem } from './providers.mjs';
+import { configuredAgentModel, generateText, Problem } from './providers.mjs';
 import { str, strings, validateReport } from './validation.mjs';
 
-const target = { provider: 'arxpay', model: agentModel };
-
 export function promptAgent(env) {
-  return { configured: Boolean(env.ARXPAY_API_KEY), model: agentModel };
+  return { configured: Boolean(env.ARXPAY_API_KEY), model: configuredAgentModel(env) };
 }
 
 const schemas = {
   analysis: '{ "goal": "text", "context": "text", "requirements": [], "constraints": [], "deliverables": [], "assumptions": [], "questions": [], "answerLanguage": "", "languageEvidence": "", "safeAssumptions": [] }',
   draft: '{ "draft": "text" }',
-  review: '{ "pass": true, "issues": [] }',
+  review: '{ "pass": true, "critical": false, "issues": [], "scores": { "intent": 100, "requirements": 100, "clarity": 100, "precision": 100, "alignment": 100, "integrity": 100 } }',
 };
 
 function validReply(stage, reply) {
@@ -23,6 +22,7 @@ function validReply(stage, reply) {
 }
 
 export async function runPromptAgent(env, input, ask = generateText) {
+  const target = { provider: 'arxpay', model: configuredAgentModel(env) };
   let actualModel;
   let repaired = false;
   const deadline = Date.now() + 140000;
@@ -82,7 +82,7 @@ export async function runPromptAgent(env, input, ask = generateText) {
     return reply;
   });
   if (report.stage === 'clarify') return { stage: 'clarify', spec: { questions: report.spec.questions, ...(report.spec.safeAssumptions.length ? { safeAssumptions: report.spec.safeAssumptions } : {}) } };
-  return { ...input, lang: report.lang, ...validateReport(report), model: actualModel ?? agentModel };
+  return { ...input, lang: report.lang, ...validateReport(report), model: actualModel ?? target.model };
 }
 
 function ageLimit(ms) {
@@ -95,12 +95,13 @@ export async function generatePrompt(db, env, owner, { session, requestId }, inp
   }
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(JSON.stringify(input)));
   const hash = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
-  const lookup = db.prepare('SELECT session,input_hash,status,clarification FROM prompt_generations WHERE owner=? AND request_id=?')
+  const lookup = db.prepare('SELECT session,input_hash,status,clarification,error_code FROM prompt_generations WHERE owner=? AND request_id=?')
     .bind(owner, requestId);
   const previous = async () => {
     const row = await lookup.first();
     if (!row) return null;
     if (row.session !== session || row.input_hash !== hash) throw new Problem(409, 'ID permintaan sudah digunakan untuk instruksi lain.');
+    if (row.error_code === 'generation_cancelled') throw generationCancelled();
     if (row.clarification) return JSON.parse(row.clarification);
     if (row.status === 'finished') {
       const saved = await db.prepare('SELECT payload,version FROM versions WHERE owner=? AND request_id=?').bind(owner, requestId).first();
@@ -129,16 +130,24 @@ export async function generatePrompt(db, env, owner, { session, requestId }, inp
     throw new Problem(429, 'Mesin prompt sedang memproses permintaan lain atau batas sementara tercapai. Coba lagi sebentar.', 'generation_limit');
   }
 
-  let result;
   try {
-    result = await runPromptAgent(env, input);
-    if (result.stage !== 'clarify') result = await save(result);
+    const result = await runPromptAgent(env, input, async (...args) => {
+      if ((await lookup.first())?.status !== 'running') throw generationCancelled();
+      return generateText(...args);
+    });
+    if (result.stage !== 'clarify') return await save(result);
+    const complete = await db.prepare(
+      "UPDATE prompt_generations SET status='finished',clarification=? WHERE owner=? AND request_id=? AND status='running'",
+    ).bind(JSON.stringify(result), owner, requestId).run();
+    if (!(complete.meta?.changes ?? complete.changes)) throw generationCancelled();
+    return result;
   } catch (error) {
-    await db.prepare("UPDATE prompt_generations SET status='failed' WHERE owner=? AND request_id=?").bind(owner, requestId).run();
+    if (error.code === 'generation_cancelled' || (await lookup.first())?.error_code === 'generation_cancelled') {
+      throw generationCancelled();
+    }
+    await db.prepare("UPDATE prompt_generations SET status='failed',error_code=? WHERE owner=? AND request_id=? AND error_code IS NULL")
+      .bind(error instanceof Problem ? error.code : 'prompt_failed', owner, requestId).run();
     if (error instanceof Problem) throw error;
     throw new Problem(502, 'Mesin prompt belum berhasil menyusun hasil. Instruksi tetap tersedia untuk dicoba kembali.', 'prompt_failed');
   }
-  await db.prepare("UPDATE prompt_generations SET status='finished',clarification=? WHERE owner=? AND request_id=?")
-    .bind(result.stage === 'clarify' ? JSON.stringify(result) : null, owner, requestId).run();
-  return result;
 }

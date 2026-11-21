@@ -29,6 +29,13 @@
       "when": 1795266120000,
       "tag": "0003_prompt_generations",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1795266180000,
+      "tag": "0004_operation_cancellation",
+      "breakpoints": true
     }
   ]
 }

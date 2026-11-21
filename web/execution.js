@@ -17,10 +17,13 @@ function adaptedAnswer(output, language, escape) {
 
 const locale = new Intl.NumberFormat('id-ID');
 
-export function targets(settings, escape) {
+export function targets(settings, escape, {auto = false} = {}) {
   const presets = settings?.presets?.map(item => '<option value="' + escape(item.id + '/' + item.provider + '/' + item.model) +
     '">' + escape(item.label + ' · ' + item.model) + '</option>').join('');
-  return (presets ? '<optgroup label="Profil">' + presets + '</optgroup>' : '') + (settings?.providers ?? []).filter(provider => provider.configured).map(provider =>
+  const selected = settings?.defaultTarget;
+  const automatic = auto && selected ?
+    '<option value="auto/' + escape(selected.provider + '/' + selected.model) + '">Otomatis · ' + escape(selected.model) + '</option>' : '';
+  return automatic + (presets ? '<optgroup label="Profil">' + presets + '</optgroup>' : '') + (settings?.providers ?? []).filter(provider => provider.configured).map(provider =>
     '<optgroup label="' + escape(provider.label) + '">' + provider.models.map(model =>
       '<option value="' + escape(provider.id + '/' + model) + '">' + escape(model) + '</option>').join('') + '</optgroup>').join('');
 }
@@ -47,7 +50,7 @@ export function executionCards(records, escape, { feedback = true } = {}) {
   return records.map(record => {
     const raw = record.raw;
     const exceptional = record.status === 'failed' || record.status === 'warning';
-    const state = { running: 'Sedang diproses', complete: 'Validasi otomatis selesai', warning: 'Periksa peringatan', failed: 'Eksekusi gagal' }[record.status];
+    const state = record.error?.code === 'execution_cancelled' ? 'Dibatalkan' : { running: 'Sedang diproses', complete: 'Validasi otomatis selesai', warning: 'Periksa peringatan', failed: 'Eksekusi gagal' }[record.status];
     return '<article class="panel execution"><h3>' + escape(record.target.provider + ' / ' + record.target.model) + '</h3>' +
       '<p class="' + (exceptional ? 'note' : 'muted') + '">' + escape(state) + '</p>' +
       (record.error ? '<p class="err">' + escape(record.error.message) + '</p>' : '') +

@@ -5,9 +5,9 @@
 ### ChatGPT Sites Edition --- Technology-Agnostic Source of Truth
 
 **Document ID:** PFAI-SITES-BLUEPRINT\
-**Version:** 2.0.0\
+**Version:** 2.1.0\
 **Status:** Authoritative product baseline\
-**Date:** 20 November 2026\
+**Date:** 21 November 2026\
 **Build and hosting target:** ChatGPT Sites\
 **Product priority:** Quality-first\
 **Default user language:** Bahasa Indonesia
@@ -18,6 +18,12 @@
 
 This document is the authoritative source of truth for building
 PromptForge AI as a Site hosted by ChatGPT Sites.
+
+Revision 2.1 incorporates the product and system requirements from the
+owner-provided brainstorming document. Direct vendor integrations and a
+minimum vendor count are outside the approved scope. The deployed Site uses
+ArxPay for configured server models. The current implementation follows this
+blueprint's technology-independent requirements.
 
 It defines product behavior, user workflows, logical capabilities, data
 requirements, quality standards, security requirements, implementation
@@ -60,8 +66,7 @@ simplest supported implementation that satisfies this document.
     provider and model.
 -   **Output Intelligence:** Adapting and validating the generated
     answer in the requested output language.
--   **Provider:** An external LLM service such as OpenAI, Anthropic, or
-    Google.
+-   **Provider:** The configured service that runs server models.
 -   **Model:** A specific model exposed by a provider.
 -   **Logical component:** A responsibility that must be distinct; it
     does not have to be a separate service, agent, or deployment.
@@ -201,10 +206,10 @@ quality, latency, and token usage where available.
   FR-08                   Provide Generate &      P0
                           Execute mode            
 
-  FR-09                   Support multiple LLM    P0
-                          providers through a     
-                          consistent integration  
-                          pattern                 
+  FR-09                   Run configured models   P0
+                          through a consistent
+                          integration contract
+
 
   FR-10                   Adapt execution output  P0
                           into natural Bahasa     
@@ -651,19 +656,19 @@ A high average score must never conceal a critical requirement failure.
 
 ------------------------------------------------------------------------
 
-# 6. Multi-provider LLM Integration
+# 6. Configurable Model Execution
 
-## 6.1 Initial provider targets
+## 6.1 Active runtime scope
 
-The product should target: 1. OpenAI. 2. Anthropic. 3. Google Gemini.
+Use the configured ArxPay server connection for execution and review.
+The owner can select among models made available through that connection.
+Local prompt generation remains a separate optional capability. Model
+comparison requires two distinct configured models. Do not require a minimum
+count of direct providers or additional vendor credentials for the release.
 
-Additional providers, including local model runtimes, are optional
-future extensions.
-
-Verify provider and model availability using current official
-documentation at implementation time. Do not hardcode assumptions about
-model availability, context limits, structured output, pricing, or
-capabilities.
+Verify model availability, limits and structured-output support before
+making a model available. Keep model configuration separate from the
+prompt pipeline.
 
 ## 6.2 Provider abstraction requirement
 
@@ -682,8 +687,7 @@ response format.
 
 Support: - **Manual:** user selects provider and model. - **Preset:**
 user selects a profile such as Quality, Balanced, or Fast. -
-**Automatic:** future routing based on task requirements, capability,
-availability, and measured evaluation results.
+**Automatic:** use the configured default model. Task-aware routing requires capability and evaluation data.
 
 Quality-first does not mean choosing the most expensive model
 automatically.
@@ -1136,12 +1140,11 @@ persistence.
 Deliverable: - User submits Indonesian input and receives a reviewed
 English prompt with intent summary and clear warnings.
 
-## Phase 3 --- Multi-provider execution
+## Phase 3 --- Configurable model execution
 
 **Goal:** Deliver Generate & Execute.
 
-Tasks: - Provider integration contract. - OpenAI integration. -
-Anthropic integration. - Google Gemini integration. - Provider/model
+Tasks: - Provider integration contract. - ArxPay integration. - Model
 selection. - Secure provider configuration. - Execution lifecycle. -
 Usage and latency capture. - Error normalization and bounded retry. -
 Execution history.
@@ -1297,12 +1300,11 @@ A feature is Done only when all applicable criteria are verified.
 -   [ ] Session can be saved where persistence is enabled.
 -   [ ] Failure does not destroy original input.
 
-## 15.3 Multi-provider DoD
+## 15.3 Configured execution DoD
 
 -   [ ] A common provider integration contract exists.
--   [ ] OpenAI integration works.
--   [ ] Anthropic integration works.
--   [ ] Google Gemini integration works.
+-   [ ] The configured ArxPay execution path works.
+-   [ ] Model comparison uses two distinct models when available.
 -   [ ] Provider and model selection are explicit.
 -   [ ] Actual provider and model are recorded.
 -   [ ] Token usage and latency are stored where available.
@@ -1311,7 +1313,7 @@ A feature is Done only when all applicable criteria are verified.
 -   [ ] Invalid credentials do not trigger infinite retries.
 -   [ ] Credentials are protected.
 -   [ ] Provider failure does not destroy the prompt session.
--   [ ] Each provider has a repeatable integration test.
+-   [ ] Each enabled execution path has a repeatable integration test.
 
 ## 15.4 Generate & Execute DoD
 
@@ -1475,8 +1477,7 @@ Sites capability assumptions are documented.
 ## 17.2 Functional MVP
 
 Required: - Generate Only works end-to-end. - Prompt Intelligence and
-quality review work. - Initial provider integrations are operational for
-the planned MVP scope. - Generate & Execute works. - Indonesian Output
+quality review work. - The configured execution path is operational. - Generate & Execute works. - Indonesian Output
 Intelligence works. - Required history/persistence behavior works. -
 Critical acceptance tests pass. - No unresolved critical security issue
 remains.
@@ -1519,13 +1520,13 @@ a ChatGPT Site.
 
 ## 19.1 Primary objective
 
-Build an Indonesian-first prompt engineering and multi-provider
+Build an Indonesian-first prompt engineering and configurable model
 execution application that follows this blueprint.
 
 The final experience must: - Accept Indonesian instructions. - Preserve
 original intent and constraints. - Produce reviewed English prompts. -
-Support Generate Only and Generate & Execute. - Integrate multiple LLM
-providers through a consistent abstraction. - Return natural Indonesian
+Support Generate Only and Generate & Execute. - Use configurable models
+through a consistent abstraction. - Return natural Indonesian
 output by default. - Validate prompt and output quality independently. -
 Persist user work according to verified Sites data and identity
 capabilities.

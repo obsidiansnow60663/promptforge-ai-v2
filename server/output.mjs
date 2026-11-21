@@ -36,6 +36,7 @@ function trace(result) {
 export async function adaptOutput(env, target, { raw, approved }, ask = generateText) {
   const context = {
     language: approved.lang, approvedPrompt: approved.draft,
+    ...(approved.systemInstructions ? { ownerPreferences: approved.systemInstructions } : {}),
     factsAndConstraints: approved.spec.constraints, sourceAnswer: raw.text,
   };
   let adaptation, output;

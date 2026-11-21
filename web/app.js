@@ -1,10 +1,13 @@
+import { operationsView, cancelButton } from './operations.js';
+import { evaluationView } from './evaluation.js';
+import { templates, templateLibrary } from './templates.js';
 import { backupView, makeBackup, restoreBackup } from './backup.js';
 import { comparisonView } from './comparison.js';
 import { executionCards, selectedTarget, targets } from './execution.js';
 'use strict';
 const main=document.querySelector('main');
-const labels={dasbor:'Dasbor',generator:'Generator prompt',riwayat:'Riwayat sesi',perbandingan:'Perbandingan model',templat:'Templat',pengaturan:'Pengaturan',bantuan:'Bantuan'};
-const paths={dasbor:'M3 3h7v7H3z M14 3h7v7h-7z M3 14h7v7H3z M14 14h7v7h-7z',generator:'M14 4l6 6 M3 21l5-1L21 7l-4-4L4 16z',riwayat:'M3 10a9 9 0 1 1 2 8 M3 4v6h6 M12 7v6l4 2',perbandingan:'M4 18V9h3v9z M10 18V4h3v14z M16 18v-7h3v7z',templat:'M4 3h16v18H4z M4 9h16 M10 9v12',pengaturan:'M3 6h18 M3 17h18 M8 3v6 M16 14v6',bantuan:'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z M9 9a3 3 0 1 1 5 2l-2 2 M12 16v.5',plus:'M12 5v14 M5 12h14',run:'M6 3l14 9-14 9z',launch:'M7 17L18 6 M8 6h10v10'};
+const labels={dasbor:'Dasbor',generator:'Generator prompt',riwayat:'Riwayat sesi',perbandingan:'Perbandingan model',evaluasi:'Evaluasi',proses:'Proses',templat:'Templat',pengaturan:'Pengaturan',bantuan:'Bantuan'};
+const paths={dasbor:'M3 3h7v7H3z M14 3h7v7h-7z M3 14h7v7H3z M14 14h7v7h-7z',generator:'M14 4l6 6 M3 21l5-1L21 7l-4-4L4 16z',riwayat:'M3 10a9 9 0 1 1 2 8 M3 4v6h6 M12 7v6l4 2',perbandingan:'M4 18V9h3v9z M10 18V4h3v14z M16 18v-7h3v7z',evaluasi:'M4 4v16h16 M8 15v-4 M12 15V8 M16 15V5',proses:'M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18z M12 7v5l3 2',templat:'M4 3h16v18H4z M4 9h16 M10 9v12',pengaturan:'M3 6h18 M3 17h18 M8 3v6 M16 14v6',bantuan:'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z M9 9a3 3 0 1 1 5 2l-2 2 M12 16v.5',plus:'M12 5v14 M5 12h14',run:'M6 3l14 9-14 9z',launch:'M7 17L18 6 M8 6h10v10'};
 function icon(name){return '<svg aria-hidden="true" class="icon" viewBox="0 0 24 24"><path d="'+paths[name]+'"/></svg>'}
 const esc=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const nav=document.querySelector('nav');
@@ -21,8 +24,10 @@ const domains=['Umum','Pemrograman','Otomasi','Riset','Bisnis','Konten','Analisi
 const languages=['Bahasa Indonesia','English'];
 let defaultLanguage='Bahasa Indonesia';
 let useLocalPromptEngine=false;
-function newSession(){return {session:crypto.randomUUID(),source:'',domain:'Umum',lang:defaultLanguage,answers:[],questions:[],safeAssumptions:[],result:null,requestId:null,mode:'generate',runs:[],runError:'',target:null}}
+function newSession(){return {session:crypto.randomUUID(),source:'',domain:'Umum',lang:defaultLanguage,systemInstructions:'',answers:[],questions:[],safeAssumptions:[],result:null,requestId:null,mode:'generate',runs:[],runError:'',target:null}}
 let work=newSession(),historyRows=[],historyError='',settings=null,settingsError='',busy='',error='',notice='',pendingDelete=null,comparison=null,comparisonVersion=null,backupDownload=null,backupFilename='';
+let evaluation=null,evaluationError='',evaluationLoading=false;
+let operations=null,operationsError='',operationsLoading=false,activeOperations=[],operationNotice='';
 const links={hasil:'Tinjau prompt',klarifikasi:'Klarifikasi',...labels};
 const route=()=>Object.hasOwn(links,location.hash.slice(1))?location.hash.slice(1):'dasbor';
 function go(page){if(route()===page)render();else location.hash=page}
@@ -42,7 +47,7 @@ function dashboard(){
  return title('Dasbor','Kelola instruksi, prompt, dan hasil dalam satu ruang kerja.')+'<div class="hero"><div class="intro"><h2>Mulai dengan instruksi Anda.</h2><p>Susun prompt bahasa Inggris dan periksa apakah tujuan, angka, serta batasan asli tetap terjaga.</p><button class="primary" id="new">'+icon('plus')+' Buat prompt</button></div><div class="blueprint">'+diagram+'</div></div><section class="section"><div class="bar"><h2>Mode kerja</h2></div><div class="grid">'+card('generator','Buat prompt','Susun dan tinjau prompt dengan mesin bahasa.','generate')+card('run','Buat & jalankan','Tinjau prompt sebelum mengirimnya ke model pilihan.','execute')+card('run','Jalankan prompt yang sudah ada','Simpan dan jalankan prompt Anda sendiri.','existing')+'</div></section><section class="section"><div class="bar"><h2>Sesi terbaru</h2><a href="#riwayat">Lihat riwayat</a></div>'+historyView(3)+'</section>';
 }
 function executionView(r) {
- const choices=targets(settings,esc);
+ const choices=targets(settings,esc,{auto:true});
  const approval=r.stage!=='ready';
  const eligible=Number.isInteger(r.version);
  const hasDraft=work.edited!=null&&work.edited!==r.draft;
@@ -59,20 +64,67 @@ const message=()=>error?'<div class="err" role="alert">'+esc(error)+'</div>':'';
 function availability(){
  if(!settings&&!settingsError)return 'Memeriksa mesin prompt Studio…';
  if(settings?.promptAgent?.configured&&!useLocalPromptEngine){
-  return 'DeepSeek melalui ArxPay · Instruksi dan jawaban klarifikasi dikirim ke server ArxPay. Versi prompt disimpan di Studio privat.';
+  return 'Instruksi dikirim ke ArxPay menggunakan model '+settings.promptAgent.model+'. Versi prompt disimpan di Studio privat.';
  }
  return 'Qwen2.5 1.5B · Instruksi diproses di perangkat. Penggunaan pertama mengunduh model dari Hugging Face dan runtime dari GitHub. Browser memerlukan WebGPU.';
 }
 function engineSelector(){
  return settings?.promptAgent?.configured?
   '<div class="group"><label for="promptEngine">Mesin prompt</label><select id="promptEngine">'+
-  '<option value="server"'+(!useLocalPromptEngine?' selected':'')+'>DeepSeek melalui ArxPay</option>'+
+  '<option value="server"'+(!useLocalPromptEngine?' selected':'')+'>Model server melalui ArxPay</option>'+
   '<option value="local"'+(useLocalPromptEngine?' selected':'')+'>Qwen di perangkat (WebGPU)</option></select></div>':'';
+}
+function systemField(){
+ return '<details class="group"'+(work.systemInstructions?' open':'')+'><summary>Instruksi sistem opsional</summary>'+
+  '<label for="systemInstructions">Preferensi nada, format, atau audiens saat eksekusi</label>'+
+  '<textarea id="systemInstructions" rows="3" maxlength="2000" placeholder="Misalnya, gunakan nada formal.">'+
+  esc(work.systemInstructions)+'</textarea></details>';
+}
+function assessmentView(assessment){
+ if(!assessment)return '';
+ const dimensions={intent:'Preservasi intent',requirements:'Kelengkapan',clarity:'Kejelasan',precision:'Presisi teknis',alignment:'Kesesuaian keluaran',integrity:'Integritas fakta'};
+ return '<details><summary>Evaluasi versi tersimpan'+(assessment.score==null?'':' · '+esc(assessment.score)+'/100')+'</summary>'+
+  (assessment.critical?'<p class="err">Peninjauan menandai perubahan kritis.</p>':'')+
+  (assessment.dimensions?'<ul>'+Object.entries(dimensions).map(([key,label])=>'<li>'+label+' · '+esc(assessment.dimensions[key])+'/100</li>').join('')+'</ul>':'<p>Skor per dimensi belum tersedia.</p>')+
+  '<p class="muted">Skor berasal dari peninjau model. Status peninjauan harus lolos sebelum draf disetujui otomatis.</p></details>';
+}
+async function loadEvaluation(){
+ if(evaluationLoading)return;
+ evaluationLoading=true;evaluationError='';render();
+ try{evaluation=await api('evaluation')}catch(e){evaluationError=e.message}
+ finally{evaluationLoading=false;if(route()==='evaluasi')render()}
+}
+async function loadOperations(){
+ if(operationsLoading)return;
+ operationsLoading=true;operationsError='';render();
+ try{operations=await api('operations')}catch(e){operationsError=e.message}
+ finally{operationsLoading=false;if(route()==='proses')render()}
+}
+async function trackOperation(kind,id,send){
+ const operation={kind,id,cancelling:false};
+ activeOperations.push(operation);render();
+ try{return await send()}
+ finally{activeOperations=activeOperations.filter(item=>item!==operation);if(busy)render()}
+}
+async function stopOperation(button){
+ const {cancelKind:kind,cancelId:id}=button.dataset;
+ const operation=activeOperations.find(item=>item.kind===kind&&item.id===id);
+ if(operation)operation.cancelling=true;
+ button.disabled=true;
+ try{
+  await api('cancel',{kind,requestId:id});
+  operationNotice='Proses dibatalkan. Panggilan model yang sudah dikirim mungkin masih menyelesaikan permintaannya.';
+ }catch(e){
+  if(operation)operation.cancelling=false;
+  operationNotice=e.message;
+ }
+ if(!busy&&route()==='proses')await loadOperations();
+ else render();
 }
 function generator(){
  if(work.mode==='existing')return title('Jalankan prompt yang sudah ada','Simpan prompt sebagai versi yang dapat dipilih untuk eksekusi.')+
- '<form id="existing" class="panel"><div class="group"><label for="source">Prompt Anda</label><textarea id="source" required maxlength="12000">'+esc(work.source)+'</textarea></div><div class="group"><label for="lang">Bahasa jawaban</label><select id="lang">'+options(languages,work.lang)+'</select></div>'+message()+'<button class="primary">Simpan dan tinjau</button></form>';
- return title('Generator prompt','Tulis instruksi asli dan tentukan bahasa jawaban yang diinginkan.')+'<form class="panel" id="generate"><h2>Instruksi asli</h2><div class="group"><label for="source">Apa yang ingin Anda kerjakan?</label><textarea id="source" required maxlength="12000" placeholder="Misalnya, rangkum laporan ini untuk tim operasional dalam 5 poin.">'+esc(work.source)+'</textarea></div><div class="grid"><div class="group"><label for="domain">Bidang</label><select id="domain">'+options(domains,work.domain)+'</select></div><div class="group"><label for="lang">Bahasa jawaban</label><select id="lang">'+options(languages,work.lang)+'</select></div></div><p class="muted" id="engineNotice" aria-live="polite">'+esc(availability())+'</p>'+message()+'<div class="actions"><button class="primary">'+(work.mode==='execute'?'Susun prompt untuk dijalankan':'Susun & tinjau prompt')+'</button><a href="/simulasi/#generator">Coba simulasi lokal</a></div></form>';
+ '<form id="existing" class="panel"><div class="group"><label for="source">Prompt Anda</label><textarea id="source" required maxlength="12000">'+esc(work.source)+'</textarea></div><div class="group"><label for="lang">Bahasa jawaban</label><select id="lang">'+options(languages,work.lang)+'</select></div>'+systemField()+message()+'<button class="primary">Simpan dan tinjau</button></form>';
+ return title('Generator prompt','Tulis instruksi asli dan tentukan bahasa jawaban yang diinginkan.')+'<form class="panel" id="generate"><h2>Instruksi asli</h2><div class="group"><label for="source">Apa yang ingin Anda kerjakan?</label><textarea id="source" required maxlength="12000" placeholder="Misalnya, rangkum laporan ini untuk tim operasional dalam 5 poin.">'+esc(work.source)+'</textarea></div><div class="grid"><div class="group"><label for="domain">Bidang</label><select id="domain">'+options(domains,work.domain)+'</select></div><div class="group"><label for="lang">Bahasa jawaban</label><select id="lang">'+options(languages,work.lang)+'</select></div></div>'+systemField()+'<p class="muted" id="engineNotice" aria-live="polite">'+esc(availability())+'</p>'+message()+'<div class="actions"><button class="primary">'+(work.mode==='execute'?'Susun prompt untuk dijalankan':'Susun & tinjau prompt')+'</button><a href="/simulasi/#generator">Coba simulasi lokal</a></div></form>';
 }
 function clarification(){return title('Klarifikasi','Lengkapi detail yang memengaruhi hasil. Jawaban sebelumnya dapat disunting.')+'<form id="clarify" class="panel"><details><summary>Instruksi asli</summary><p>'+esc(work.source)+'</p></details>'+work.answers.map((a,i)=>'<div class="group"><label for="q'+i+'">'+esc(a.question)+'</label><input id="q'+i+'" data-answer="'+i+'" required maxlength="1500" value="'+esc(a.answer)+'"></div>').join('')+(work.safeAssumptions.length?'<details><summary>Asumsi yang dapat digunakan</summary><ul>'+
  work.safeAssumptions.map(item=>'<li>'+esc(item.question)+' '+esc(item.answer)+'</li>').join('')+
@@ -90,7 +142,7 @@ function promptVersions(r){
 }
 function result(){
  const r=work.result;if(!r)return empty('Belum ada hasil','Pilih sesi di Riwayat atau buat prompt.');
- return title('Tinjau prompt','Versi '+esc(r.version)+' · '+esc(r.model))+'<section class="panel"><h2>'+esc(r.spec.goal)+'</h2><p>'+esc(r.spec.context)+'</p><details><summary>Instruksi dan jawaban klarifikasi</summary><p>'+esc(work.source)+'</p>'+items(work.answers.map(a=>a.question+' — '+a.answer))+'</details>'+[['Kebutuhan',r.spec.requirements],['Batasan',r.spec.constraints],['Hasil yang diminta',r.spec.deliverables],['Asumsi',r.spec.assumptions]].map(([k,v])=>'<details><summary>'+k+'</summary>'+items(v)+'</details>').join('')+'<div class="group"><label for="draft">'+(r.model==='Prompt manual'?'Prompt yang tersimpan':'Prompt bahasa Inggris')+'</label><textarea class="mono" id="draft" '+(work.unsaved?'readonly':'')+'>'+esc(work.edited??r.draft)+'</textarea></div><p id="review" class="'+(r.stage==='ready'&&work.edited==null?'status':'note')+'">'+(work.edited!=null?'Suntingan belum ditinjau.':r.stage==='ready'?'Lolos pemeriksaan nilai dan tinjauan model.':esc(r.issues.join(' ')))+'</p><p class="muted">Revisi otomatis '+esc(r.revisions)+' dari 2. Peninjau menggunakan model yang sama dalam permintaan terpisah.</p>'+message()+'<div class="actions"><button id="copy">Salin prompt</button>'+(work.unsaved?'<button id="retrySave">Coba simpan kembali</button>':'<button id="save">Simpan versi suntingan</button>')+'<a href="#generator">Kembali ke instruksi</a><button id="delete">Hapus sesi</button></div><p role="status" id="notice">'+esc(notice)+'</p>'+(backupDownload?.session===work.session?backupLink():'')+(pendingDelete===work.session?'<div class="note">Hapus semua versi sesi ini? <button id="confirmDelete">Ya, hapus sesi</button> <button id="cancelDelete">Batal</button></div>':'')+'</section>'+executionView(r)+promptVersions(r);
+ return title('Tinjau prompt','Versi '+esc(r.version)+' · '+esc(r.model))+'<section class="panel"><h2>'+esc(r.spec.goal)+'</h2><p>'+esc(r.spec.context)+'</p><details><summary>Instruksi dan jawaban klarifikasi</summary><p>'+esc(work.source)+'</p>'+items(work.answers.map(a=>a.question+' — '+a.answer))+'</details>'+[['Kebutuhan',r.spec.requirements],['Batasan',r.spec.constraints],['Hasil yang diminta',r.spec.deliverables],['Asumsi',r.spec.assumptions]].map(([k,v])=>'<details><summary>'+k+'</summary>'+items(v)+'</details>').join('')+'<div class="group"><label for="draft">'+(r.model==='Prompt manual'?'Prompt yang tersimpan':'Prompt bahasa Inggris')+'</label><textarea class="mono" id="draft" '+(work.unsaved?'readonly':'')+'>'+esc(work.edited??r.draft)+'</textarea></div><p id="review" class="'+(r.stage==='ready'&&work.edited==null?'status':'note')+'">'+(work.edited!=null?'Suntingan belum ditinjau.':r.stage==='ready'?'Lolos pemeriksaan nilai dan tinjauan model.':esc(r.issues.join(' ')))+'</p>'+assessmentView(r.assessment)+(r.systemInstructions?'<details><summary>Preferensi eksekusi tersimpan</summary><p>'+esc(r.systemInstructions)+'</p></details>':'')+'<p class="muted">Revisi otomatis '+esc(r.revisions)+' dari 2. Peninjau menggunakan model yang sama dalam permintaan terpisah.</p>'+message()+'<div class="actions"><button id="copy">Salin prompt</button>'+(work.unsaved?'<button id="retrySave">Coba simpan kembali</button>':'<button id="save">Simpan versi suntingan</button>')+'<a href="#generator">Kembali ke instruksi</a><button id="delete">Hapus sesi</button></div><p role="status" id="notice">'+esc(notice)+'</p>'+(backupDownload?.session===work.session?backupLink():'')+(pendingDelete===work.session?'<div class="note">Hapus semua versi sesi ini? <button id="confirmDelete">Ya, hapus sesi</button> <button id="cancelDelete">Batal</button></div>':'')+'</section>'+executionView(r)+promptVersions(r);
 }
 function backupLink(){
  return '<a href="'+esc(backupDownload.url)+'" download="'+esc(backupDownload.name)+'">Unduh cadangan sesi</a>';
@@ -105,11 +157,12 @@ async function exportData(session){
 }
 function render(){
  const page=route();document.title=links[page]+' · PromptForge AI';document.querySelector('#crumb').textContent=links[page];for(const a of nav.querySelectorAll('a'))a.classList.toggle('current',a.hash==='#'+(['hasil','klarifikasi'].includes(page)?'generator':page));
- const views={dasbor:dashboard,generator,klarifikasi:clarification,hasil:result,riwayat:()=>title('Riwayat sesi','200 versi terbaru milik akun Anda.')+message()+'<section class="panel">'+historyView(200)+'</section>',pengaturan:()=>title('Pengaturan','Preferensi Studio dan pemulihan data.')+message()+'<p role="status">'+esc(notice)+'</p><section class="panel"><h2>Mesin bahasa</h2><p>'+esc(availability())+'</p>'+engineSelector()+'<div class="group"><label for="defaultLang">Bahasa jawaban di tab ini</label><select id="defaultLang">'+options(languages,defaultLanguage)+'</select></div></section>'+backupView(esc,backupDownload?.session ? null : backupDownload,backupFilename),bantuan:()=>title('Bantuan','Cara menggunakan Studio privat.')+'<section class="panel"><p>Susun & tinjau prompt memakai mesin yang dipilih di Pengaturan. Setelah klarifikasi yang diperlukan, sistem meninjau draf dan mencoba maksimal dua revisi. Hasil berperingatan tetap dapat dibaca dan disunting.</p><p>Setiap hasil dan suntingan yang disimpan memiliki nomor versi. Hapus sesi untuk menghapus semua versinya. Draf sebelum dikirim hanya ada di tab ini.</p><p><a href="/register.txt">Register kapabilitas</a> · <a href="/simulasi/">Simulasi lokal</a></p></section>',perbandingan:()=>title('Perbandingan model','Uji model berbeda dengan prompt yang sama.')+message()+comparisonView({settings,history:historyRows,comparison,escape:esc}),templat:()=>title('Templat','Pustaka templat belum tersedia.')};
- main.innerHTML=busy?'<section class="panel" role="status"><h2>'+esc(busy)+'</h2><p>Tunggu hingga proses selesai.</p></section>':views[page]();if(work.target&&document.querySelector('#target'))document.querySelector('#target').value=work.target;
+ const views={dasbor:dashboard,generator,klarifikasi:clarification,hasil:result,riwayat:()=>title('Riwayat sesi','200 versi terbaru milik akun Anda.')+message()+'<section class="panel">'+historyView(200)+'</section>',pengaturan:()=>title('Pengaturan','Preferensi Studio dan pemulihan data.')+message()+'<p role="status">'+esc(notice)+'</p><section class="panel"><h2>Mesin bahasa</h2><p>'+esc(availability())+'</p>'+engineSelector()+'<div class="group"><label for="defaultLang">Bahasa jawaban di tab ini</label><select id="defaultLang">'+options(languages,defaultLanguage)+'</select></div></section>'+backupView(esc,backupDownload?.session ? null : backupDownload,backupFilename),bantuan:()=>title('Bantuan','Cara menggunakan Studio privat.')+'<section class="panel"><p>Susun & tinjau prompt memakai mesin yang dipilih di Pengaturan. Setelah klarifikasi yang diperlukan, sistem meninjau draf dan mencoba maksimal dua revisi. Hasil berperingatan tetap dapat dibaca dan disunting.</p><p>Setiap hasil dan suntingan yang disimpan memiliki nomor versi. Hapus sesi untuk menghapus semua versinya. Draf sebelum dikirim hanya ada di tab ini.</p><p><a href="/register.txt">Register kapabilitas</a> · <a href="/simulasi/">Simulasi lokal</a></p></section>',perbandingan:()=>title('Perbandingan model','Uji model berbeda dengan prompt yang sama.')+message()+comparisonView({settings,history:historyRows,comparison,escape:esc}),evaluasi:()=>title('Evaluasi','Aktivitas 30 hari terakhir dan hasil benchmark.')+evaluationView({data:evaluation,error:evaluationError,loading:evaluationLoading,escape:esc}),proses:()=>title('Proses server','Lihat status permintaan terakhir dan buka hasil tersimpan.')+(operationNotice?'<p role="status">'+esc(operationNotice)+'</p>':'')+'<section class="panel">'+operationsView({data:operations,error:operationsError,loading:operationsLoading,escape:esc})+'</section>',templat:()=>title('Templat prompt','Pilih titik awal dan isi bagian dalam tanda kurung siku sebelum meninjau.')+templateLibrary(esc)};
+ main.innerHTML=busy?'<section class="panel"><h2>'+esc(busy)+'</h2><p role="status">'+esc(operationNotice||'Tunggu hingga proses selesai.')+'</p>'+
+  (activeOperations.length?'<div class="actions">'+activeOperations.map((item,index)=>cancelButton(item,esc,activeOperations.length>1?'Batalkan model '+(index+1):'Batalkan proses')).join('')+'</div>':'')+'</section>':views[page]();if(work.target&&document.querySelector('#target'))document.querySelector('#target').value=work.target;
  main.focus({preventScroll:true});
 }
-async function task(label,fn){if(busy)return;busy=label;error='';notice='';render();try{await fn()}catch(e){error=e.message||'Permintaan belum berhasil.'}finally{busy='';render()}}
+async function task(label,fn){if(busy)return;busy=label;error='';notice='';operationNotice='';render();try{await fn()}catch(e){error=e.message||'Permintaan belum berhasil.'}finally{busy='';render()}}
 async function submit(){
  if(!work.source.trim()){error='Isi instruksi sebelum melanjutkan.';render();return}
  await task('Menganalisis dan meninjau instruksi…',async()=>{
@@ -118,12 +171,12 @@ async function submit(){
    settings=await api('status');
    settingsError='';
   }
-  const input={source:work.source,domain:work.domain,lang:work.lang,answers:work.answers};
+  const input={source:work.source,domain:work.domain,lang:work.lang,answers:work.answers,systemInstructions:work.systemInstructions};
   const ids={requestId:work.requestId,session:work.session};
   const remote=!work.unsaved&&settings.promptAgent?.configured&&!useLocalPromptEngine;
   let report=work.unsaved;
   if(remote){
-   try{report=await api('generate',{...input,...ids})}
+   try{report=await trackOperation('generate',ids.requestId,()=>api('generate',{...input,...ids}))}
    catch(e){
     if(e.responseReceived&&e.code!=='generation_running')work.requestId=null;
     throw e;
@@ -131,7 +184,7 @@ async function submit(){
   }else if(!report){
    const {runLocal}=await import('./local.js');
    report=await runLocal(input,text=>{
-    const status=main.querySelector('[role=status] p');
+    const status=main.querySelector('p[role=status]');
     if(status)status.textContent=text;
    });
   }
@@ -180,7 +233,7 @@ async function runVersion(form){
   const requestId=work.pendingRun?.requestId??crypto.randomUUID();
   work.pendingRun={requestId,signature};
   try{
-   const record=await api('execute',{session:work.session,version:work.result.version,target,confirm,requestId});
+   const record=await trackOperation('execute',requestId,()=>api('execute',{session:work.session,version:work.result.version,target,confirm,requestId}));
    if(record.status!=='running')work.pendingRun=null;
    work.runs=[record,...work.runs.filter(item=>item.id!==record.id)];
   }catch(e){if(e.responseReceived)work.pendingRun=null;throw e}
@@ -204,8 +257,10 @@ document.addEventListener('submit',e=>{
   const version=Number(rawVersion),confirm=form.querySelector('#confirmCompare').checked;
   task('Menjalankan kedua model…',async()=>{
    if(first.provider===second.provider&&first.model===second.model)throw Error('Pilih dua model yang berbeda.');
-   const results=await Promise.allSettled([first,second].map(target=>
-    api('execute',{session,version,confirm,target,assessmentTarget,requestId:crypto.randomUUID()})));
+   const results=await Promise.allSettled([first,second].map(target=>{
+    const requestId=crypto.randomUUID();
+    return trackOperation('execute',requestId,()=>api('execute',{session,version,confirm,target,assessmentTarget,requestId}));
+   }));
    comparison={version,runs:[],errors:[]};
    for(const [index,result] of results.entries()){
     if(result.status==='fulfilled')comparison.runs.push(result.value);
@@ -226,18 +281,26 @@ document.addEventListener('submit',e=>{
   task('Menyimpan prompt…',async()=>{
    work.requestId??=crypto.randomUUID();
    work.result=await api('existing',{session:work.session,requestId:work.requestId,source:work.source,
-    draft:work.source,lang:work.lang,domain:work.domain,answers:[]});
+    draft:work.source,lang:work.lang,domain:work.domain,answers:[],systemInstructions:work.systemInstructions});
    work.requestId=null;work.edited=null;work.runs=[];work.pendingRun=null;work.runError='';await refreshHistory();go('hasil');
   });return;
  }
  submit();
 });
-document.addEventListener('input',e=>{const el=e.target;if(el.id==='promptEngine'){useLocalPromptEngine=el.value==='local';work.requestId=null;render();return}if(el.id==='target'){work.target=el.value;return}if(el.id==='defaultLang'){defaultLanguage=el.value;return}if(['source','domain','lang'].includes(el.id)){work.requestId=null;if(el.id==='source'&&el.value!==work.source){work.answers=[];work.safeAssumptions=[];}work.unsaved=null;work[el.id]=el.value}else if(el.dataset.answer!==undefined){work.requestId=null;work.answers[Number(el.dataset.answer)].answer=el.value}else if(el.id==='draft'){work.requestId=null;work.edited=el.value;document.querySelector('#review').className='note';document.querySelector('#review').textContent='Suntingan belum ditinjau.';const run=document.querySelector('#run');if(run)run.disabled=el.value!==work.result.draft}});
+document.addEventListener('input',e=>{const el=e.target;if(el.id==='promptEngine'){useLocalPromptEngine=el.value==='local';work.requestId=null;render();return}if(el.id==='target'){work.target=el.value;return}if(el.id==='defaultLang'){defaultLanguage=el.value;return}if(['source','domain','lang','systemInstructions'].includes(el.id)){work.requestId=null;if(el.id==='source'&&el.value!==work.source){work.answers=[];work.safeAssumptions=[];}work.unsaved=null;work[el.id]=el.value}else if(el.dataset.answer!==undefined){work.requestId=null;work.answers[Number(el.dataset.answer)].answer=el.value}else if(el.id==='draft'){work.requestId=null;work.edited=el.value;document.querySelector('#review').className='note';document.querySelector('#review').textContent='Suntingan belum ditinjau.';const run=document.querySelector('#run');if(run)run.disabled=el.value!==work.result.draft}});
 document.addEventListener('click',async e=>{
  const b=e.target.closest('button,a');if(!b)return;
  if(b.matches('.skip')){e.preventDefault();main.focus();return}
+ if(b.dataset.cancelId){e.preventDefault();await stopOperation(b);return}
  if(busy){if(!b.href||b.hash)e.preventDefault();return}
  if(b.id==='new'||b.dataset.mode){e.preventDefault();work=newSession();work.mode=b.dataset.mode??'generate';error='';go('generator')}
+ if(b.id==='refreshOperations'){operationNotice='';await loadOperations();return}
+ if(b.id==='refreshEvaluation'){await loadEvaluation();return}
+ if(b.dataset.template){
+  const template=templates.find(item=>item.id===b.dataset.template);
+  if(template){work={...newSession(),source:template.source,domain:template.domain};error='';go('generator')}
+  return;
+ }
  if(b.id==='fillAssumptions'){
   for(const item of work.safeAssumptions){
    const destination=work.answers.find(answer=>answer.question===item.question);
@@ -263,8 +326,10 @@ document.addEventListener('click',async e=>{
  if(b.id==='delete'||b.id==='cancelDelete'){pendingDelete=b.id==='delete'?work.session:null;render()}
  if(b.id==='confirmDelete')await task('Menghapus sesi…',async()=>{await api('delete',{session:work.session});work=newSession();pendingDelete=null;await refreshHistory();go('riwayat')});
 });
-window.addEventListener('hashchange',()=>{pendingDelete=null;render()});
+window.addEventListener('hashchange',()=>{pendingDelete=null;render();if(!busy){if(route()==='evaluasi')loadEvaluation();if(route()==='proses')loadOperations()}});
 render();
+if(route()==='evaluasi')loadEvaluation();
+if(route()==='proses')loadOperations();
 Promise.all([refreshHistory(),api('status').then(v=>settings=v).catch(e=>settingsError=e.message)]).then(()=>{
  if(busy)return;
  if(!document.activeElement?.matches('textarea,input,select')){render();return}

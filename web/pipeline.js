@@ -1,3 +1,5 @@
+import { promptAssessment } from './quality.js';
+
 function str(x,max){return typeof x==='string' && x.trim().length>0 && x.length<=max}
 function strings(x){return Array.isArray(x)&&x.length<=40&&x.every(v=>str(v,2000))}
 const malformed=()=>new Error('Respons mesin bahasa belum dapat divalidasi. Instruksi asli tetap tersedia.');
@@ -31,18 +33,20 @@ export async function generate(input,ask){
  delete spec.answerLanguage;
  delete spec.languageEvidence;
  delete spec.safeAssumptions;
- let draft='',issues=[];
+ let draft='',issues=[],assessment;
  for(let attempt=0;attempt<=2;attempt++){
   const suggestion=await ask('Translate and optimize the instruction into natural, task-specific English. Include the requested answer language. Preserve exact numeric literals, names, URLs, quoted text, identifiers, constraints and required outputs. Do not execute. Return {draft:string}. Repair identified review issues.',{input,spec,previous:draft,issues},'draft');
   if(!str(suggestion?.draft,32000))throw malformed();
   draft=suggestion.draft;
   const literal=literalFailures([input.source,...input.answers.map(a=>a.answer)].join('\n'),draft);
   let review;
-  try{review=await ask('You review a translation of instructions, not the completed task. The candidate itself MUST be written in English. Compare what a future executor is asked to do in the candidate against the original request and clarification answers. The resolved input.lang states the requested language of the future answer only. A candidate saying "Write 5 points in Indonesian" preserves those requirements; do not demand the five points or Indonesian prose in the candidate. Look for changed intent, added obligations, missing deliverables, altered numbers/names/code, weak English or wrong response language. Return {pass:boolean,issues:string[]} in Indonesian. A critical failure always fails.',{input,draft},'review')}catch{return {stage:'warning',lang,spec,draft,issues:[...literal,'Peninjauan semantik belum selesai.'],revisions:attempt}}
-  if(typeof review?.pass!=='boolean'||!strings(review.issues))return {stage:'warning',lang,spec,draft,issues:[...literal,'Format laporan peninjauan tidak sah.'],revisions:attempt};
+  try{review=await ask('You review a translation of instructions, not the completed task. The candidate itself MUST be written in English. Compare what a future executor is asked to do in the candidate against the original request and clarification answers. The resolved input.lang states the requested language of the future answer only. A candidate saying "Write 5 points in Indonesian" preserves those requirements; do not demand the five points or Indonesian prose in the candidate. Look for changed intent, added obligations, missing deliverables, altered numbers/names/code, weak English or wrong response language. Return {pass:boolean,critical:boolean,issues:string[],scores:{intent,requirements,clarity,precision,alignment,integrity}}. Rate each dimension independently from 0 to 100 based on evidence, using 100 only when fully satisfied. Issues are in Indonesian. A critical failure always fails.',{input,draft},'review')}catch{return {stage:'warning',lang,spec,draft,issues:[...literal,'Peninjauan semantik belum selesai.'],assessment:promptAssessment(null,literal),revisions:attempt}}
+  if(typeof review?.pass!=='boolean'||!strings(review.issues))return {stage:'warning',lang,spec,draft,issues:[...literal,'Format laporan peninjauan tidak sah.'],assessment:promptAssessment(null,literal),revisions:attempt};
+  assessment=promptAssessment(review,literal);
   issues=[...literal,...review.issues];
-  if(review.pass&&!issues.length)return {stage:'ready',lang,spec,draft,issues,revisions:attempt};
+  if(review.pass&&!assessment.critical&&!issues.length)return {stage:'ready',lang,spec,draft,issues,assessment,revisions:attempt};
+  if(assessment.critical&&!issues.length)issues=['Peninjau menandai perubahan kritis pada instruksi.'];
   if(!issues.length)issues=['Peninjau belum dapat memastikan kesetiaan makna.'];
  }
- return {stage:'warning',lang,spec,draft,issues,revisions:2}
+ return {stage:'warning',lang,spec,draft,issues,assessment,revisions:2}
 }

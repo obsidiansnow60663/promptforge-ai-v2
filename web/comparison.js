@@ -25,5 +25,5 @@ export function comparisonView({ settings, history, comparison, escape }) {
     '<section class="section panel"><h2>Evaluasi benchmark</h2><p>100 kasus bahasa Indonesia dalam enam kategori. ' +
     'Metode membandingkan instruksi Indonesia asli, terjemahan harfiah, dan prompt teroptimasi dengan kondisi eksekusi yang sama.</p>' +
     '<p>Penilaian provider dan penilaian manusia masih diperlukan untuk mengukur peningkatan kualitas.</p>' +
-    '<a href="/benchmark.txt">Metode dan status evaluasi</a></section>';
+    '<a href="#evaluasi">Lihat dasbor evaluasi</a></section>';
 }

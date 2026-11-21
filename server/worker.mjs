@@ -1,3 +1,5 @@
+import { cancelOperation, listOperations } from './operations.mjs';
+import { readEvaluation } from './evaluation.mjs';
 import { generatePrompt, promptAgent } from './prompt-engine.mjs';
 import { exportPage, restorePage } from './backups.mjs';
 import { invalid, str, uuid, validVersion, validateInput, validateReport, readJson } from './validation.mjs';
@@ -5,8 +7,16 @@ import { catalog, providerPresets, Problem } from './providers.mjs';
 import { execute, listExecutions, saveFeedback } from './executions.mjs';
 const MODEL='Qwen2.5-1.5B-Instruct-q4f32_1-MLC';
 const json=(value,status=200)=>new Response(JSON.stringify(value),{status,headers:{'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer'}});
-async function saveVersion(db,owner,b,data){
- await db.prepare('INSERT INTO versions(owner,session,version,request_id,created,payload) SELECT ?,?,COALESCE(MAX(version),0)+1,?,?,? FROM versions WHERE owner=? AND session=? ON CONFLICT(owner,request_id) DO NOTHING').bind(owner,b.session,b.requestId,new Date().toISOString(),JSON.stringify(data),owner,b.session).run();
+async function saveVersion(db,owner,b,data,generation=false){
+ const guarded=generation?" HAVING EXISTS (SELECT 1 FROM prompt_generations WHERE owner=? AND request_id=? AND status='running')":'';
+ const values=[owner,b.session,b.requestId,new Date().toISOString(),JSON.stringify(data),owner,b.session];
+ if(generation)values.push(owner,b.requestId);
+ const insert=db.prepare(`INSERT INTO versions(owner,session,version,request_id,created,payload)
+  SELECT ?,?,COALESCE(MAX(version),0)+1,?,?,? FROM versions WHERE owner=? AND session=?${guarded}
+  ON CONFLICT(owner,request_id) DO NOTHING`).bind(...values);
+ if(generation){
+  await db.batch([insert,db.prepare("UPDATE prompt_generations SET status='finished' WHERE owner=? AND request_id=? AND status='running'").bind(owner,b.requestId)]);
+ }else await insert.run();
  const saved=await db.prepare('SELECT session,version,payload FROM versions WHERE owner=? AND request_id=?').bind(owner,b.requestId).first();
  if(!saved||saved.session!==b.session)throw new Problem(409,'Penyimpanan belum terkonfirmasi untuk sesi ini.');
  return {...JSON.parse(saved.payload),version:saved.version};
@@ -22,8 +32,14 @@ async function route(req,env){
  const owner=req.headers.get('oai-authenticated-user-id');
  if(!owner)throw new Problem(401,'Masuk dengan ChatGPT untuk mengakses studio privat.');
  const db=env.DB;
- if(path==='/api/status'&&req.method==='GET')return json({configured:true,model:MODEL,providers:catalog(env),presets:providerPresets(env),promptAgent:promptAgent(env)});
+ if(path==='/api/status'&&req.method==='GET'){
+  const agent=promptAgent(env);
+  return json({configured:true,model:MODEL,providers:catalog(env),presets:providerPresets(env),promptAgent:agent,
+   defaultTarget:agent.configured?{provider:'arxpay',model:agent.model}:null});
+ }
  if(!db)throw new Problem(503,'Penyimpanan sesi belum tersedia.');
+ if(req.method==='GET'&&path==='/api/operations')return json(await listOperations(db,owner));
+ if(req.method==='GET'&&path==='/api/evaluation')return json(await readEvaluation(db,owner));
  if(req.method==='GET'&&path==='/api/export')return json(await exportPage(db,owner,url.searchParams));
  if(req.method==='GET'&&path==='/api/history'){
   const result=await db.prepare('SELECT session,version,created,substr(json_extract(payload,\'$.source\'),1,140) AS title FROM versions WHERE owner=? ORDER BY created DESC, version DESC LIMIT 200').bind(owner).all();return json(result.results);
@@ -42,6 +58,7 @@ async function route(req,env){
   throw new Problem(403,'Permintaan tidak diizinkan.');
  }
  const b=await readJson(req,path==='/api/restore'?2*1024*1024:256*1024);
+ if(path==='/api/cancel')return json(await cancelOperation(db,owner,b));
  if(path==='/api/restore')return json(await restorePage(db,owner,b));
  if(!b||!uuid(b.session))invalid();
  if(path==='/api/delete'){
@@ -68,7 +85,7 @@ async function route(req,env){
   if(prior.session!==b.session)throw new Problem(409,'ID permintaan sudah dipakai untuk sesi lain.');
   return json({...JSON.parse(prior.payload),version:prior.version});
  }
- if(path==='/api/generate')return json(await generatePrompt(db,env,owner,b,validateInput(b),data=>saveVersion(db,owner,b,data)));
+ if(path==='/api/generate')return json(await generatePrompt(db,env,owner,b,validateInput(b),data=>saveVersion(db,owner,b,data,true)));
  let data;
  if(path==='/api/local'){
   const input=validateInput(b);
@@ -84,7 +101,8 @@ async function route(req,env){
   if(!str(b.draft,32000)||!validVersion(b.parent))invalid();
   const row=await db.prepare('SELECT payload FROM versions WHERE owner=? AND session=? AND version=?').bind(owner,b.session,Number(b.parent)||0).first();
   if(!row)throw new Problem(404,'Versi induk tidak ditemukan.');
-  data={...JSON.parse(row.payload),parent:b.parent,draft:b.draft,stage:'edited',issues:['Perubahan manual belum ditinjau.']};
+  const {assessment: _assessment,...original}=JSON.parse(row.payload);
+  data={...original,parent:b.parent,draft:b.draft,stage:'edited',issues:['Perubahan manual belum ditinjau.']};
  }else throw new Problem(404,'Operasi tidak ditemukan.');
  return json(await saveVersion(db,owner,b,data));
 }

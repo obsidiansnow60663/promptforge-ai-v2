@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { existing, openaiReply, runtime } from './runtime.mjs';
+import { existing, arxReply, runtime } from './runtime.mjs';
 import { outputDimensions } from '../server/output.mjs';
 
-const env = { OPENAI_API_KEY: 'fixture-openai', OPENAI_MODELS: 'fixture' };
+const env = { ARXPAY_API_KEY: 'fixture-arxpay', ARXPAY_MODELS: 'fixture' };
 
 const page = async (call, kind, owner, cursor = 0) =>
   (await call('export?kind=' + kind + '&cursor=' + cursor, undefined, owner)).json();
@@ -15,15 +15,15 @@ test('restores version links and real record shape with provider fixtures under 
   await call('edit', { session: original.session, parent: 1, draft: 'Write a concise list of 5 points.', requestId: crypto.randomUUID() });
   const mock = t.mock.method(globalThis, 'fetch', async (_url, options) => {
     const call = JSON.parse(options.body);
-    if (call.instructions.startsWith('You adapt')) return openaiReply(JSON.stringify({ answer: 'Rangkum.', warnings: [] }));
-    if (call.instructions.startsWith('Independently')) return openaiReply(JSON.stringify({
+    if (call.messages[0].content.startsWith('You adapt')) return arxReply(JSON.stringify({ answer: 'Rangkum.', warnings: [] }));
+    if (call.messages[0].content.startsWith('Independently')) return arxReply(JSON.stringify({
       critical: false, issues: [], dimensions: Object.fromEntries(outputDimensions.map(key => [key, true])),
     }));
-    return openaiReply('Rangkum.');
+    return arxReply('Rangkum.');
   });
   const run = await (await call('execute', {
     session: original.session, version: 2, requestId: crypto.randomUUID(), confirm: true,
-    target: { provider: 'openai', model: 'fixture' },
+    target: { provider: 'arxpay', model: 'fixture' },
   })).json();
   await call('feedback', { session: original.session, version: 2, executionId: run.id, useful: true, comment: 'Ringkas.' });
   const versions = await page(call, 'versions');
@@ -83,7 +83,7 @@ test('deleted history still counts against the bounded execution window', async 
   const { call } = runtime(t, env);
   t.mock.method(globalThis, 'fetch', async () => Response.json({}, { status: 401 }));
   const run = session => call('execute', { session, version: 1, requestId: crypto.randomUUID(), confirm: true,
-    target: { provider: 'openai', model: 'fixture' } });
+    target: { provider: 'arxpay', model: 'fixture' } });
   for (let i = 0; i < 12; ++i) {
     const prompt = existing();
     await call('existing', prompt);

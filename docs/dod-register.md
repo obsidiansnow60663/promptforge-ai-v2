@@ -1,5 +1,7 @@
 # Register DoD PromptForge v2.0
 
+Register historis untuk rilis 12. Scope aktif v2.1 dan hasil implementasi brainstorming tercatat di [catatan fitur](brainstorming.md).
+
 Audit 21 November 2026 WIB. Bukti di bawah memakai Site khusus pemilik. Nama pemilik, instruksi pribadi, dan data produksi yang sudah ada tidak diambil untuk pengujian. Detail putaran sebelumnya ada di [audit mutu](quality-audit.md) dan [verifikasi implementasi](verification.md).
 
 ## Dapat dikerjakan dan sudah diperiksa

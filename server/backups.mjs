@@ -28,6 +28,7 @@ function onlyKeys(value, keys) {
     Object.keys(value).every(key => keys.includes(key));
 }
 
+// Preserve imports and history recorded before direct adapters were removed.
 function validTarget(target) {
   return onlyKeys(target, ['provider', 'model']) && ['openai', 'anthropic', 'gemini', 'arxpay'].includes(target.provider) && str(target.model, 120);
 }
@@ -74,7 +75,7 @@ function versionInsert(db, owner, row) {
   const { session, version, id, created, payload } = row;
   validateInput(payload);
   validateReport(payload, true);
-  if (!onlyKeys(payload, ['source', 'domain', 'lang', 'answers', 'spec', 'draft', 'stage', 'issues', 'revisions', 'model', 'parent']) ||
+  if (!onlyKeys(payload, ['source', 'domain', 'lang', 'answers', 'spec', 'draft', 'stage', 'issues', 'revisions', 'model', 'parent', 'systemInstructions', 'assessment']) ||
     !onlyKeys(payload.spec, ['goal', 'context', 'requirements', 'constraints', 'deliverables', 'assumptions', 'questions']) ||
     !payload.answers.every(answer => onlyKeys(answer, ['question', 'answer']))) invalid();
   const parent = payload.parent ?? null;

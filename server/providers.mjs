@@ -34,74 +34,16 @@ const arxpay = {
   },
 };
 
-const providers = {
-  arxpay,
-  openai: {
-    label: 'OpenAI',
-    key: 'OPENAI_API_KEY',
-    models: 'OPENAI_MODELS',
-    request(model, key, system, prompt, limit) {
-      return ['https://api.openai.com/v1/responses', { Authorization: 'Bearer ' + key }, {
-        model, instructions: system, input: prompt, max_output_tokens: limit, store: false,
-      }];
-    },
-    response(body) {
-      if (body.status !== 'completed') return null;
-      const content = body.output?.flatMap(item => item.type === 'message' ? item.content : []);
-      return {
-        text: content?.filter(part => part?.type === 'output_text').map(part => part.text).join('\n'),
-        model: body.model, finish: body.status,
-        usage: usage(body.usage?.input_tokens, body.usage?.output_tokens),
-      };
-    },
-  },
-  anthropic: {
-    label: 'Anthropic',
-    key: 'ANTHROPIC_API_KEY',
-    models: 'ANTHROPIC_MODELS',
-    request(model, key, system, prompt, limit) {
-      return ['https://api.anthropic.com/v1/messages', { 'x-api-key': key, 'anthropic-version': '2023-06-01' }, {
-        model, system, messages: [{ role: 'user', content: prompt }], max_tokens: limit,
-      }];
-    },
-    response(body) {
-      if (!['end_turn', 'stop_sequence'].includes(body.stop_reason)) return null;
-      return {
-        text: body.content?.filter(part => part.type === 'text').map(part => part.text).join('\n'),
-        model: body.model, finish: body.stop_reason,
-        usage: usage(body.usage?.input_tokens, body.usage?.output_tokens),
-      };
-    },
-  },
-  gemini: {
-    label: 'Google Gemini',
-    key: 'GEMINI_API_KEY',
-    models: 'GEMINI_MODELS',
-    request(model, key, system, prompt, limit) {
-      return ['https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(model) + ':generateContent',
-        { 'x-goog-api-key': key }, {
-          systemInstruction: { parts: [{ text: system }] },
-          contents: [{ role: 'user', parts: [{ text: prompt }] }],
-          generationConfig: { maxOutputTokens: limit },
-        }];
-    },
-    response(body) {
-      const candidate = body.candidates?.[0];
-      if (candidate?.finishReason !== 'STOP') return null;
-      return {
-        text: candidate.content?.parts?.filter(part => !part.thought && typeof part.text === 'string').map(part => part.text).join('\n'),
-        model: body.modelVersion, finish: candidate.finishReason,
-        usage: usage(body.usageMetadata?.promptTokenCount, body.usageMetadata?.candidatesTokenCount),
-      };
-    },
-  },
-};
+const providers = { arxpay };
 
 const modelPattern = /^[a-zA-Z0-9][a-zA-Z0-9._:-]{0,119}$/;
+export function configuredAgentModel(env) {
+  return modelPattern.test(env.PROMPTFORGE_AGENT_MODEL ?? '') ? env.PROMPTFORGE_AGENT_MODEL : agentModel;
+}
 export function catalog(env) {
   return Object.entries(providers).map(([id, provider]) => {
     const available = (env[provider.models] ?? '').split(',').map(value => value.trim()).filter(value => modelPattern.test(value));
-    if (id === 'arxpay') available.unshift(agentModel);
+    if (id === 'arxpay') available.unshift(configuredAgentModel(env));
     const models = [...new Set(available)].slice(0, 20);
     return { id, label: provider.label, configured: Boolean(env[provider.key] && models.length), models };
   });

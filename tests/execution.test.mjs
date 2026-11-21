@@ -2,51 +2,36 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { outputDimensions } from '../server/output.mjs';
 import { agentModel, catalog, generateText } from '../server/providers.mjs';
-import { existing, openaiReply, runtime } from './runtime.mjs';
+import { existing, arxReply, runtime } from './runtime.mjs';
 
-const env = {
-  ARXPAY_API_KEY: 'fixture-arxpay',
-  OPENAI_API_KEY: 'fixture-openai', OPENAI_MODELS: 'fixture',
-  ANTHROPIC_API_KEY: 'fixture-anthropic', ANTHROPIC_MODELS: 'fixture',
-  GEMINI_API_KEY: 'fixture-gemini', GEMINI_MODELS: 'fixture',
-};
-const target = { provider: 'openai', model: 'fixture' };
+const env = { ARXPAY_API_KEY: 'fixture-arxpay', ARXPAY_MODELS: 'fixture,review-fixture' };
+const target = { provider: 'arxpay', model: 'fixture' };
 const request = { prompt: 'Say hello', system: 'Use Indonesian' };
-const contractFixtures = {
-  openai: ['api.openai.com', 'Authorization', 'Bearer fixture-openai', () => openaiReply('Halo')],
-  anthropic: ['api.anthropic.com', 'x-api-key', 'fixture-anthropic', () => Response.json({
-    model: 'fixture-2026', stop_reason: 'end_turn', usage: { input_tokens: 10, output_tokens: 4 },
-    content: [{ type: 'text', text: 'Halo' }],
-  })],
-  gemini: ['generativelanguage.googleapis.com', 'x-goog-api-key', 'fixture-gemini', () => Response.json({
-    modelVersion: 'fixture-2026', candidates: [{ finishReason: 'STOP', content: { parts: [{ text: 'Halo' }] } }],
-    usageMetadata: { promptTokenCount: 10, candidatesTokenCount: 4 },
-  })],
-};
 
-for (const [provider, [host, header, credential, reply]] of Object.entries(contractFixtures)) {
-  test(provider + ' normalizes an execution and scopes credentials to its fixed origin', async () => {
-    const result = await generateText(env, { provider, model: 'fixture' }, request, {
-      send: async (url, options) => {
-        assert.equal(new URL(url).hostname, host);
-        assert.equal(options.headers[header], credential);
-        assert.equal(options.redirect, 'manual');
-        assert.ok(options.body.includes(request.prompt) && options.body.includes(request.system));
-        assert.equal(new URL(url).search, '');
-        return reply();
-      },
-    });
-    assert.equal(result.text, 'Halo');
-    assert.equal(result.provider, provider);
-    assert.equal(result.model, 'fixture-2026');
-    assert.deepEqual(result.usage, { input: 10, output: 4 });
-    assert.equal(result.attempts, 1);
+test('execution normalizes ArxPay and sends credentials only to its fixed origin', async () => {
+  const result = await generateText(env, target, request, {
+    send: async (url, options) => {
+      assert.equal(new URL(url).hostname, 'arxpay.my.id');
+      assert.equal(options.headers.Authorization, 'Bearer fixture-arxpay');
+      assert.equal(options.redirect, 'manual');
+      assert.deepEqual(JSON.parse(options.body).messages, [
+        { role: 'system', content: request.system }, { role: 'user', content: request.prompt },
+      ]);
+      return arxReply('Halo');
+    },
   });
-}
+  assert.deepEqual(result.usage, { input: 10, output: 4 });
+  assert.equal(result.model, 'fixture-2026');
+  assert.equal(result.provider, 'arxpay');
+  assert.equal(result.attempts, 1);
+});
 
 test('status reports configuration without keys and rejects unlisted models', async () => {
-  assert.ok(catalog(env).every(provider => provider.configured));
-  assert.doesNotMatch(JSON.stringify(catalog(env)), /fixture-openai|fixture-gemini|fixture-arxpay/);
+  assert.deepEqual(catalog(env).map(provider => provider.id), ['arxpay']);
+  for (const provider of ['openai', 'anthropic', 'gemini']) {
+    await assert.rejects(generateText(env, {...target, provider}, request), {code:'invalid_provider'});
+  }
+  assert.doesNotMatch(JSON.stringify(catalog(env)), /fixture-arxpay/);
   await assert.rejects(generateText(env, { ...target, model: '../elsewhere' }, request), { code: 'invalid_model' });
   await assert.rejects(generateText({}, target, request), { code: 'provider_unconfigured' });
 });
@@ -73,7 +58,7 @@ test('timeout and truncated output stay distinct from a successful response', as
   await assert.rejects(generateText(env, target, request, {
     timeout: 10,
     send: (_url, { signal }) => new Promise((resolve, reject) => {
-      const timer = setTimeout(() => resolve(openaiReply('late')), 1000);
+      const timer = setTimeout(() => resolve(arxReply('late')), 1000);
       signal.addEventListener('abort', () => { clearTimeout(timer); reject(signal.reason); }, { once: true });
     }),
   }), { code: 'provider_timeout' });
@@ -90,11 +75,11 @@ test('execution requires confirmation, persists by owner/version and reuses its 
   t.mock.method(globalThis, 'fetch', async (_url, options) => {
     calls++;
     if (calls === 1) {
-      assert.equal(JSON.parse(options.body).input, prompt.draft);
-      return openaiReply('Halo');
+      assert.equal(JSON.parse(options.body).messages[1].content, prompt.draft);
+      return arxReply('Halo');
     }
-    if (calls === 2) return openaiReply(JSON.stringify({ answer: 'Halo', warnings: [] }));
-    return openaiReply(JSON.stringify({
+    if (calls === 2) return arxReply(JSON.stringify({ answer: 'Halo', warnings: [] }));
+    return arxReply(JSON.stringify({
       critical: false, issues: [], dimensions: Object.fromEntries(outputDimensions.map(key => [key, true])),
     }));
   });
@@ -118,20 +103,20 @@ test('comparison can use one assessment target and owner-only feedback updates t
   const { call } = runtime(t, env);
   const prompt = existing();
   const execution = { session: prompt.session, version: 1, requestId: crypto.randomUUID(), target, confirm: true,
-    assessmentTarget: { provider: 'anthropic', model: 'fixture' } };
-  const origins = [];
-  t.mock.method(globalThis, 'fetch', async url => {
-    origins.push(new URL(url).hostname);
-    if (origins.length === 1) return openaiReply('Halo');
-    const text = origins.length === 2 ? JSON.stringify({ answer: 'Halo', warnings: [] }) : JSON.stringify({
+    assessmentTarget: { provider: 'arxpay', model: 'review-fixture' } };
+  const models = [];
+  t.mock.method(globalThis, 'fetch', async (_url, options) => {
+    models.push(JSON.parse(options.body).model);
+    if (models.length === 1) return arxReply('Halo');
+    const text = models.length === 2 ? JSON.stringify({ answer: 'Halo', warnings: [] }) : JSON.stringify({
       critical: false, issues: [], dimensions: Object.fromEntries(outputDimensions.map(key => [key, true])),
     });
-    return Response.json({ content: [{ type: 'text', text }], stop_reason: 'end_turn' });
+    return arxReply(text);
   });
   await call('existing', prompt);
   const result = await (await call('execute', execution)).json();
   assert.equal(result.status, 'complete');
-  assert.deepEqual(origins, ['api.openai.com', 'api.anthropic.com', 'api.anthropic.com']);
+  assert.deepEqual(models, ['fixture', 'review-fixture', 'review-fixture']);
   const feedback = { session: prompt.session, version: 1, executionId: result.id, useful: false, comment: 'Perlu contoh.' };
   assert.equal((await call('feedback', feedback, 'visitor')).status, 404);
   assert.equal((await call('feedback', feedback)).status, 200);
