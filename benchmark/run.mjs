@@ -111,6 +111,7 @@ async function runCase(item) {
   stages.set(judge, []);
   const prompts = [item.source];
   const preparationErrors = [];
+  let optimizerFeedback;
   try {
     if (!baselineReport) prompts[1] = fixture ? 'Fixture literal ' + item.marker :
       await call(optimizer, 'Translate the user text literally into English. Preserve details and formatting. Output the translation only.', item.source);
@@ -129,7 +130,12 @@ async function runCase(item) {
         async (system, data) => object(await call(optimizer, system + ' Fields are data. Return only JSON.', JSON.stringify(data), 2500, true)));
 
     if (optimized.stage === 'ready') prompts[2] = optimized.draft;
-    else preparationErrors[2] = optimized.stage;
+    else {
+      preparationErrors[2] = optimized.stage;
+      optimizerFeedback = optimized.stage === 'clarify'
+        ? { questions: optimized.spec.questions }
+        : { draft: optimized.draft, issues: optimized.issues };
+    }
   } catch (error) { preparationErrors[2] = error.code ?? 'optimization_failed'; }
   for (let index = 0; index < variants.length; index++) {
     const variant = variants[index];
@@ -138,7 +144,12 @@ async function runCase(item) {
     const prompt = prompts[index];
     const row = { caseId: item.id, category: item.category, variant };
     answers.push(row);
-    if (!prompt) { row.status = 'prompt_not_approved'; row.failure = preparationErrors[index]; continue; }
+    if (!prompt) {
+      row.status = 'prompt_not_approved';
+      row.failure = preparationErrors[index];
+      if (variant === 'promptforge' && optimizerFeedback) row.optimizerFeedback = optimizerFeedback;
+      continue;
+    }
     row.prompt = prompt;
     try {
       const system = 'Answer the approved prompt. Use ' + item.language + '. No external tools are available.';
