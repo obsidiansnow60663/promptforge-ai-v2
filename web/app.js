@@ -37,6 +37,7 @@ let work=newSession(),historyRows=[],historyError='',settings=null,settingsError
 let evaluation=null,evaluationError='',evaluationLoading=false;
 let operations=null,operationsError='',operationsLoading=false,activeOperations=[],operationNotice='';
 let namedModel='',modelNameDraft;
+let arxpayDirectory=null;
 const links={hasil:'Tinjau prompt',klarifikasi:'Klarifikasi',...labels};
 const route=()=>Object.hasOwn(links,location.hash.slice(1))?location.hash.slice(1):'dasbor';
 function go(page){if(route()===page)render();else location.hash=page}
@@ -98,6 +99,20 @@ function modelNameForm(){
   '<div class="group"><label for="modelName">Nama tampilan</label><input id="modelName" maxlength="80" aria-describedby="modelNameHelp" value="'+esc(name)+'">'+
   '<p id="modelNameHelp" class="muted">Nama berlaku untuk akun Anda. Kosongkan untuk kembali ke ID model.</p></div>'+
   '<button class="primary">Simpan nama model</button></form></section>';
+}
+function arxpayCatalogPanel(){
+ const arxpay=settings?.providers?.find(item=>item.id==='arxpay'&&item.configured);
+ if(!arxpay)return '';
+ const available=arxpayDirectory?.filter(model=>!arxpay.models.includes(model));
+ const added=(settings.enabledArxPayModels??[]).map(model=>'<div class="listrow"><span>'+
+  esc(modelName(settings,'arxpay',model))+'</span><button type="button" data-disable-arxpay-model="'+esc(model)+'" aria-label="'+
+  esc('Nonaktifkan '+model)+'">Nonaktifkan</button></div>').join('');
+ const selection=available?.length?'<form id="enableModel"><div class="group"><label for="catalogModel">ID model dari katalog</label>'+
+  '<select id="catalogModel" required>'+options(available,'')+'</select></div><button class="primary">Uji dan aktifkan</button></form>':
+  arxpayDirectory?'<p>'+(!arxpayDirectory.length?'Katalog ArxPay kosong.':'Semua model dalam katalog sudah aktif.')+'</p>':'';
+ return '<section class="panel"><h2>Katalog model ArxPay</h2><p>Ambil daftar dari ArxPay. Studio menguji satu model yang Anda pilih sebelum menambahkannya ke eksekusi dan perbandingan.</p>'+
+  '<button type="button" id="fetchArxpayModels">'+(arxpayDirectory?'Muat ulang daftar model':'Ambil daftar model')+'</button>'+
+  selection+(added?'<h3>Model tambahan aktif</h3>'+added:'')+'</section>';
 }
 function subdomainField(){
  return '<div class="group"><label for="subdomain">Subbidang (opsional)</label><input id="subdomain" maxlength="80" value="'+esc(work.subdomain)+'"></div>';
@@ -193,7 +208,7 @@ async function exportData(session){
 }
 function render(){
  const page=route();document.title=links[page]+' · PromptForge AI';document.querySelector('#crumb').textContent=links[page];for(const a of nav.querySelectorAll('a'))a.classList.toggle('current',a.hash==='#'+(['hasil','klarifikasi'].includes(page)?'generator':page));
- const views={dasbor:dashboard,generator,klarifikasi:clarification,hasil:result,riwayat:()=>title('Riwayat sesi','200 versi terbaru milik akun Anda.')+message()+'<section class="panel">'+historyView(200)+'</section>',pengaturan:()=>title('Pengaturan','Preferensi Studio dan pemulihan data.')+message()+'<p role="status">'+esc(notice)+'</p><section class="panel"><h2>Mesin bahasa</h2><p>'+esc(availability())+'</p>'+engineSelector()+'<div class="group"><label for="defaultLang">Bahasa jawaban bawaan di browser ini</label><select id="defaultLang">'+options(languages,defaultLanguage)+'</select></div>'+executionPreferences()+'</section>'+modelNameForm()+backupView(esc,backupDownload?.session ? null : backupDownload,backupFilename),bantuan:()=>title('Bantuan','Cara menggunakan Studio privat.')+'<section class="panel"><p>Susun & tinjau prompt memakai mesin yang dipilih di Pengaturan. Setelah klarifikasi yang diperlukan, sistem meninjau draf dan mencoba maksimal dua revisi. Hasil berperingatan tetap dapat dibaca dan disunting.</p><p>Setiap hasil dan suntingan yang disimpan memiliki nomor versi. Hapus sesi untuk menghapus semua versinya. Draf sebelum dikirim hanya ada di tab ini.</p><p><a href="/register.txt">Register kapabilitas</a> · <a href="/simulasi/">Simulasi lokal</a></p></section>',perbandingan:()=>title('Perbandingan model','Uji model berbeda dengan prompt yang sama.')+message()+comparisonView({settings,history:historyRows,comparison,escape:esc}),evaluasi:()=>title('Evaluasi','Aktivitas 30 hari terakhir dan hasil benchmark.')+evaluationView({data:evaluation,error:evaluationError,loading:evaluationLoading,escape:esc}),proses:()=>title('Proses server','Lihat status permintaan terakhir dan buka hasil tersimpan.')+(operationNotice?'<p role="status">'+esc(operationNotice)+'</p>':'')+'<section class="panel">'+operationsView({data:operations,error:operationsError,loading:operationsLoading,escape:esc})+'</section>',templat:()=>title('Templat prompt','Pilih titik awal dan isi bagian dalam tanda kurung siku sebelum meninjau.')+templateLibrary(esc)};
+ const views={dasbor:dashboard,generator,klarifikasi:clarification,hasil:result,riwayat:()=>title('Riwayat sesi','200 versi terbaru milik akun Anda.')+message()+'<section class="panel">'+historyView(200)+'</section>',pengaturan:()=>title('Pengaturan','Preferensi Studio dan pemulihan data.')+message()+'<p role="status">'+esc(notice)+'</p><section class="panel"><h2>Mesin bahasa</h2><p>'+esc(availability())+'</p>'+engineSelector()+'<div class="group"><label for="defaultLang">Bahasa jawaban bawaan di browser ini</label><select id="defaultLang">'+options(languages,defaultLanguage)+'</select></div>'+executionPreferences()+'</section>'+arxpayCatalogPanel()+modelNameForm()+backupView(esc,backupDownload?.session ? null : backupDownload,backupFilename),bantuan:()=>title('Bantuan','Cara menggunakan Studio privat.')+'<section class="panel"><p>Susun & tinjau prompt memakai mesin yang dipilih di Pengaturan. Setelah klarifikasi yang diperlukan, sistem meninjau draf dan mencoba maksimal dua revisi. Hasil berperingatan tetap dapat dibaca dan disunting.</p><p>Setiap hasil dan suntingan yang disimpan memiliki nomor versi. Hapus sesi untuk menghapus semua versinya. Draf sebelum dikirim hanya ada di tab ini.</p><p><a href="/register.txt">Register kapabilitas</a> · <a href="/simulasi/">Simulasi lokal</a></p></section>',perbandingan:()=>title('Perbandingan model','Uji model berbeda dengan prompt yang sama.')+message()+comparisonView({settings,history:historyRows,comparison,escape:esc}),evaluasi:()=>title('Evaluasi','Aktivitas 30 hari terakhir dan hasil benchmark.')+evaluationView({data:evaluation,error:evaluationError,loading:evaluationLoading,escape:esc}),proses:()=>title('Proses server','Lihat status permintaan terakhir dan buka hasil tersimpan.')+(operationNotice?'<p role="status">'+esc(operationNotice)+'</p>':'')+'<section class="panel">'+operationsView({data:operations,error:operationsError,loading:operationsLoading,escape:esc})+'</section>',templat:()=>title('Templat prompt','Pilih titik awal dan isi bagian dalam tanda kurung siku sebelum meninjau.')+templateLibrary(esc)};
  main.innerHTML=busy&&page!=='proses'?'<section class="panel"><h2>'+esc(busy)+'</h2><p role="status">'+esc(operationNotice||'Tunggu hingga proses selesai.')+'</p>'+
   (activeOperations.length?'<div class="actions">'+activeOperations.map((item,index)=>cancelButton(item,esc,activeOperations.length>1?'Batalkan model '+(index+1):'Batalkan proses')).join('')+'</div>':'')+'</section>':views[page]();
  for(const [id, choice] of [['target',work.target??defaultExecutionChoice],['defaultTarget',defaultExecutionChoice]]){
@@ -281,6 +296,15 @@ async function runVersion(form){
 }
 document.addEventListener('submit',e=>{
  e.preventDefault();
+ if(e.target.id==='enableModel'){
+  const model=e.target.querySelector('#catalogModel').value;
+  task('Menguji model ArxPay…',async()=>{
+   await api('arxpay-model',{model,enabled:true});
+   settings=await api('status');
+   settingsError='';
+   notice='Model aktif dan tersedia untuk eksekusi.';
+  });return;
+ }
  if(e.target.id==='modelNameForm'){
   const model=e.target.querySelector('#namedModel').value;
   namedModel=model;
@@ -347,6 +371,19 @@ document.addEventListener('click',async e=>{
  if(b.id==='refreshOperations'){operationNotice='';await loadOperations();return}
  if(busy&&b.hash!=='#proses'){if(!b.href||b.hash)e.preventDefault();return}
  if(b.id==='new'||b.dataset.mode){e.preventDefault();work=newSession();work.mode=b.dataset.mode??'generate';error='';go('generator')}
+ if(b.id==='fetchArxpayModels'){
+  await task('Memuat katalog ArxPay…',async()=>{arxpayDirectory=(await api('arxpay-models')).models});
+  return;
+ }
+ if(b.dataset.disableArxpayModel){
+  await task('Menonaktifkan model ArxPay…',async()=>{
+   await api('arxpay-model',{model:b.dataset.disableArxpayModel,enabled:false});
+   settings=await api('status');
+   settingsError='';
+   notice='Model dinonaktifkan.';
+  });
+  return;
+ }
  if(b.id==='refreshEvaluation'){await loadEvaluation();return}
  if(b.dataset.template){
   const template=templates.find(item=>item.id===b.dataset.template);

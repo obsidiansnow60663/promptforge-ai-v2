@@ -57,3 +57,9 @@ Generator menerima subbidang opsional dan menyimpannya bersama versi prompt (§9
 45 tes lokal lulus. Chromium lokal dengan respons provider tiruan menguji penyimpanan nama, pembacaan sesudah muat ulang, nama tampilan di pilihan eksekusi, nilai ID asli yang dipilih, penghapusan nama, dan pembukaan kembali hasil. Uji ArxPay nyata terpisah mengembalikan HTTP 429 `key_daily_cap` tanpa waktu reset pada pemeriksaan satu panggilan. Bukti benchmark lengkap, penilaian manusia, pembandingan dua model nyata, dan sesi browser produksi sebagai pemilik masih terbuka.
 
 Sites menerbitkan v15 dari commit `2d594f16fa3b155e0a22d35c1d8162aa61b3871d` dengan akses khusus pemilik. Sites mendeteksi tabel D1 `arxpay_model_names`. Aset form dan subbidang mengembalikan HTTP 200 melalui akses layanan. Halaman anonim dan API nama model tanpa identitas pengunjung mengembalikan 401. Uji browser sebagai pemilik di URL produksi tertahan karena browser bersama gagal dimulai.
+
+### Katalog model dari ArxPay
+
+**Pengaturan → Katalog model ArxPay → Ambil daftar model** membaca `GET /v1/models` dari Worker memakai secret Sites. Studio menampilkan ID yang dikembalikan ArxPay. **Uji dan aktifkan** memeriksa satu model terpilih dengan respons JSON kecil sebelum memasukkannya ke pilihan eksekusi, perbandingan dan nama tampilan. Model tambahan tersimpan per pemilik dan dapat dinonaktifkan. Model bawaan penyusun prompt tetap ditentukan oleh konfigurasi Sites.
+
+Katalog nyata mengembalikan 19 ID saat diuji. Aktivasi, penolakan saat kuota habis, pemakaian ID asli, isolasi akun, dan penonaktifan lulus dengan respons tiruan. Chromium lokal menguji alur Pengaturan pada lebar 390 px, termasuk membaca kembali model aktif sesudah muat ulang.

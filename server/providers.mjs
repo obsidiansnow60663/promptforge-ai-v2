@@ -36,15 +36,18 @@ const arxpay = {
 
 const providers = { arxpay };
 
-const modelPattern = /^[a-zA-Z0-9][a-zA-Z0-9._:-]{0,119}$/;
+const modelPattern = /^[a-zA-Z0-9][a-zA-Z0-9._:/-]{0,119}$/;
+export const validModelId = value => typeof value === 'string' && modelPattern.test(value);
+
 export function configuredAgentModel(env) {
-  return modelPattern.test(env.PROMPTFORGE_AGENT_MODEL ?? '') ? env.PROMPTFORGE_AGENT_MODEL : agentModel;
+  return validModelId(env.PROMPTFORGE_AGENT_MODEL) ? env.PROMPTFORGE_AGENT_MODEL : agentModel;
 }
 export function catalog(env) {
   return Object.entries(providers).map(([id, provider]) => {
-    const available = (env[provider.models] ?? '').split(',').map(value => value.trim()).filter(value => modelPattern.test(value));
+    const available = (env[provider.models] ?? '').split(',').map(value => value.trim()).filter(validModelId);
     if (id === 'arxpay') available.unshift(configuredAgentModel(env));
-    const models = [...new Set(available)].slice(0, 20);
+    const enabled = id === 'arxpay' ? env.ownerArxPayModels ?? [] : [];
+    const models = [...new Set([...new Set(available)].slice(0, 20).concat(enabled))];
     return { id, label: provider.label, configured: Boolean(env[provider.key] && models.length), models };
   });
 }
@@ -52,8 +55,9 @@ export function catalog(env) {
 export function providerPresets(env) {
   const providers = catalog(env);
   return [['QUALITY', 'Kualitas'], ['BALANCED', 'Seimbang'], ['FAST', 'Cepat']].flatMap(([key, label]) => {
-    const [provider, model, extra] = (env['PROMPTFORGE_' + key + '_MODEL'] ?? '').split('/');
-    return !extra && providers.some(item => item.id === provider && item.configured && item.models.includes(model)) ?
+    const [provider, ...parts] = (env['PROMPTFORGE_' + key + '_MODEL'] ?? '').split('/');
+    const model = parts.join('/');
+    return providers.some(item => item.id === provider && item.configured && item.models.includes(model)) ?
       [{ id: key.toLowerCase(), label, provider, model }] : [];
   });
 }
@@ -77,6 +81,27 @@ function providerError(status, body) {
   }
   if (status === 408 || status >= 500) return new Problem(502, 'Provider sedang mengalami gangguan. Coba kembali.', 'provider_transient');
   return new Problem(502, 'Provider menolak permintaan. Periksa model dan panjang prompt.', 'provider_rejected');
+}
+
+export async function fetchArxPayModels(env) {
+  if (!env.ARXPAY_API_KEY) throw new Problem(503, 'Kredensial ArxPay belum dikonfigurasi di Sites.', 'provider_unconfigured');
+  const signal = AbortSignal.timeout(10000);
+  let response, body;
+  try {
+    response = await fetch('https://arxpay.my.id/v1/models', {
+      headers: { Authorization: 'Bearer ' + env.ARXPAY_API_KEY, Accept: 'application/json' }, redirect: 'manual', signal,
+    });
+    if (response.status < 300 || response.status >= 400) body = await response.json().catch(() => null);
+    else await response.body?.cancel();
+  } catch {
+    throw new Problem(502, signal.aborted ? 'Waktu tunggu katalog ArxPay habis.' : 'Katalog ArxPay tidak dapat dihubungi.',
+      signal.aborted ? 'provider_timeout' : 'provider_connection');
+  }
+  if (signal.aborted) throw new Problem(502, 'Waktu tunggu katalog ArxPay habis.', 'provider_timeout');
+  if (response.status >= 300 && response.status < 400) throw new Problem(502, 'Endpoint katalog ArxPay mengalihkan permintaan.', 'provider_redirect');
+  if (!response.ok) throw providerError(response.status, body);
+  if (!Array.isArray(body?.data)) throw new Problem(502, 'Format katalog ArxPay tidak dapat dibaca.', 'provider_incomplete');
+  return [...new Set(body.data.map(item => item?.id).filter(validModelId))].slice(0, 200).sort();
 }
 
 function retryDelay(response, code, attempt) {

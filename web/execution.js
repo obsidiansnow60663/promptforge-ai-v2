@@ -16,6 +16,7 @@ function adaptedAnswer(output, language, escape) {
 }
 
 const locale = new Intl.NumberFormat('id-ID');
+const modelValue = model => model.replaceAll('/', '%2F');
 
 export function modelName(settings, provider, model) {
   const names = settings?.modelNames;
@@ -23,20 +24,20 @@ export function modelName(settings, provider, model) {
 }
 
 export function targets(settings, escape, {auto = false} = {}) {
-  const presets = settings?.presets?.map(item => '<option value="' + escape(item.id + '/' + item.provider + '/' + item.model) +
+  const presets = settings?.presets?.map(item => '<option value="' + escape(item.id + '/' + item.provider + '/' + modelValue(item.model)) +
     '">' + escape(item.label + ' · ' + modelName(settings, item.provider, item.model)) + '</option>').join('');
   const selected = settings?.defaultTarget;
   const automatic = auto && selected ?
-    '<option value="auto/' + escape(selected.provider + '/' + selected.model) + '">Otomatis · ' +
+    '<option value="auto/' + escape(selected.provider + '/' + modelValue(selected.model)) + '">Otomatis · ' +
     escape(modelName(settings, selected.provider, selected.model)) + '</option>' : '';
   return automatic + (presets ? '<optgroup label="Profil">' + presets + '</optgroup>' : '') + (settings?.providers ?? []).filter(provider => provider.configured).map(provider =>
     '<optgroup label="' + escape(provider.label) + '">' + provider.models.map(model =>
-      '<option value="' + escape(provider.id + '/' + model) + '">' + escape(modelName(settings, provider.id, model)) + '</option>').join('') + '</optgroup>').join('');
+      '<option value="' + escape(provider.id + '/' + modelValue(model)) + '">' + escape(modelName(settings, provider.id, model)) + '</option>').join('') + '</optgroup>').join('');
 }
 
 export function selectedTarget(element) {
   const [provider, model] = element.value.split('/').slice(-2);
-  return { provider, model };
+  return { provider, model: model ? decodeURIComponent(model) : undefined };
 }
 
 function feedbackForm(record, escape) {

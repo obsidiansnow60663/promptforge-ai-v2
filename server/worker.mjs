@@ -2,8 +2,9 @@ import { cancelOperation, listOperations } from './operations.mjs';
 import { evaluationMetadata, readEvaluation } from './evaluation.mjs';
 import { generatePrompt, promptAgent } from './prompt-engine.mjs';
 import { exportPage, restorePage } from './backups.mjs';
+import { ownerModelEnvironment, setArxPayModel } from './model-settings.mjs';
 import { invalid, str, uuid, validVersion, validateInput, validateReport, validateRevisionReason, readJson } from './validation.mjs';
-import { catalog, providerPresets, Problem } from './providers.mjs';
+import { catalog, fetchArxPayModels, providerPresets, Problem } from './providers.mjs';
 import { execute, listExecutions, saveFeedback } from './executions.mjs';
 const MODEL='Qwen2.5-1.5B-Instruct-q4f32_1-MLC';
 const json=(value,status=200)=>new Response(JSON.stringify(value),{status,headers:{'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer'}});
@@ -54,14 +55,17 @@ async function route(req,env){
  const db=env.DB;
  if(path==='/api/status'&&req.method==='GET'){
   const agent=promptAgent(env);
-  const providers=catalog(env);
+  const scoped=await ownerModelEnvironment(db,env,owner);
+  const providers=catalog(scoped);
   const names=db?(await db.prepare('SELECT model,name FROM arxpay_model_names WHERE owner=?').bind(owner).all()).results:[];
   const arxpay=providers.find(item=>item.id==='arxpay');
   const modelNames=Object.fromEntries(names.filter(item=>arxpay?.models.includes(item.model)).map(item=>[item.model,item.name]));
-  return json({configured:true,model:MODEL,providers,presets:providerPresets(env),promptAgent:agent,modelNames,
+  return json({configured:true,model:MODEL,providers,presets:providerPresets(scoped),promptAgent:agent,modelNames,
+   enabledArxPayModels:scoped.ownerArxPayModels??[],
    defaultTarget:agent.configured?{provider:'arxpay',model:agent.model}:null});
  }
  if(!db)throw new Problem(503,'Penyimpanan sesi belum tersedia.');
+ if(req.method==='GET'&&path==='/api/arxpay-models')return json({models:await fetchArxPayModels(env)});
  if(req.method==='GET'&&path==='/api/operations')return json(await listOperations(db,owner));
  if(req.method==='GET'&&path==='/api/evaluation')return json(await readEvaluation(db,owner));
  if(req.method==='GET'&&path==='/api/export')return json(await exportPage(db,owner,url.searchParams));
@@ -87,8 +91,9 @@ async function route(req,env){
   throw new Problem(403,'Permintaan tidak diizinkan.');
  }
  const b=await readJson(req,path==='/api/restore'?2*1024*1024:256*1024);
+ if(path==='/api/arxpay-model')return json(await setArxPayModel(db,env,owner,b));
  if(path==='/api/model-name'){
-  const arxpay=catalog(env).find(item=>item.id==='arxpay'&&item.configured);
+  const arxpay=catalog(await ownerModelEnvironment(db,env,owner)).find(item=>item.id==='arxpay'&&item.configured);
   if(!arxpay?.models.includes(b?.model)||typeof b.name!=='string'||b.name.length>80||/[\u0000-\u001f\u007f]/u.test(b.name))invalid();
   const name=b.name.trim();
   if(name){
@@ -117,7 +122,7 @@ async function route(req,env){
  if(!uuid(b.requestId))invalid();
  if(path==='/api/execute'){
   if(!validVersion(b.version))invalid();
-  return json(await execute(db,env,owner,b));
+  return json(await execute(db,await ownerModelEnvironment(db,env,owner),owner,b));
  }
  const prior=await db.prepare('SELECT session,payload,version FROM versions WHERE owner=? AND request_id=?').bind(owner,b.requestId).first();
  if(prior){
