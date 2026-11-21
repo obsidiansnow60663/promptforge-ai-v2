@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
-import { readFile, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import { cases, datasetVersion } from './cases.mjs';
 import { generate } from '../web/pipeline.js';
 import { agentModel, generateText, requireTarget } from '../server/providers.mjs';
@@ -18,7 +19,12 @@ const sourceReport = sourceReportBytes ? JSON.parse(sourceReportBytes) : null;
 const fixture = sourceReport ? sourceReport.method === 'synthetic fixture' : !process.argv.includes('--live');
 const fingerprint = bytes => createHash('sha256').update(bytes).digest('hex');
 const datasetSha256 = fingerprint(JSON.stringify(cases));
-const selected = getOption('case') ? cases.filter(item => item.id === getOption('case')) : cases;
+const filter = getOption('case')?.split(',');
+const selected = filter ? cases.filter(item => filter.includes(item.id)) : cases;
+const jobs = Number(getOption('jobs') ?? 1);
+const checkpoint = getOption('checkpoint');
+const automatedOnly = process.argv.includes('--automated-only');
+if (!Number.isInteger(jobs) || jobs < 1 || jobs > 8) throw Error('--jobs harus antara 1 dan 8.');
 const reportPath = getOption('out');
 if (!selected.length || !reportPath || (sourceReport && !getOption('human'))) throw Error('Gunakan --out PATH dengan opsi --case ID atau --live.');
 
@@ -28,21 +34,12 @@ const optimizer = target('BENCH_OPT');
 const judge = target('BENCH_JUDGE');
 const maximumTokens = !fixture && executor.provider === 'arxpay' ? 6144 : 2048;
 if (!fixture && !sourceReport) {
-  for (const model of [executor, optimizer, judge]) requireTarget(process.env, model);
-  if ([executor, optimizer].some(model => model.provider === judge.provider && model.model === judge.model)) {
+  for (const model of automatedOnly ? [executor, optimizer] : [executor, optimizer, judge]) requireTarget(process.env, model);
+  if (!automatedOnly && [executor, optimizer].some(model => model.provider === judge.provider && model.model === judge.model)) {
     throw Error('Setel endpoint penilai yang berbeda dari model eksekusi dan pengoptimal.');
   }
 }
 
-const stages = new Map();
-const record = async (env, model, request, options) => {
-  const result = await generateText(env, model, request, { timeout: model.provider === 'arxpay' ? 40000 : 25000, ...options });
-  const { text, ...trace } = result;
-  stages.get(model).push(trace);
-  return result;
-};
-const call = async (model, system, prompt, limit = maximumTokens, json = false, thinking) =>
-  (await record(process.env, model, { system, prompt, limit, json, thinking })).text;
 const object = text => JSON.parse(text.trim().replace(/^```(?:json)?\s*([\s\S]*?)\s*```$/i, '$1'));
 function validateRatings(review, item) {
   const score = value => Number.isInteger(value) && value >= 0 && value <= 100;
@@ -60,8 +57,32 @@ function validateRatings(review, item) {
 const fixtureScore = keys => Object.fromEntries(keys.map(key => [key, 100]));
 if (sourceReport && (sourceReport.datasetVersion !== datasetVersion || sourceReport.datasetSha256 !== datasetSha256 ||
   !Array.isArray(sourceReport.rows))) throw Error('Dataset laporan asal tidak cocok.');
-const answers = sourceReport?.rows ?? [];
-for (const item of sourceReport ? [] : selected) {
+const checkpointKey = fingerprint(JSON.stringify({ datasetSha256, fixture, automatedOnly, executor, optimizer, judge,
+  maximumTokens, commit: process.env.BENCH_COMMIT ?? null }));
+if (checkpoint && !process.env.BENCH_COMMIT) throw Error('Setel BENCH_COMMIT ketika menggunakan checkpoint.');
+if (checkpoint) await mkdir(checkpoint, { recursive: true });
+
+async function runCase(item) {
+  const checkpointPath = checkpoint ? join(checkpoint, item.id + '.json') : null;
+  if (checkpointPath) {
+    try {
+      const stored = JSON.parse(await readFile(checkpointPath, 'utf8'));
+      if (stored.key !== checkpointKey) throw Error('Konfigurasi checkpoint berubah. Gunakan direktori baru.');
+      return stored.rows;
+    } catch (error) {
+      if (error.code !== 'ENOENT') throw error;
+    }
+  }
+  const answers = [];
+  const stages = new Map();
+  const record = async (env, model, request, options) => {
+    const result = await generateText(env, model, request, { timeout: model.provider === 'arxpay' ? 40000 : 25000, ...options });
+    const { text, ...trace } = result;
+    stages.get(model).push(trace);
+    return result;
+  };
+  const call = async (model, system, prompt, limit = maximumTokens, json = false, thinking) =>
+    (await record(process.env, model, { system, prompt, limit, json, thinking })).text;
   stages.set(executor, []);
   stages.set(optimizer, []);
   stages.set(judge, []);
@@ -100,6 +121,7 @@ for (const item of sourceReport ? [] : selected) {
       row.automated = { markerPresent: row.answer.includes(item.marker) };
       const trace = fixture ? { model: 'fixture', latencyMs: 0, usage: { input: null, output: null } } : stages.get(executor).at(-1);
       row.execution = trace;
+      if (automatedOnly && !fixture) { row.status = 'answered'; continue; }
       const review = fixture ? {
         prompt: fixtureScore(Object.keys(promptWeights)), output: fixtureScore(outputKeys),
         constraints: item.constraints.map(() => true), issues: [], critical: false,
@@ -110,8 +132,15 @@ for (const item of sourceReport ? [] : selected) {
         '; constraints is an ordered boolean array about the answer. Return critical boolean and issues string array. ' +
         'Language compliance is 100 only if the answer follows the requested language. Critical failure overrides scores.',
         JSON.stringify({ criteria: item, prompt, answer: row.answer }), 2500, true));
+      if (!fixture) {
+        row.judge = stages.get(judge).at(-1);
+        const executionModel = stages.get(executor).at(-1)?.model;
+        const optimizerModels = stages.get(optimizer).map(entry => entry.model).filter(Boolean);
+        if (row.judge?.model && [executionModel, ...optimizerModels].includes(row.judge.model)) {
+          throw Object.assign(Error('Judge resolved to a generator model'), { code: 'judge_model_overlap' });
+        }
+      }
       row.review = validateRatings(review, item);
-      if (!fixture) row.judge = stages.get(judge).at(-1);
       row.status = 'evaluated';
     } catch (error) {
       row.status = row.answer ? 'evaluation_failed' : 'execution_failed';
@@ -119,7 +148,26 @@ for (const item of sourceReport ? [] : selected) {
     }
   }
   if (!fixture) for (const row of answers.slice(-variants.length)) row.preparation = stages.get(optimizer);
+  if (checkpointPath) {
+    const temporary = checkpointPath + '.tmp';
+    await writeFile(temporary, JSON.stringify({ key: checkpointKey, rows: answers }));
+    await rename(temporary, checkpointPath);
+  }
+  return answers;
 }
+
+const results = [];
+let nextIndex = 0, completed = 0;
+if (!sourceReport) {
+  await Promise.all(Array.from({ length: Math.min(jobs, selected.length) }, async () => {
+    while (nextIndex < selected.length) {
+      const index = nextIndex++;
+      results[index] = await runCase(selected[index]);
+      if (!fixture && ++completed % 10 === 0) console.error('Kasus selesai: %d/%d', completed, selected.length);
+    }
+  }));
+}
+const answers = sourceReport?.rows ?? results.flat();
 
 const humanFile = getOption('human');
 if (humanFile) {
@@ -142,7 +190,10 @@ const summary = Object.fromEntries(variants.map(variant => {
   const checks = reviewed.flatMap(row => row.review.constraints);
   const mean = values => values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : null;
   return [variant, {
+    answered: rows.filter(row => row.answer).length,
     evaluated: reviewed.length, missing: rows.length - reviewed.length,
+    failures: Object.fromEntries([...new Set(rows.map(row => row.failure).filter(Boolean))].map(failure =>
+      [failure, rows.filter(row => row.failure === failure).length])),
     humanReviewed: rows.filter(row => row.human).length,
     criticalFailures: fixture || !reviewed.length ? null : issueCount,
     meanPromptScore: fixture ? null : mean(reviewed.map(row => row.review.promptScore)),
@@ -156,9 +207,10 @@ const report = {
   datasetVersion, datasetSha256,
   workflowCommit: sourceReport?.workflowCommit ?? newestCommit, method: fixture ? 'synthetic fixture' : 'provider requests',
   settings: sourceReport?.settings ?? { executor: fixture ? 'fixture' : executor, optimizer: fixture ? 'fixture' : optimizer,
-    judge: fixture ? 'fixture' : judge, maxOutputTokens: maximumTokens, sampling: 'provider default' },
+    judge: fixture ? 'fixture' : automatedOnly ? null : judge, maxOutputTokens: maximumTokens, sampling: 'provider default' },
   limitations: ['Penanda literal adalah indikator mekanis; gunakan penilaian manusia untuk mengkalibrasi penilai.',
-    fixture ? 'Skor fixture hanya menguji alur pelaporan.' : 'Kondisi sampling menggunakan pengaturan default provider.'],
+    fixture ? 'Skor fixture hanya menguji alur pelaporan.' : 'Kondisi sampling menggunakan pengaturan default provider.',
+    ...(automatedOnly ? ['Jawaban belum dinilai model independen.'] : [])],
   summary, rows: answers,
 };
 await writeFile(reportPath, JSON.stringify(report, null, 2) + '\n');
