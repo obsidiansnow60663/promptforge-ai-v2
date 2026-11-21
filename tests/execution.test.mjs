@@ -30,7 +30,7 @@ for (const [provider, [host, header, credential, reply]] of Object.entries(contr
       send: async (url, options) => {
         assert.equal(new URL(url).hostname, host);
         assert.equal(options.headers[header], credential);
-        assert.equal(options.redirect, 'error');
+        assert.equal(options.redirect, 'manual');
         assert.ok(options.body.includes(request.prompt) && options.body.includes(request.system));
         assert.equal(new URL(url).search, '');
         return reply();
@@ -155,4 +155,16 @@ test('ArxPay disables thinking only when the caller requests it for the configur
   assert.equal(requests[0].thinking, undefined);
   assert.deepEqual(requests[1].thinking, { type: 'disabled' });
   assert.equal(requests[2].thinking, undefined);
+});
+
+test('a provider redirect is rejected without following or forwarding credentials', async () => {
+  let attempts = 0;
+  await assert.rejects(generateText(env, target, request, {
+    send: async (_url, options) => {
+      attempts++;
+      assert.equal(options.redirect, 'manual');
+      return new Response(null, { status: 302, headers: { Location: 'https://redirect.invalid/' } });
+    },
+  }), { code: 'provider_redirect' });
+  assert.equal(attempts, 1);
 });

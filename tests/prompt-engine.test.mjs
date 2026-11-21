@@ -41,7 +41,7 @@ test('the hosted route scopes credentials, saves a reviewed version, and coalesc
   const mock = t.mock.method(globalThis, 'fetch', async (url, options) => {
     assert.equal(url, 'https://arxpay.my.id/v1/chat/completions');
     assert.equal(options.headers.Authorization, 'Bearer fixture-not-a-secret');
-    assert.equal(options.redirect, 'error');
+    assert.equal(options.redirect, 'manual');
     const body = JSON.parse(options.body);
     assert.deepEqual(body.response_format, { type: 'json_object' });
     assert.equal(body.thinking, undefined);

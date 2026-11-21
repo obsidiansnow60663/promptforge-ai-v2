@@ -136,7 +136,7 @@ function providerError(status, body) {
 }
 
 export async function generateText(env, target, { system, prompt, limit = 2048, json = false, thinking },
-  { send = fetch, pause = ms => new Promise(resolve => setTimeout(resolve, ms)), timeout = 10000 } = {}) {
+  { send = (url, options) => globalThis.fetch(url, options), pause = ms => new Promise(resolve => setTimeout(resolve, ms)), timeout = 10000 } = {}) {
   requireTarget(env, target);
   const started = Date.now();
   const provider = providers[target.provider];
@@ -147,14 +147,21 @@ export async function generateText(env, target, { system, prompt, limit = 2048, 
     try {
       response = await send(url, {
         method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload), signal, redirect: 'error',
+        body: JSON.stringify(payload), signal, redirect: 'manual',
       });
-      body = await response.json().catch(() => null);
+      if (response.status >= 300 && response.status < 400) {
+        await response.body?.cancel().catch(() => {});
+      } else {
+        body = await response.json().catch(() => null);
+      }
     } catch {
       throw new Problem(502, signal.aborted ? 'Waktu tunggu provider habis.' : 'Provider tidak dapat dihubungi.',
         signal.aborted ? 'provider_timeout' : 'provider_connection');
     }
     if (signal.aborted) throw new Problem(502, 'Waktu tunggu provider habis.', 'provider_timeout');
+    if (response.status >= 300 && response.status < 400) {
+      throw new Problem(502, 'Endpoint provider mengalihkan permintaan. Hubungi pengelola provider.', 'provider_redirect');
+    }
     if (!response.ok) {
       const issue = providerError(response.status, body);
       if (issue.code === 'provider_transient' && attempt === 1 && response.status !== 408) {

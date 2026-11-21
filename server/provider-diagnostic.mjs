@@ -1,4 +1,4 @@
-import { agentModel } from './providers.mjs';
+import { runPromptAgent } from './prompt-engine.mjs';
 
 export async function diagnoseProvider(req, env) {
   const key = env.PROMPTFORGE_DIAGNOSTIC_KEY;
@@ -23,14 +23,26 @@ export async function diagnoseProvider(req, env) {
     }
   }
 
-  const [control, catalog, completion] = await Promise.all([
-    check('https://example.com/'),
-    check('https://arxpay.my.id/v1/models'),
-    check('https://arxpay.my.id/v1/chat/completions', {
-      method: 'POST', headers: { Authorization: 'Bearer ' + env.ARXPAY_API_KEY, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: agentModel, messages: [{ role: 'user', content: 'Answer with the word OK.' }],
-        max_tokens: 120, thinking: { type: 'disabled' } }),
-    }),
+  // The control has no credentials and no user content.
+  const detached = fetch;
+  const [redirectMode, receiver] = await Promise.all([
+    check('https://arxpay.my.id/v1/models', { redirect: 'error' }),
+    detached('https://arxpay.my.id/v1/models', { redirect: 'manual' }).then(
+      async response => { await response.body?.cancel().catch(() => {}); return { status: response.status }; },
+      error => ({ issue: error.name, message: String(error.message).slice(0, 150) }),
+    ),
   ]);
-  return { configured: Boolean(env.ARXPAY_API_KEY), control, catalog, completion };
+  let pipeline;
+  const started = Date.now();
+  try {
+    const result = await runPromptAgent(env, {
+      source: 'Jelaskan Git kepada mahasiswa baru dalam tepat 5 poin. Jawab dalam Bahasa Indonesia.',
+      domain: 'Pemrograman', lang: 'Bahasa Indonesia', answers: [],
+    });
+    pipeline = { stage: result.stage, model: result.model, revisions: result.revisions,
+      preservesCount: result.draft?.includes('5') ?? false, elapsed: Date.now() - started };
+  } catch (error) {
+    pipeline = { code: error.code, message: error.message, elapsed: Date.now() - started };
+  }
+  return { configured: Boolean(env.ARXPAY_API_KEY), redirectMode, receiver, pipeline };
 }
