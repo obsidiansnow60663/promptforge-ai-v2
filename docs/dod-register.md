@@ -54,3 +54,26 @@ Audit sampel bersifat kualitatif. Ia membantu menentukan perbaikan berikutnya da
 ## Verifikasi rilis
 
 Versi 12 disimpan dari commit `9106a873c765b88026ddd851af4bcabcb891fca6` dan deployment `appgdep_6b01069b67f081918d9c3c38cf5a8eec` berstatus sukses. Versi ini memakai environment revisi 5 yang kembali hanya memiliki secret ArxPay. Site mempunyai satu pemilik dan tanpa grup. URL mengembalikan HTTP 200 untuk aset aplikasi dan benchmark lewat akses layanan. Generator memerlukan identitas pengunjung. Rute probe menolak kunci uji lama dengan HTTP 401. Sebanyak 36 tes otomatis lulus sebelum deploy.
+
+## Hasil akhir benchmark 100 kasus
+
+Benchmark menguji optimizer commit `9106a87` yang ada pada versi 12, dengan baseline awal yang sama. Ketiga jalur memakai pengaturan eksekusi yang sama. Hasil berikut berasal dari panggilan nyata ke ArxPay.
+
+| Varian | Jawaban tersedia | Penanda jawaban terdeteksi | Prompt dengan semua literal terukur utuh |
+|---|---:|---:|---:|
+| Instruksi langsung | 100/100 | 97/100 | 46/46 |
+| Terjemahan harfiah | 100/100 | 98/100 | 46/46 |
+| PromptForge | 79/100 | 78/79 | 38/38 |
+
+PromptForge memiliki 21 kasus tanpa jawaban. Ringkasan status
+
+- `clarify` 9
+- `provider_incomplete` 1
+- `warning` 3
+- `provider_timeout` 8
+
+Ada 79 kasus dengan jawaban pada semua jalur. Audit literal berlaku pada kasus yang menyertakan token terukur. P50 dan P95 latensi jawaban awal PromptForge masing-masing 5674 ms dan 21206 ms. Angka mencakup permintaan provider yang menghasilkan jawaban. P50 jumlah waktu panggilan optimizer adalah 24793 ms. Metrik ini tidak mengukur waktu interaksi browser atau adaptasi.
+
+Patch Node.js lulus pemeriksaan penerusan galat, pemisahan versi dan pemulihan. Draf mendapat persetujuan model sebelum eksekusi.
+
+Hasil per kasus, sidik laporan, uji D1 dan bukti uji ulang ada di `benchmark/evidence-dod-v12.json`. Semua penilaian manusia tetap kosong.

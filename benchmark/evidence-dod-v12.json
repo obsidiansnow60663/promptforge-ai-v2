@@ -1,0 +1,1197 @@
+{
+  "datasetVersion": "promptforge-id-1.0.0",
+  "datasetSha256": "3d2f16aad692ac082a497df08c6845f5a53a1a9e8d1da2c70c4cfc5fd18000b5",
+  "workflowCommit": "9106a873c765b88026ddd851af4bcabcb891fca6",
+  "reportSha256": "c0fd00aab724af0fb2a7187d2c08d85db50a6e5a901f6305bf50d68e464ba5f1",
+  "baseline": {
+    "sha256": "a91317ae7de908de3ad8912366f0df262166c1a281d4c2f782bc7fd38ffcadd5",
+    "workflowCommit": "62bbb94d91c1601933482fb4530f34b0acb85c0e",
+    "variants": [
+      "direct-id",
+      "literal-en"
+    ]
+  },
+  "liveSummary": {
+    "direct-id": {
+      "cases": 100,
+      "answered": 100,
+      "markerFound": 97,
+      "markerAbsent": 3,
+      "promptsWithCheckableTokens": 46,
+      "promptsPreservingAllCheckedTokens": 46,
+      "missedTokens": 0,
+      "failures": {}
+    },
+    "literal-en": {
+      "cases": 100,
+      "answered": 100,
+      "markerFound": 98,
+      "markerAbsent": 2,
+      "promptsWithCheckableTokens": 46,
+      "promptsPreservingAllCheckedTokens": 46,
+      "missedTokens": 0,
+      "failures": {}
+    },
+    "promptforge": {
+      "cases": 100,
+      "answered": 79,
+      "markerFound": 78,
+      "markerAbsent": 1,
+      "promptsWithCheckableTokens": 38,
+      "promptsPreservingAllCheckedTokens": 38,
+      "missedTokens": 0,
+      "failures": {
+        "clarify": 9,
+        "provider_incomplete": 1,
+        "warning": 3,
+        "provider_timeout": 8
+      }
+    }
+  },
+  "matched": {
+    "direct-id": {
+      "cases": 79,
+      "answered": 79,
+      "markerFound": 77,
+      "markerAbsent": 2,
+      "promptsWithCheckableTokens": 38,
+      "promptsPreservingAllCheckedTokens": 38,
+      "missedTokens": 0,
+      "failures": {}
+    },
+    "literal-en": {
+      "cases": 79,
+      "answered": 79,
+      "markerFound": 77,
+      "markerAbsent": 2,
+      "promptsWithCheckableTokens": 38,
+      "promptsPreservingAllCheckedTokens": 38,
+      "missedTokens": 0,
+      "failures": {}
+    },
+    "promptforge": {
+      "cases": 79,
+      "answered": 79,
+      "markerFound": 78,
+      "markerAbsent": 1,
+      "promptsWithCheckableTokens": 38,
+      "promptsPreservingAllCheckedTokens": 38,
+      "missedTokens": 0,
+      "failures": {}
+    }
+  },
+  "matchedCases": [
+    "programming-01",
+    "programming-02",
+    "programming-03",
+    "programming-05",
+    "programming-06",
+    "programming-07",
+    "programming-08",
+    "programming-09",
+    "programming-10",
+    "programming-11",
+    "programming-12",
+    "programming-13",
+    "programming-14",
+    "programming-16",
+    "programming-17",
+    "programming-18",
+    "programming-19",
+    "programming-20",
+    "automation-01",
+    "automation-03",
+    "automation-04",
+    "automation-05",
+    "automation-06",
+    "automation-07",
+    "automation-08",
+    "automation-09",
+    "automation-11",
+    "automation-12",
+    "automation-13",
+    "automation-14",
+    "automation-15",
+    "automation-16",
+    "automation-17",
+    "automation-18",
+    "automation-19",
+    "automation-20",
+    "research-01",
+    "research-03",
+    "research-04",
+    "research-05",
+    "research-07",
+    "research-09",
+    "research-10",
+    "research-11",
+    "research-12",
+    "research-13",
+    "research-14",
+    "research-15",
+    "business-01",
+    "business-06",
+    "business-07",
+    "business-08",
+    "business-09",
+    "business-10",
+    "business-11",
+    "business-12",
+    "business-13",
+    "business-14",
+    "business-15",
+    "content-01",
+    "content-02",
+    "content-03",
+    "content-04",
+    "content-05",
+    "content-06",
+    "content-10",
+    "content-11",
+    "content-15",
+    "general-01",
+    "general-02",
+    "general-03",
+    "general-05",
+    "general-06",
+    "general-07",
+    "general-08",
+    "general-09",
+    "general-11",
+    "general-12",
+    "general-13"
+  ],
+  "performance": {
+    "executionMsP50": 5674,
+    "executionMsP95": 21206,
+    "optimizerProviderMsP50": 24793,
+    "tokens": {
+      "input": 6042,
+      "output": 74135
+    }
+  },
+  "e2e": [
+    {
+      "name": "strict-json-contract",
+      "generation": "ready",
+      "validation": "validated",
+      "savedAndRecovered": true
+    },
+    {
+      "name": "compare-after-articles",
+      "generation": "ready",
+      "validation": "validated",
+      "savedAndRecovered": true
+    },
+    {
+      "name": "priorities-after-notes",
+      "generation": "ready",
+      "validation": "validated",
+      "savedAndRecovered": true
+    },
+    {
+      "name": "patch-after-source",
+      "generation": "ready",
+      "validation": "validated",
+      "savedAndRecovered": true
+    }
+  ],
+  "probe": {
+    "denied": {
+      "request": "write",
+      "http": 401,
+      "error": "Masuk dengan ChatGPT untuk mengakses studio privat.",
+      "code": "request_error"
+    },
+    "write": {
+      "request": "write",
+      "http": 200,
+      "phase": "write",
+      "checks": {
+        "generated": true,
+        "idempotent": true,
+        "executed": true,
+        "adapted": true,
+        "validated": true
+      }
+    },
+    "verify": {
+      "request": "verify",
+      "http": 200,
+      "phase": "verify",
+      "checks": {
+        "persistsAcrossRequests": true,
+        "isolatedSyntheticIdentities": true,
+        "exported_versions": true,
+        "restored_versions": true,
+        "verified_versions": true,
+        "exported_executions": true,
+        "restored_executions": true,
+        "verified_executions": true,
+        "deleteCascades": true,
+        "syntheticRowsRemoved": true
+      }
+    }
+  },
+  "loop24": [
+    {
+      "caseId": "programming-02",
+      "variant": "promptforge",
+      "status": "prompt_not_approved",
+      "failure": "clarify",
+      "optimizerFeedback": {
+        "questions": [
+          "Mohon berikan potongan kode/file Node.js yang bermasalah (fungsi atau baris yang menelan galat Promise) agar patch dapat spesifik."
+        ]
+      }
+    },
+    {
+      "caseId": "programming-13",
+      "variant": "promptforge",
+      "status": "answered"
+    },
+    {
+      "caseId": "programming-15",
+      "variant": "promptforge",
+      "status": "prompt_not_approved",
+      "failure": "clarify",
+      "optimizerFeedback": {
+        "questions": [
+          "Apa nama tabel dan dialek database (misalnya PostgreSQL, MySQL, SQL Server) yang digunakan?",
+          "Tipe data apa yang diinginkan untuk `archived_at` (misalnya TIMESTAMP, DATETIME, atau TIMESTAMPTZ)?"
+        ]
+      }
+    },
+    {
+      "caseId": "programming-16",
+      "variant": "promptforge",
+      "status": "prompt_not_approved",
+      "failure": "clarify",
+      "optimizerFeedback": {
+        "questions": [
+          "Bahasa pemrograman dan framework test apa yang harus digunakan?",
+          "Apakah fungsi target perlu menerima parameter tambahan seperti sensitivitas case atau locale, atau cukup menggunakan signature placeholder?"
+        ]
+      }
+    },
+    {
+      "caseId": "automation-02",
+      "variant": "promptforge",
+      "status": "answered"
+    },
+    {
+      "caseId": "automation-10",
+      "variant": "promptforge",
+      "status": "answered"
+    },
+    {
+      "caseId": "automation-11",
+      "variant": "promptforge",
+      "status": "answered"
+    },
+    {
+      "caseId": "automation-14",
+      "variant": "promptforge",
+      "status": "answered"
+    },
+    {
+      "caseId": "automation-15",
+      "variant": "promptforge",
+      "status": "answered"
+    },
+    {
+      "caseId": "automation-16",
+      "variant": "promptforge",
+      "status": "answered"
+    },
+    {
+      "caseId": "research-01",
+      "variant": "promptforge",
+      "status": "prompt_not_approved",
+      "failure": "clarify",
+      "optimizerFeedback": {
+        "questions": [
+          "Apakah Anda sudah memiliki daftar sumber/basis data tertentu (misalnya Google Scholar, Garuda, Scopus) yang wajib digunakan, atau protokol boleh menetapkan strategi pencarian secara mandiri?",
+          "Apakah protokol perlu mencakup kriteria inklusi/eksklusi rinci dan instrumen ekstraksi data, atau cukup kerangka alur telaah?"
+        ]
+      }
+    },
+    {
+      "caseId": "research-02",
+      "variant": "promptforge",
+      "status": "prompt_not_approved",
+      "failure": "clarify",
+      "optimizerFeedback": {
+        "questions": [
+          "Mohon lampirkan atau kutip isi kedua artikel pangan yang akan diuji (atau bagian yang memuat pernyataan dan bukti), karena tanpa bahan tersebut matriks tidak dapat diisi tanpa mengarang sitasi."
+        ]
+      }
+    },
+    {
+      "caseId": "research-03",
+      "variant": "promptforge",
+      "status": "answered"
+    },
+    {
+      "caseId": "research-06",
+      "variant": "promptforge",
+      "status": "prompt_not_approved",
+      "failure": "clarify",
+      "optimizerFeedback": {
+        "questions": [
+          "Data curah hujan yang akan diperiksa beresolusi apa (harian, bulanan, atau keduanya) dan apakah ada daftar kode penanda BMKG khusus yang wajib diikuti?"
+        ]
+      }
+    },
+    {
+      "caseId": "research-11",
+      "variant": "promptforge",
+      "status": "answered"
+    },
+    {
+      "caseId": "business-02",
+      "variant": "promptforge",
+      "status": "answered"
+    },
+    {
+      "caseId": "business-04",
+      "variant": "promptforge",
+      "status": "prompt_not_approved",
+      "failure": "clarify",
+      "optimizerFeedback": {
+        "questions": [
+          "Produk apa yang akan diluncurkan dan siapa target audiensnya?",
+          "Apa tujuan utama peluncuran (misalnya, akuisisi pengguna, penjualan, kesadaran merek) dan saluran pemasaran yang dipertimbangkan?"
+        ]
+      }
+    },
+    {
+      "caseId": "business-06",
+      "variant": "promptforge",
+      "status": "prompt_not_approved",
+      "failure": "warning",
+      "optimizerFeedback": {
+        "draft": "Create a timed meeting agenda lasting exactly 45 minutes to resolve shipping/delivery blockers. Assign a clear owner for every follow-up action. The total agenda duration must be exactly 45 minutes, and each agenda item must include a time allocation. Use a timed agenda format. Output the meeting agenda and the follow-up list with owners in Bahasa Indonesia. If participant roles/functions and specific shipping blockers are not provided, use adaptable placeholder roles/functions and blocker items. Treat this as an internal cross-functional business meeting.",
+        "issues": [
+          "Peninjauan semantik belum selesai."
+        ]
+      }
+    },
+    {
+      "caseId": "business-13",
+      "variant": "promptforge",
+      "status": "prompt_not_approved",
+      "failure": "provider_incomplete"
+    },
+    {
+      "caseId": "content-04",
+      "variant": "promptforge",
+      "status": "prompt_not_approved",
+      "failure": "warning",
+      "optimizerFeedback": {
+        "draft": "Write an email reply in Bahasa Indonesia to a customer who ordered package A7. Keep the reference to package A7. Do not promise any delivery date or time. Use an email format with subject, greeting, body, and closing. Address the customer's order clearly and politely. Use placeholders for the customer's name and order number. Tone: formal, friendly, and concise. Deliverable: a draft email reply for the A7 package customer.",
+        "issues": [
+          "Peninjauan semantik belum selesai."
+        ]
+      }
+    },
+    {
+      "caseId": "content-07",
+      "variant": "promptforge",
+      "status": "prompt_not_approved",
+      "failure": "clarify",
+      "optimizerFeedback": {
+        "questions": [
+          "Siapa penerima pesan dan jadwal apa yang berubah?"
+        ]
+      }
+    },
+    {
+      "caseId": "general-04",
+      "variant": "promptforge",
+      "status": "prompt_not_approved",
+      "failure": "clarify",
+      "optimizerFeedback": {
+        "questions": [
+          "Mohon kirimkan catatan tugas yang ingin diubah menjadi agenda 3 prioritas."
+        ]
+      }
+    },
+    {
+      "caseId": "general-12",
+      "variant": "promptforge",
+      "status": "prompt_not_approved",
+      "failure": "warning",
+      "optimizerFeedback": {
+        "draft": "Create a kerja bakti (community work) schedule for RW 07 that starts at 08:00 WIB. Write the deliverable in Bahasa Indonesia. The output must include: 1) a public announcement (pengumuman), and 2) an agenda. Use RW 07 as the location/scope and keep the start time exactly 08:00 WIB. Participants are RW 07 residents. If the date is not provided, use a placeholder for the date; if needed, include a reasonable duration in the agenda.",
+        "issues": [
+          "Peninjauan semantik belum selesai."
+        ]
+      }
+    },
+    {
+      "caseId": "general-15",
+      "variant": "promptforge",
+      "status": "prompt_not_approved",
+      "failure": "clarify",
+      "optimizerFeedback": {
+        "questions": [
+          "Jenis sup apa yang akan dibuat, dan apakah ada pantangan/alergi atau preferensi diet yang perlu diperhatikan?"
+        ]
+      }
+    }
+  ],
+  "loop4": [
+    {
+      "caseId": "business-06",
+      "variant": "promptforge",
+      "status": "answered"
+    },
+    {
+      "caseId": "business-13",
+      "variant": "promptforge",
+      "status": "answered"
+    },
+    {
+      "caseId": "content-04",
+      "variant": "promptforge",
+      "status": "answered"
+    },
+    {
+      "caseId": "general-12",
+      "variant": "promptforge",
+      "status": "prompt_not_approved",
+      "failure": "clarify",
+      "optimizerFeedback": {
+        "questions": [
+          "Apa tanggal pelaksanaan kerja bakti?",
+          "Berapa lama durasi kegiatan dan apa saja agenda spesifiknya?"
+        ]
+      }
+    }
+  ],
+  "optimizerCases": [
+    {
+      "caseId": "programming-01",
+      "status": "answered",
+      "exactTokenCount": 0,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "programming-02",
+      "status": "answered",
+      "exactTokenCount": 0,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "programming-03",
+      "status": "answered",
+      "exactTokenCount": 1,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "programming-04",
+      "status": "prompt_not_approved",
+      "exactTokenCount": 0,
+      "missedPromptTokens": null,
+      "marker": null,
+      "failure": "clarify"
+    },
+    {
+      "caseId": "programming-05",
+      "status": "answered",
+      "exactTokenCount": 1,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "programming-06",
+      "status": "answered",
+      "exactTokenCount": 0,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "programming-07",
+      "status": "answered",
+      "exactTokenCount": 0,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "programming-08",
+      "status": "answered",
+      "exactTokenCount": 0,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "programming-09",
+      "status": "answered",
+      "exactTokenCount": 0,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "programming-10",
+      "status": "answered",
+      "exactTokenCount": 0,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "programming-11",
+      "status": "answered",
+      "exactTokenCount": 1,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "programming-12",
+      "status": "answered",
+      "exactTokenCount": 0,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "programming-13",
+      "status": "answered",
+      "exactTokenCount": 0,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "programming-14",
+      "status": "answered",
+      "exactTokenCount": 1,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "programming-15",
+      "status": "prompt_not_approved",
+      "exactTokenCount": 1,
+      "missedPromptTokens": null,
+      "marker": null,
+      "failure": "clarify"
+    },
+    {
+      "caseId": "programming-16",
+      "status": "answered",
+      "exactTokenCount": 0,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "programming-17",
+      "status": "answered",
+      "exactTokenCount": 1,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "programming-18",
+      "status": "answered",
+      "exactTokenCount": 0,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "programming-19",
+      "status": "answered",
+      "exactTokenCount": 1,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "programming-20",
+      "status": "answered",
+      "exactTokenCount": 0,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "automation-01",
+      "status": "answered",
+      "exactTokenCount": 0,
+      "missedPromptTokens": [],
+      "marker": false
+    },
+    {
+      "caseId": "automation-02",
+      "status": "prompt_not_approved",
+      "exactTokenCount": 3,
+      "missedPromptTokens": null,
+      "marker": null,
+      "failure": "provider_incomplete"
+    },
+    {
+      "caseId": "automation-03",
+      "status": "answered",
+      "exactTokenCount": 1,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "automation-04",
+      "status": "answered",
+      "exactTokenCount": 1,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "automation-05",
+      "status": "answered",
+      "exactTokenCount": 0,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "automation-06",
+      "status": "answered",
+      "exactTokenCount": 0,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "automation-07",
+      "status": "answered",
+      "exactTokenCount": 1,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "automation-08",
+      "status": "answered",
+      "exactTokenCount": 0,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "automation-09",
+      "status": "answered",
+      "exactTokenCount": 0,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "automation-10",
+      "status": "prompt_not_approved",
+      "exactTokenCount": 0,
+      "missedPromptTokens": null,
+      "marker": null,
+      "failure": "warning"
+    },
+    {
+      "caseId": "automation-11",
+      "status": "answered",
+      "exactTokenCount": 0,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "automation-12",
+      "status": "answered",
+      "exactTokenCount": 1,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "automation-13",
+      "status": "answered",
+      "exactTokenCount": 1,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "automation-14",
+      "status": "answered",
+      "exactTokenCount": 0,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "automation-15",
+      "status": "answered",
+      "exactTokenCount": 1,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "automation-16",
+      "status": "answered",
+      "exactTokenCount": 0,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "automation-17",
+      "status": "answered",
+      "exactTokenCount": 0,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "automation-18",
+      "status": "answered",
+      "exactTokenCount": 1,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "automation-19",
+      "status": "answered",
+      "exactTokenCount": 0,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "automation-20",
+      "status": "answered",
+      "exactTokenCount": 0,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "research-01",
+      "status": "answered",
+      "exactTokenCount": 2,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "research-02",
+      "status": "prompt_not_approved",
+      "exactTokenCount": 0,
+      "missedPromptTokens": null,
+      "marker": null,
+      "failure": "clarify"
+    },
+    {
+      "caseId": "research-03",
+      "status": "answered",
+      "exactTokenCount": 0,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "research-04",
+      "status": "answered",
+      "exactTokenCount": 0,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "research-05",
+      "status": "answered",
+      "exactTokenCount": 0,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "research-06",
+      "status": "prompt_not_approved",
+      "exactTokenCount": 0,
+      "missedPromptTokens": null,
+      "marker": null,
+      "failure": "clarify"
+    },
+    {
+      "caseId": "research-07",
+      "status": "answered",
+      "exactTokenCount": 0,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "research-08",
+      "status": "prompt_not_approved",
+      "exactTokenCount": 1,
+      "missedPromptTokens": null,
+      "marker": null,
+      "failure": "clarify"
+    },
+    {
+      "caseId": "research-09",
+      "status": "answered",
+      "exactTokenCount": 1,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "research-10",
+      "status": "answered",
+      "exactTokenCount": 1,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "research-11",
+      "status": "answered",
+      "exactTokenCount": 1,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "research-12",
+      "status": "answered",
+      "exactTokenCount": 0,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "research-13",
+      "status": "answered",
+      "exactTokenCount": 0,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "research-14",
+      "status": "answered",
+      "exactTokenCount": 0,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "research-15",
+      "status": "answered",
+      "exactTokenCount": 0,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "business-01",
+      "status": "answered",
+      "exactTokenCount": 1,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "business-02",
+      "status": "prompt_not_approved",
+      "exactTokenCount": 0,
+      "missedPromptTokens": null,
+      "marker": null,
+      "failure": "provider_timeout"
+    },
+    {
+      "caseId": "business-03",
+      "status": "prompt_not_approved",
+      "exactTokenCount": 0,
+      "missedPromptTokens": null,
+      "marker": null,
+      "failure": "provider_timeout"
+    },
+    {
+      "caseId": "business-04",
+      "status": "prompt_not_approved",
+      "exactTokenCount": 0,
+      "missedPromptTokens": null,
+      "marker": null,
+      "failure": "clarify"
+    },
+    {
+      "caseId": "business-05",
+      "status": "prompt_not_approved",
+      "exactTokenCount": 0,
+      "missedPromptTokens": null,
+      "marker": null,
+      "failure": "provider_timeout"
+    },
+    {
+      "caseId": "business-06",
+      "status": "answered",
+      "exactTokenCount": 1,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "business-07",
+      "status": "answered",
+      "exactTokenCount": 1,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "business-08",
+      "status": "answered",
+      "exactTokenCount": 0,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "business-09",
+      "status": "answered",
+      "exactTokenCount": 0,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "business-10",
+      "status": "answered",
+      "exactTokenCount": 1,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "business-11",
+      "status": "answered",
+      "exactTokenCount": 0,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "business-12",
+      "status": "answered",
+      "exactTokenCount": 0,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "business-13",
+      "status": "answered",
+      "exactTokenCount": 1,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "business-14",
+      "status": "answered",
+      "exactTokenCount": 1,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "business-15",
+      "status": "answered",
+      "exactTokenCount": 0,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "content-01",
+      "status": "answered",
+      "exactTokenCount": 0,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "content-02",
+      "status": "answered",
+      "exactTokenCount": 1,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "content-03",
+      "status": "answered",
+      "exactTokenCount": 1,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "content-04",
+      "status": "answered",
+      "exactTokenCount": 1,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "content-05",
+      "status": "answered",
+      "exactTokenCount": 1,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "content-06",
+      "status": "answered",
+      "exactTokenCount": 0,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "content-07",
+      "status": "prompt_not_approved",
+      "exactTokenCount": 2,
+      "missedPromptTokens": null,
+      "marker": null,
+      "failure": "provider_timeout"
+    },
+    {
+      "caseId": "content-08",
+      "status": "prompt_not_approved",
+      "exactTokenCount": 0,
+      "missedPromptTokens": null,
+      "marker": null,
+      "failure": "provider_timeout"
+    },
+    {
+      "caseId": "content-09",
+      "status": "prompt_not_approved",
+      "exactTokenCount": 0,
+      "missedPromptTokens": null,
+      "marker": null,
+      "failure": "clarify"
+    },
+    {
+      "caseId": "content-10",
+      "status": "answered",
+      "exactTokenCount": 0,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "content-11",
+      "status": "answered",
+      "exactTokenCount": 1,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "content-12",
+      "status": "prompt_not_approved",
+      "exactTokenCount": 0,
+      "missedPromptTokens": null,
+      "marker": null,
+      "failure": "provider_timeout"
+    },
+    {
+      "caseId": "content-13",
+      "status": "prompt_not_approved",
+      "exactTokenCount": 1,
+      "missedPromptTokens": null,
+      "marker": null,
+      "failure": "provider_timeout"
+    },
+    {
+      "caseId": "content-14",
+      "status": "prompt_not_approved",
+      "exactTokenCount": 0,
+      "missedPromptTokens": null,
+      "marker": null,
+      "failure": "provider_timeout"
+    },
+    {
+      "caseId": "content-15",
+      "status": "answered",
+      "exactTokenCount": 1,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "general-01",
+      "status": "answered",
+      "exactTokenCount": 1,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "general-02",
+      "status": "answered",
+      "exactTokenCount": 1,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "general-03",
+      "status": "answered",
+      "exactTokenCount": 1,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "general-04",
+      "status": "prompt_not_approved",
+      "exactTokenCount": 1,
+      "missedPromptTokens": null,
+      "marker": null,
+      "failure": "clarify"
+    },
+    {
+      "caseId": "general-05",
+      "status": "answered",
+      "exactTokenCount": 1,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "general-06",
+      "status": "answered",
+      "exactTokenCount": 1,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "general-07",
+      "status": "answered",
+      "exactTokenCount": 0,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "general-08",
+      "status": "answered",
+      "exactTokenCount": 1,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "general-09",
+      "status": "answered",
+      "exactTokenCount": 2,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "general-10",
+      "status": "prompt_not_approved",
+      "exactTokenCount": 0,
+      "missedPromptTokens": null,
+      "marker": null,
+      "failure": "warning"
+    },
+    {
+      "caseId": "general-11",
+      "status": "answered",
+      "exactTokenCount": 0,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "general-12",
+      "status": "answered",
+      "exactTokenCount": 2,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "general-13",
+      "status": "answered",
+      "exactTokenCount": 1,
+      "missedPromptTokens": [],
+      "marker": true
+    },
+    {
+      "caseId": "general-14",
+      "status": "prompt_not_approved",
+      "exactTokenCount": 1,
+      "missedPromptTokens": null,
+      "marker": null,
+      "failure": "warning"
+    },
+    {
+      "caseId": "general-15",
+      "status": "prompt_not_approved",
+      "exactTokenCount": 1,
+      "missedPromptTokens": null,
+      "marker": null,
+      "failure": "clarify"
+    }
+  ],
+  "humanEvaluations": 0
+}

@@ -54,7 +54,7 @@ const fixtures = [
     name: 'patch-after-source', domain: 'Pemrograman', confirmIfReviewUnavailable: true,
     source: 'Perbaiki aplikasi Node.js yang menelan galat saat Promise ditolak. Jangan abaikan galat. Sebutkan await. Berikan patch dan alasan berdasarkan potongan kode aktual. Saya belum memberi kode. Minta kodenya sebelum menyusun patch dan jangan memakai kode contoh.',
     lang: 'Bahasa Indonesia', draftChecks: [/await/i, /patch/i],
-    clarification: 'Kode sintetis untuk diuji: async function load() { try { return await fetchData(); } catch (error) { return null; } }. Pertahankan API async, dan teruskan error asli dengan throw agar pemanggil menanganinya.',
+    clarification: 'Potongan kode untuk kasus ini: async function load() { try { return await fetchData(); } catch (error) { return null; } }. Pertahankan API async, dan teruskan error asli dengan throw agar pemanggil menanganinya.',
     answerCheck: answer => /await/.test(answer) && /throw\s+error/.test(answer),
   },
   {
