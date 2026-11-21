@@ -41,3 +41,9 @@ Sites menerbitkan versi 13 dari commit `e90d4d6c6e1284a0829e08dd8d6a6a09b8bfb371
 Pemulihan tahap dimulai ketika instruksi dikirim ulang dari sesi yang sama. Kemampuan melanjutkan pekerjaan otomatis di latar belakang setelah browser ditutup masih belum terverifikasi.
 
 Benchmark ArxPay untuk kode v13 mencoba jalur optimasi pada 100 kasus dan memakai kembali dua baseline v12 dari dataset yang sama. Sebanyak 18 kasus menghasilkan jawaban, 77 ditolak dengan HTTP 429, dua perlu klarifikasi, dan tiga menghasilkan draf berperingatan. Panggilan serial mengonfirmasi kode `key_daily_cap`. Pada 12 kasus v12 yang dinilai secara buta oleh agen, skor keberhasilan tugas PromptForge 18/24, pembanding Indonesia langsung 17/24, dan terjemahan literal 20/24. Temuan campuran aksara memicu pemeriksaan tambahan untuk prosa Indonesia. Hasil terbatas ini tidak menetapkan preservasi 95% atau peningkatan keberhasilan. [Bukti per kasus](../benchmark/evidence-dod-v13.json).
+
+### Verifikasi rilis v14
+
+Sites menerbitkan v14 dari commit `d9200ae70f93e91c4543df9fce98ea5e4bebeee8` pada environment revisi 5. Akses terverifikasi hanya untuk pemilik. Uji HTTP produksi mendapat 200 untuk aset aplikasi, evaluasi, proses, templat, dan benchmark melalui akses layanan. Akses anonim ke halaman utama, serta permintaan layanan tanpa identitas pengunjung ke API evaluasi, proses, dan pembatalan mendapat 401. Binding D1 terdeteksi melalui Sites. Browser bersama gagal dimulai, sehingga pengujian penyimpanan dari browser produksi sebagai pemilik masih terbuka.
+
+Seluruh 44 tes lokal lulus. Uji Chromium lokal diulang pada kode rilis dengan respons provider tiruan. Bukti ArxPay nyata memakai kode v13; pengujian proyek dengan kasus sintetis dan data benchmark tidak dihitung sebagai penilaian manusia. Ketiga belas alias ArxPay alternatif yang dicoba belum menghasilkan respons yang dapat dipakai sebagai model kedua.
