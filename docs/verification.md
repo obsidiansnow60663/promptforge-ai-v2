@@ -41,3 +41,18 @@
 - [OpenAI Responses API](https://developers.openai.com/api/reference/resources/responses/methods/create)
 - [Anthropic Messages API](https://platform.claude.com/docs/en/api/messages)
 - [Google Gemini generateContent](https://ai.google.dev/api/generate-content)
+
+## Bukti deployment privat
+
+| Pemeriksaan | Hasil |
+|---|---|
+| Versi sumber | Sites menyimpan versi 4 untuk `3cff6da2afd843d3bc58e0e0b5104574811b5d9e` dengan arsip Worker dan migrasi D1. |
+| Publikasi | Deployment `appgdep_6b00eaea3a0481918ce05ea726f3535e` berstatus `succeeded`. |
+| Kebijakan akses | Setelah deploy, Sites melaporkan satu pemilik, tanpa grup dan tanpa pengunjung eksternal. |
+| URL anonim | GET `/` dan `/api/history` mengembalikan HTTP 401. |
+| URL melalui akses layanan Sites | GET `/`, `/backup.js`, dan `/benchmark.txt` mengembalikan HTTP 200. Respons berisi CSP Worker dan aset Fase 5–6. |
+| API tanpa identitas pengunjung | GET `/api/status` dan `/api/export?kind=versions` mengembalikan HTTP 401 meskipun menggunakan akses layanan Sites. |
+| Identitas pengguna dan data | Browser cloud gagal diinisialisasi. Layanan HTTP Sites tidak membawa identitas pemilik. Login pemilik, akun non-pemilik terautentikasi, penyimpanan dan pemulihan D1 end-to-end, interaksi responsif serta WebGPU belum diverifikasi di deployment. |
+| Provider dan mutu | Pengaturan runtime belum berisi kredensial atau daftar model. Tidak ada panggilan provider nyata pada Fase 3–6 dalam sesi ini. Mutu jawaban dan hasil benchmark masih memerlukan data live dan penilai manusia. |
+
+URL teruji: [PromptForge AI Studio](https://promptforge-studio.pearlymonkey32.chatgpt.site).
