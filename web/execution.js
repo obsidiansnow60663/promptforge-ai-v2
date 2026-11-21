@@ -53,12 +53,14 @@ export function executionCards(records, escape, { feedback = true } = {}) {
     const state = record.error?.code === 'execution_cancelled' ? 'Dibatalkan' : { running: 'Sedang diproses', complete: 'Validasi otomatis selesai', warning: 'Periksa peringatan', failed: 'Eksekusi gagal' }[record.status];
     return '<article class="panel execution"><h3>' + escape(record.target.provider + ' / ' + record.target.model) + '</h3>' +
       '<p class="' + (exceptional ? 'note' : 'muted') + '">' + escape(state) + '</p>' +
+      '<p class="muted">' + escape('Mulai ' + new Date(record.created).toLocaleString('id-ID') +
+        (record.completed ? ' · Selesai ' + new Date(record.completed).toLocaleString('id-ID') : '')) + '</p>' +
       (record.error ? '<p class="err">' + escape(record.error.message) + '</p>' : '') +
       adaptedAnswer(record.output, record.language, escape) +
       (raw ? '<p class="muted">' + escape(
         'Model aktual ' + (raw.model ?? 'tidak dilaporkan') + ' · ' + locale.format(raw.latencyMs) +
-        ' ms · Token masuk / keluar ' + (raw.usage.input ?? '—') + ' / ' + (raw.usage.output ?? '—') +
-        ' · ' + new Date(record.created).toLocaleString('id-ID')) + '</p><details><summary>Respons mentah provider</summary>' +
+        ' ms · Token masuk / keluar ' + (raw.usage.input ?? '—') + ' / ' + (raw.usage.output ?? '—')) +
+        '</p><details><summary>Respons mentah provider</summary>' +
         '<pre class="answer">' + escape(raw.text) + '</pre></details>' : '') + (feedback ? feedbackForm(record, escape) : '') + '</article>';
   }).join('');
 }

@@ -1,0 +1,1187 @@
+{
+  "datasetVersion": "promptforge-id-1.0.0",
+  "datasetSha256": "3d2f16aad692ac082a497df08c6845f5a53a1a9e8d1da2c70c4cfc5fd18000b5",
+  "live": {
+    "method": "provider requests",
+    "workflowCommit": "e90d4d6c6e1284a0829e08dd8d6a6a09b8bfb371",
+    "reportSha256": "6f9ee19670c10560cfe5871ec34099b5e834eebd14dffc5ffbcfd51909d64006",
+    "baseline": {
+      "sha256": "c0fd00aab724af0fb2a7187d2c08d85db50a6e5a901f6305bf50d68e464ba5f1",
+      "workflowCommit": "9106a873c765b88026ddd851af4bcabcb891fca6",
+      "variants": [
+        "direct-id",
+        "literal-en"
+      ]
+    },
+    "jobs": 5,
+    "settings": {
+      "executor": {
+        "provider": "arxpay",
+        "model": "deepseek-v4.1-flash-bansos"
+      },
+      "optimizer": {
+        "provider": "arxpay",
+        "model": "deepseek-v4.1-flash-bansos"
+      },
+      "judge": null,
+      "maxOutputTokens": 6144,
+      "sampling": "provider default"
+    },
+    "resolvedModel": "deepseek-v4.1-flash",
+    "matchedCases": 18,
+    "deterministicSummary": {
+      "direct-id": {
+        "cases": 100,
+        "answered": 100,
+        "markerFound": 97,
+        "markerAbsent": 3,
+        "promptsWithCheckableTokens": 46,
+        "promptsPreservingAllCheckedTokens": 46,
+        "missedTokens": 0,
+        "failures": {}
+      },
+      "literal-en": {
+        "cases": 100,
+        "answered": 100,
+        "markerFound": 98,
+        "markerAbsent": 2,
+        "promptsWithCheckableTokens": 46,
+        "promptsPreservingAllCheckedTokens": 46,
+        "missedTokens": 0,
+        "failures": {}
+      },
+      "promptforge": {
+        "cases": 100,
+        "answered": 18,
+        "markerFound": 18,
+        "markerAbsent": 0,
+        "promptsWithCheckableTokens": 6,
+        "promptsPreservingAllCheckedTokens": 6,
+        "missedTokens": 0,
+        "failures": {
+          "clarify": 2,
+          "warning": 3,
+          "provider_rate_limit": 77
+        }
+      }
+    },
+    "optimizedCases": [
+      {
+        "caseId": "programming-01",
+        "status": "answered",
+        "outputMarker": true,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-02",
+        "status": "answered",
+        "outputMarker": true,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-03",
+        "status": "prompt_not_approved",
+        "failure": "clarify",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "programming-04",
+        "status": "answered",
+        "outputMarker": true,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-05",
+        "status": "answered",
+        "outputMarker": true,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-06",
+        "status": "answered",
+        "outputMarker": true,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-07",
+        "status": "answered",
+        "outputMarker": true,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-08",
+        "status": "answered",
+        "outputMarker": true,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-09",
+        "status": "answered",
+        "outputMarker": true,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-10",
+        "status": "answered",
+        "outputMarker": true,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-11",
+        "status": "answered",
+        "outputMarker": true,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-12",
+        "status": "answered",
+        "outputMarker": true,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-13",
+        "status": "answered",
+        "outputMarker": true,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-14",
+        "status": "answered",
+        "outputMarker": true,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-15",
+        "status": "answered",
+        "outputMarker": true,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-16",
+        "status": "prompt_not_approved",
+        "failure": "clarify",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "programming-17",
+        "status": "answered",
+        "outputMarker": true,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-18",
+        "status": "answered",
+        "outputMarker": true,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-19",
+        "status": "answered",
+        "outputMarker": true,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "programming-20",
+        "status": "answered",
+        "outputMarker": true,
+        "missedPromptTokens": []
+      },
+      {
+        "caseId": "automation-01",
+        "status": "prompt_not_approved",
+        "failure": "warning",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "automation-02",
+        "status": "prompt_not_approved",
+        "failure": "warning",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "automation-03",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "automation-04",
+        "status": "prompt_not_approved",
+        "failure": "warning",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "automation-05",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "automation-06",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "automation-07",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "automation-08",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "automation-09",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "automation-10",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "automation-11",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "automation-12",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "automation-13",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "automation-14",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "automation-15",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "automation-16",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "automation-17",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "automation-18",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "automation-19",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "automation-20",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "research-01",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "research-02",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "research-03",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "research-04",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "research-05",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "research-06",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "research-07",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "research-08",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "research-09",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "research-10",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "research-11",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "research-12",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "research-13",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "research-14",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "research-15",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "business-01",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "business-02",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "business-03",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "business-04",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "business-05",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "business-06",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "business-07",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "business-08",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "business-09",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "business-10",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "business-11",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "business-12",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "business-13",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "business-14",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "business-15",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "content-01",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "content-02",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "content-03",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "content-04",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "content-05",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "content-06",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "content-07",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "content-08",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "content-09",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "content-10",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "content-11",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "content-12",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "content-13",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "content-14",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "content-15",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "general-01",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "general-02",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "general-03",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "general-04",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "general-05",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "general-06",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "general-07",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "general-08",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "general-09",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "general-10",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "general-11",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "general-12",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "general-13",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "general-14",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      },
+      {
+        "caseId": "general-15",
+        "status": "prompt_not_approved",
+        "failure": "provider_rate_limit",
+        "outputMarker": null,
+        "missedPromptTokens": null
+      }
+    ],
+    "limitProbe": {
+      "method": "single serial chat completion",
+      "status": 429,
+      "providerCode": "key_daily_cap",
+      "retryAfter": null
+    }
+  },
+  "modelCapability": {
+    "catalogHttpStatus": 200,
+    "advertisedAliases": 19,
+    "probe": "Submit a small JSON completion through the same ArxPay connection",
+    "successfulAlias": {
+      "id": "deepseek-v4.1-flash-bansos",
+      "httpStatus": 200,
+      "resolvedModel": "deepseek-v4.1-flash"
+    },
+    "otherProbes": {
+      "qwen4-max-bansos": 503,
+      "glm-5.3": 403,
+      "gpt-5.6-sol": 403,
+      "gemini-4-neon-bansos": 500,
+      "gpt-6.2-astra-bansos": 502,
+      "deepseek-v4-pro": 500,
+      "deepseek-v4.1-flash": 502,
+      "deepseek-v4.1-flash-abliterated-2": 500,
+      "glm-5.3-flash-abliterated": 403,
+      "glm-5.3-flash-uncensored": 502,
+      "kimi-k2.8-preview": 500,
+      "kimi-k3-1": 500,
+      "minimax-m3": 502
+    }
+  },
+  "blindSample": {
+    "method": "Independent Codex agent static review of v12 live outputs; three anonymized variants per case",
+    "selection": "Two complete cases per category, ordered by SHA-256 of a fixed salt and source instruction",
+    "sourceReportSha256": "c0fd00aab724af0fb2a7187d2c08d85db50a6e5a901f6305bf50d68e464ba5f1",
+    "pairedCases": 12,
+    "humanReviews": 0,
+    "taskSuccessScale": {
+      "0": "fail",
+      "1": "partial",
+      "2": "pass"
+    },
+    "summary": {
+      "literal-en": {
+        "cases": 12,
+        "promptsPreservingConstraints": 12,
+        "answersMeetingConstraints": 11,
+        "answersInRequestedLanguage": 12,
+        "fullTaskSuccesses": 8,
+        "taskSuccessPoints": 20,
+        "maximumTaskSuccessPoints": 24
+      },
+      "direct-id": {
+        "cases": 12,
+        "promptsPreservingConstraints": 12,
+        "answersMeetingConstraints": 10,
+        "answersInRequestedLanguage": 12,
+        "fullTaskSuccesses": 5,
+        "taskSuccessPoints": 17,
+        "maximumTaskSuccessPoints": 24
+      },
+      "promptforge": {
+        "cases": 12,
+        "promptsPreservingConstraints": 12,
+        "answersMeetingConstraints": 11,
+        "answersInRequestedLanguage": 11,
+        "fullTaskSuccesses": 6,
+        "taskSuccessPoints": 18,
+        "maximumTaskSuccessPoints": 24
+      }
+    },
+    "reviews": [
+      {
+        "round": 1,
+        "caseId": "research-05",
+        "variant": "literal-en",
+        "promptConstraints": true,
+        "answerConstraints": true,
+        "answerLanguage": true,
+        "taskSuccess": 2,
+        "reason": "Boolean strings, inclusion criteria and method are present; the fixed date window is an adjustable methodological choice."
+      },
+      {
+        "round": 1,
+        "caseId": "research-05",
+        "variant": "direct-id",
+        "promptConstraints": true,
+        "answerConstraints": true,
+        "answerLanguage": true,
+        "taskSuccess": 2,
+        "reason": "The core Boolean query and inclusion/method sections are complete; narrower initial date filtering should be justified against wider inclusion."
+      },
+      {
+        "round": 1,
+        "caseId": "research-05",
+        "variant": "promptforge",
+        "promptConstraints": true,
+        "answerConstraints": true,
+        "answerLanguage": true,
+        "taskSuccess": 2,
+        "reason": "Boolean strings, inclusion criteria and reproducible methods are given with adjustable criteria."
+      },
+      {
+        "round": 1,
+        "caseId": "programming-07",
+        "variant": "literal-en",
+        "promptConstraints": true,
+        "answerConstraints": true,
+        "answerLanguage": true,
+        "taskSuccess": 2,
+        "reason": "Native keyboard inputs, explicit labels and error descriptions support focus-based announcement; no screen reader interaction was run."
+      },
+      {
+        "round": 1,
+        "caseId": "programming-07",
+        "variant": "direct-id",
+        "promptConstraints": true,
+        "answerConstraints": true,
+        "answerLanguage": true,
+        "taskSuccess": 1,
+        "reason": "Labels and focused error summary are present, but novalidate plus a nonempty-only check lets malformed email bypass its stated error."
+      },
+      {
+        "round": 1,
+        "caseId": "programming-07",
+        "variant": "promptforge",
+        "promptConstraints": true,
+        "answerConstraints": true,
+        "answerLanguage": true,
+        "taskSuccess": 2,
+        "reason": "Explicit labels, accessible focus and linked error summary satisfy the markup request; the optional textarea's advertised maximum is unenforced."
+      },
+      {
+        "round": 1,
+        "caseId": "business-09",
+        "variant": "literal-en",
+        "promptConstraints": true,
+        "answerConstraints": true,
+        "answerLanguage": true,
+        "taskSuccess": 2,
+        "reason": "Ordered steps include verifiable claims and scheduled follow-up."
+      },
+      {
+        "round": 1,
+        "caseId": "business-09",
+        "variant": "direct-id",
+        "promptConstraints": true,
+        "answerConstraints": true,
+        "answerLanguage": true,
+        "taskSuccess": 2,
+        "reason": "Ordered steps include documented claims, explicit follow-up and contact preferences."
+      },
+      {
+        "round": 1,
+        "caseId": "business-09",
+        "variant": "promptforge",
+        "promptConstraints": true,
+        "answerConstraints": true,
+        "answerLanguage": true,
+        "taskSuccess": 2,
+        "reason": "The steps cover evidence-backed claims and follow-up with agreed timing."
+      },
+      {
+        "round": 1,
+        "caseId": "content-04",
+        "variant": "literal-en",
+        "promptConstraints": true,
+        "answerConstraints": true,
+        "answerLanguage": true,
+        "taskSuccess": 1,
+        "reason": "Preserves A7 and gives no delivery promise, but asserts the order is being processed and unchanged without status evidence."
+      },
+      {
+        "round": 1,
+        "caseId": "content-04",
+        "variant": "promptforge",
+        "promptConstraints": true,
+        "answerConstraints": true,
+        "answerLanguage": true,
+        "taskSuccess": 1,
+        "reason": "Preserves A7 and gives no delivery promise, but asserts current processing without status evidence."
+      },
+      {
+        "round": 1,
+        "caseId": "content-04",
+        "variant": "direct-id",
+        "promptConstraints": true,
+        "answerConstraints": true,
+        "answerLanguage": true,
+        "taskSuccess": 1,
+        "reason": "Preserves A7 and gives no delivery promise, but asserts current processing and implies an unspecified inconvenience."
+      },
+      {
+        "round": 1,
+        "caseId": "automation-11",
+        "variant": "literal-en",
+        "promptConstraints": true,
+        "answerConstraints": true,
+        "answerLanguage": true,
+        "taskSuccess": 1,
+        "reason": "Key and metadata-only logging are specified; stored response hash cannot replay a body, and lock expiry or failure after a committed effect can duplicate work without an atomic invariant."
+      },
+      {
+        "round": 1,
+        "caseId": "automation-11",
+        "variant": "direct-id",
+        "promptConstraints": true,
+        "answerConstraints": true,
+        "answerLanguage": true,
+        "taskSuccess": 1,
+        "reason": "Key and metadata-only logging are specified; lock expiry/finally cleanup allow retries after ambiguous successful effects without an atomic invariant."
+      },
+      {
+        "round": 1,
+        "caseId": "automation-11",
+        "variant": "promptforge",
+        "promptConstraints": true,
+        "answerConstraints": true,
+        "answerLanguage": true,
+        "taskSuccess": 1,
+        "reason": "Key and metadata-only logging are specified; payload hash is not checked on replay, only the response code is stored, and the claimed at-most-once effect is unsupported on partial failure."
+      },
+      {
+        "round": 1,
+        "caseId": "general-03",
+        "variant": "direct-id",
+        "promptConstraints": true,
+        "answerConstraints": true,
+        "answerLanguage": true,
+        "taskSuccess": 2,
+        "reason": "Allocation sums to Rp300.000 and distinguishes Rp30.000 reserve."
+      },
+      {
+        "round": 1,
+        "caseId": "general-03",
+        "variant": "promptforge",
+        "promptConstraints": true,
+        "answerConstraints": true,
+        "answerLanguage": false,
+        "taskSuccess": 1,
+        "reason": "Allocation sums to Rp300.000 and includes reserve, but the nontechnical table entry includes an untranslated Mandarin fragment."
+      },
+      {
+        "round": 1,
+        "caseId": "general-03",
+        "variant": "literal-en",
+        "promptConstraints": true,
+        "answerConstraints": false,
+        "answerLanguage": true,
+        "taskSuccess": 1,
+        "reason": "It claims the entire Rp300.000 stays untouched while consuming Rp270.000 of the same total; reserve and spending cannot both follow the described allocation."
+      },
+      {
+        "round": 2,
+        "caseId": "research-12",
+        "variant": "direct-id",
+        "promptConstraints": true,
+        "answerConstraints": true,
+        "answerLanguage": true,
+        "taskSuccess": 1,
+        "reason": "Explains peer review and separates access from quality, but treats double-blind as inherently strictest and uses 'Plagiarisme <15%' as adequate, conflating plagiarism with similarity."
+      },
+      {
+        "round": 2,
+        "caseId": "research-12",
+        "variant": "promptforge",
+        "promptConstraints": true,
+        "answerConstraints": true,
+        "answerLanguage": true,
+        "taskSuccess": 1,
+        "reason": "Explains both concepts, but gives incompatible scoring instructions. The 40–50 top band cannot be reached using only the seven later recommended criteria, whose maximum is 35."
+      },
+      {
+        "round": 2,
+        "caseId": "research-12",
+        "variant": "literal-en",
+        "promptConstraints": true,
+        "answerConstraints": true,
+        "answerLanguage": true,
+        "taskSuccess": 1,
+        "reason": "Explains both concepts, but the unnormalized sum of 1–5 scores multiplied by percentage weights cannot reach the stated maximum of 100 or the classification bands."
+      },
+      {
+        "round": 2,
+        "caseId": "programming-10",
+        "variant": "literal-en",
+        "promptConstraints": true,
+        "answerConstraints": true,
+        "answerLanguage": true,
+        "taskSuccess": 2,
+        "reason": "Ran the script on a spaced directory and filenames. It correctly counted two direct CSV files, excluded a subdirectory and nested CSV, and left data bytes unchanged."
+      },
+      {
+        "round": 2,
+        "caseId": "programming-10",
+        "variant": "promptforge",
+        "promptConstraints": true,
+        "answerConstraints": true,
+        "answerLanguage": true,
+        "taskSuccess": 2,
+        "reason": "Ran the script on a spaced directory and filenames. It correctly counted two direct CSV files, excluded a subdirectory and nested CSV, and left data bytes unchanged."
+      },
+      {
+        "round": 2,
+        "caseId": "programming-10",
+        "variant": "direct-id",
+        "promptConstraints": true,
+        "answerConstraints": true,
+        "answerLanguage": true,
+        "taskSuccess": 2,
+        "reason": "Ran the script on a spaced directory and filenames. It correctly counted two direct CSV files, excluded a subdirectory and nested CSV, and left data bytes unchanged. Fixture setup commands are outside the counting script."
+      },
+      {
+        "round": 2,
+        "caseId": "business-06",
+        "variant": "promptforge",
+        "promptConstraints": true,
+        "answerConstraints": true,
+        "answerLanguage": true,
+        "taskSuccess": 2,
+        "reason": "Segments sum to 45 minutes and role owners are attached to concrete follow-ups. One IT follow-up has overlapping role options."
+      },
+      {
+        "round": 2,
+        "caseId": "business-06",
+        "variant": "direct-id",
+        "promptConstraints": true,
+        "answerConstraints": false,
+        "answerLanguage": true,
+        "taskSuccess": 1,
+        "reason": "Segments sum to 45 minutes; the notulis owns the meeting summary, but the three main resolution actions' owner cells are blank and agenda facilitators are not assigned those actions."
+      },
+      {
+        "round": 2,
+        "caseId": "business-06",
+        "variant": "literal-en",
+        "promptConstraints": true,
+        "answerConstraints": true,
+        "answerLanguage": true,
+        "taskSuccess": 2,
+        "reason": "Segments sum to 45 minutes and each stated follow-up has a role-specific owner placeholder."
+      },
+      {
+        "round": 2,
+        "caseId": "content-01",
+        "variant": "direct-id",
+        "promptConstraints": true,
+        "answerConstraints": true,
+        "answerLanguage": true,
+        "taskSuccess": 1,
+        "reason": "One paragraph, exact name and no emoji, but 'surat kabar bulanan' and 'diskusi bulan lalu' assert an unprovided cadence and event."
+      },
+      {
+        "round": 2,
+        "caseId": "content-01",
+        "variant": "literal-en",
+        "promptConstraints": true,
+        "answerConstraints": true,
+        "answerLanguage": true,
+        "taskSuccess": 2,
+        "reason": "One paragraph, exact name and no emoji. Generic reading experiences work as creative framing without asserting a specific community schedule or event."
+      },
+      {
+        "round": 2,
+        "caseId": "content-01",
+        "variant": "promptforge",
+        "promptConstraints": true,
+        "answerConstraints": true,
+        "answerLanguage": true,
+        "taskSuccess": 1,
+        "reason": "One paragraph, exact name and no emoji, but 'kegiatan komunitas yang baru saja berlangsung' asserts an unprovided recent event."
+      },
+      {
+        "round": 2,
+        "caseId": "automation-13",
+        "variant": "promptforge",
+        "promptConstraints": true,
+        "answerConstraints": false,
+        "answerLanguage": true,
+        "taskSuccess": 1,
+        "reason": "Preserves +62 in normal examples, but ordered cleanup removes / before the multi-number ambiguity guard, and +62/0 branches run before the malformed-prefix guard. The examples do not follow reliably from the algorithm."
+      },
+      {
+        "round": 2,
+        "caseId": "automation-13",
+        "variant": "direct-id",
+        "promptConstraints": true,
+        "answerConstraints": false,
+        "answerLanguage": true,
+        "taskSuccess": 1,
+        "reason": "Examples normalize prefixless numbers based on assumptions without marking the first as ambiguous, and blanket non-digit cleanup can remove letters before ambiguity detection."
+      },
+      {
+        "round": 2,
+        "caseId": "automation-13",
+        "variant": "literal-en",
+        "promptConstraints": true,
+        "answerConstraints": true,
+        "answerLanguage": true,
+        "taskSuccess": 2,
+        "reason": "Preserves +62 and marks demonstrated duplicate prefixes, questionable lengths and extensions rather than silently correcting them. Implementations should inspect such signals before separator cleanup."
+      },
+      {
+        "round": 2,
+        "caseId": "general-13",
+        "variant": "literal-en",
+        "promptConstraints": true,
+        "answerConstraints": true,
+        "answerLanguage": true,
+        "taskSuccess": 2,
+        "reason": "Keeps the required literal FRAGILE and provides bottom, side and top protection in ordered steps. 'impact damper' is packaging terminology in Indonesian prose."
+      },
+      {
+        "round": 2,
+        "caseId": "general-13",
+        "variant": "direct-id",
+        "promptConstraints": true,
+        "answerConstraints": true,
+        "answerLanguage": true,
+        "taskSuccess": 2,
+        "reason": "Keeps the required literal FRAGILE and includes wrapping, cushions and a check for shifting."
+      },
+      {
+        "round": 2,
+        "caseId": "general-13",
+        "variant": "promptforge",
+        "promptConstraints": true,
+        "answerConstraints": true,
+        "answerLanguage": true,
+        "taskSuccess": 2,
+        "reason": "Keeps the required literal FRAGILE and provides complete cushioning steps. 'impact cushioning' is glossed in Indonesian as 'bahan peredam benturan'."
+      }
+    ]
+  }
+}

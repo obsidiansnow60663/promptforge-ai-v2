@@ -15,10 +15,13 @@ export function validateSystemInstructions(value) {
 
 export function validateInput(body) {
   if (!str(body?.source, 12000) || !str(body.domain, 80) || !['Bahasa Indonesia', 'English'].includes(body.lang) ||
+    (body.mode !== undefined && !['generate', 'execute', 'existing'].includes(body.mode)) ||
+    (body.inputLanguage !== undefined && !['Bahasa Indonesia', 'English', 'Tidak ditentukan'].includes(body.inputLanguage)) ||
     !Array.isArray(body.answers) || body.answers.length > 12 ||
     !body.answers.every(item => item && str(item.question, 500) && str(item.answer, 1500))) invalid();
   const systemInstructions = validateSystemInstructions(body.systemInstructions);
   return { source: body.source, domain: body.domain, lang: body.lang, ...(systemInstructions ? { systemInstructions } : {}),
+    ...(body.mode ? { mode: body.mode } : {}), ...(body.inputLanguage ? { inputLanguage: body.inputLanguage } : {}),
     answers: body.answers.map(({ question, answer }) => ({ question, answer })) };
 }
 
@@ -28,8 +31,16 @@ export function validateAssessment(value) {
       (value.dimensions !== null && !hasPromptScores(value.dimensions))) invalid();
   const dimensions = value.dimensions && Object.fromEntries(Object.keys(promptWeights).map(key=>[key,value.dimensions[key]]));
   const score = dimensions ? weightedPromptScore(dimensions) : null;
-  if (value.score !== score) invalid();
-  return { critical: value.critical, dimensions, score };
+  const evaluatorType = value.evaluatorType;
+  if (value.score !== score || (evaluatorType !== undefined &&
+      (!['model-assisted', 'deterministic'].includes(evaluatorType) || (evaluatorType === 'deterministic' && dimensions)))) invalid();
+  return { critical: value.critical, dimensions, score, ...(evaluatorType ? { evaluatorType } : {}) };
+}
+
+export function validateRevisionReason(value) {
+  if (value === undefined) return '';
+  if (typeof value !== 'string' || value.length > 1000) invalid();
+  return value.trim();
 }
 
 export function validateReport(report, allowEdited = false) {
@@ -40,10 +51,14 @@ export function validateReport(report, allowEdited = false) {
     !keys.slice(2).every(key => strings(spec[key])) || !str(report.draft, 32000) || !strings(report.issues) ||
     !stages.includes(report.stage) || !Number.isInteger(report.revisions) || report.revisions < 0 || report.revisions > 2) invalid();
   const assessment = validateAssessment(report.assessment);
+  const stage = (report.issues.length || assessment?.critical) && report.stage === 'ready' ? 'warning' : report.stage;
+  if (stage === 'ready' && assessment?.evaluatorType === 'deterministic') invalid();
+  const revisionReason = validateRevisionReason(report.revisionReason);
   return {
     ...(assessment ? { assessment } : {}),
+    ...(revisionReason ? { revisionReason } : {}),
     spec: Object.fromEntries(keys.map(key => [key, spec[key]])), draft: report.draft,
-    stage: (report.issues.length || assessment?.critical) && report.stage === 'ready' ? 'warning' : report.stage,
+    stage,
     issues: report.issues, revisions: report.revisions,
   };
 }

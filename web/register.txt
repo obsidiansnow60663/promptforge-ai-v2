@@ -69,3 +69,7 @@ Uji mandiri meliputi benchmark live 100 kasus dan uji Worker dengan instruksi si
 ## PF-006 · Lingkup brainstorming · 21 November 2026
 
 Blueprint aktif v2.1 memakai ArxPay untuk eksekusi server. Adapter langsung vendor lain dikeluarkan dari lingkup. Penambahan mencakup dasbor evaluasi, skor mutu per dimensi dengan gerbang kritis, instruksi sistem opsional per versi, pustaka templat, dan status serta pembatalan proses server. Catatan fitur dan batas verifikasi berada di [docs/brainstorming.md](docs/brainstorming.md).
+
+## PF-007 · Pemulihan proses dan bukti DoD · 21 November 2026
+
+D1 menyimpan status analisis, penyusunan, dan peninjauan. Tahap tervalidasi dapat dipakai kembali dari percobaan gagal untuk sesi, instruksi, model, dan format checkpoint yang sama. Pembatalan menghentikan percobaan provider berikutnya. Cadangan tidak menyertakan checkpoint. Metadata sesi, revisi, eksekusi, dan evaluasi tersedia pada data baru tanpa mewajibkan isian historis pada arsip lama. Uji browser lokal, keterbatasan benchmark ArxPay nyata dan hasil penilaian buta agen dicatat pada [bukti DoD v2.1](docs/brainstorming.md).

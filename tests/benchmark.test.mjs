@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { cases } from '../benchmark/cases.mjs';
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { promisify } from 'node:util';
@@ -27,8 +27,14 @@ test('benchmark covers 100 unique cases and three equivalent fixture tracks with
   for (const summary of Object.values(report.summary)) {
     assert.equal(summary.evaluated, 100);
     assert.equal(summary.requirementPreservation, null);
+    assert.equal(summary.promptConstraintChecks, 0);
+    assert.equal(summary.promptConstraintChecksPossible, cases.reduce((count, item) => count + item.constraints.length, 0));
+    assert.equal(summary.answerConstraintCompliance, null);
     assert.equal(summary.humanReviewed, 0);
   }
+  assert.equal(report.pairedTaskSuccess.model.cases, 100);
+  assert.ok(Object.values(report.pairedTaskSuccess.model.meanTaskSuccess).every(score => score === null));
+  assert.equal(report.pairedTaskSuccess.human.cases, 0);
 });
 
 test('parallel benchmark writes deterministic checkpoints and rejects a mismatched workflow commit', async t => {
@@ -47,4 +53,30 @@ test('parallel benchmark writes deterministic checkpoints and rejects a mismatch
   await execute('checkpoint-fixture', 1);
   assert.equal(await readFile(output, 'utf8'), before);
   await assert.rejects(execute('different-workflow', 2), /Konfigurasi checkpoint berubah/);
+});
+
+test('benchmark stops provider traffic at a quota cap and leaves unattempted cases resumable', async t => {
+  const dir = await mkdtemp(join(tmpdir(), 'promptforge-quota-'));
+  t.after(() => rm(dir, { recursive: true, force: true }));
+  const mock = join(dir, 'quota.mjs');
+  const output = join(dir, 'report.json');
+  const checkpoint = join(dir, 'cases');
+  await writeFile(mock, `let calls = 0;
+globalThis.fetch = async () => {
+  if (++calls !== 1) process.exit(33);
+  return Response.json({ error: { code: 'insufficient_quota' } }, { status: 429 });
+};
+`);
+  const model = 'deepseek-v4.1-flash-bansos';
+  await promisify(execFile)(process.execPath, ['--import', mock, 'benchmark/run.mjs', '--live', '--automated-only',
+    '--case', 'content-01,programming-09', '--checkpoint', checkpoint, '--out', output], { env: {
+    ...process.env, BENCH_COMMIT: 'quota-fixture', ARXPAY_API_KEY: 'fixture', BENCH_EXEC_PROVIDER: 'arxpay',
+    BENCH_OPT_PROVIDER: 'arxpay', BENCH_EXEC_MODEL: model, BENCH_OPT_MODEL: model,
+  } });
+  const report = JSON.parse(await readFile(output, 'utf8'));
+  assert.equal(report.stoppedBy, 'provider_quota');
+  assert.equal(report.rows.length, 6);
+  assert.equal(report.rows.filter(row => row.failure === 'provider_quota').length, 1);
+  assert.equal(report.rows.filter(row => row.status === 'not_attempted').length, 5);
+  assert.deepEqual(await readdir(checkpoint), []);
 });

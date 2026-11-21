@@ -1,4 +1,5 @@
 import { executionCancelled } from './operations.mjs';
+import { evaluationMetadata } from './evaluation.mjs';
 import { adaptOutput } from './output.mjs';
 import { generateText, Problem, requireTarget } from './providers.mjs';
 
@@ -71,10 +72,10 @@ export async function execute(db, env, owner, input) {
     throw new Problem(429, 'Batas eksekusi sementara tercapai atau versi sudah dihapus. Periksa riwayat dan coba lagi.', 'execution_limit');
   }
 
-  const ask = async (...args) => {
+  const beforeAttempt = async () => {
     if ((await lookup.first())?.status !== 'running') throw executionCancelled();
-    return generateText(...args);
   };
+  const ask = (env, target, request, options) => generateText(env, target, request, { ...options, beforeAttempt });
   let status;
   try {
     data.raw = await ask(env, target, {
@@ -91,8 +92,12 @@ export async function execute(db, env, owner, input) {
       prompt: approved.draft,
       limit: target.provider === 'arxpay' ? 6144 : 2048, thinking: false,
     }, { timeout: target.provider === 'arxpay' ? 40000 : 10000 });
-    await db.prepare("UPDATE executions SET payload=? WHERE owner=? AND request_id=? AND status='running'")
-      .bind(JSON.stringify(data), owner, requestId).run();
+    try {
+      await db.prepare("UPDATE executions SET payload=? WHERE owner=? AND request_id=? AND status='running'")
+        .bind(JSON.stringify(data), owner, requestId).run();
+    } catch {
+      throw new Problem(503, 'Respons belum dapat disimpan. Periksa riwayat sebelum menjalankan ulang.', 'storage_failure');
+    }
     data.output = await adaptOutput(env, assessmentTarget, { raw: data.raw, approved }, ask);
     status = data.output.status === 'validated' ? 'complete' : 'warning';
   } catch (error) {
@@ -101,18 +106,31 @@ export async function execute(db, env, owner, input) {
     status = 'failed';
   }
 
-  await db.prepare("UPDATE executions SET status=?,payload=? WHERE owner=? AND request_id=? AND status='running'")
-    .bind(status, JSON.stringify(data), owner, requestId).run();
-  const saved = await lookup.first();
+  data.completed = new Date(Math.max(Date.now(), Date.parse(created))).toISOString();
+  if (data.output?.text) {
+    const evaluatorType = data.output.review ? 'model-assisted' : 'deterministic';
+    const evaluationStatus = status === 'complete' ? 'passed' :
+      evaluatorType === 'deterministic' && !data.output.critical ? 'unverified' : 'failed';
+    data.output.evaluation = evaluationMetadata('output', requestId, evaluatorType, evaluationStatus, data.completed);
+  }
+  let saved;
+  try {
+    await db.prepare("UPDATE executions SET status=?,payload=? WHERE owner=? AND request_id=? AND status='running'")
+      .bind(status, JSON.stringify(data), owner, requestId).run();
+    saved = await lookup.first();
+  } catch {
+    throw new Problem(503, 'Status akhir belum dapat dikonfirmasi. Periksa riwayat sebelum menjalankan ulang.', 'storage_failure');
+  }
   if (!saved) throw new Problem(404, 'Sesi sudah dihapus.');
   return present(saved);
 }
 
 export async function saveFeedback(db, owner, { session, version, executionId, useful, comment }) {
+  const evaluation = evaluationMetadata('usefulness', executionId, 'human', useful ? 'passed' : 'failed');
   const result = await db.prepare(
     `UPDATE executions SET payload=json_set(payload, '$.feedback', json(?))
      WHERE owner=? AND session=? AND version=? AND request_id=? AND status IN ('complete','warning')`,
-  ).bind(JSON.stringify({ useful, comment }), owner, session, version, executionId).run();
+  ).bind(JSON.stringify({ useful, comment, evaluation }), owner, session, version, executionId).run();
   if (!(result.meta?.changes ?? result.changes)) throw new Problem(404, 'Hasil eksekusi tidak ditemukan.');
   return { saved: true };
 }

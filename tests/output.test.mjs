@@ -33,6 +33,26 @@ test('missing values override a positive semantic review', async () => {
   assert.match(result.warnings[0], /15%/);
 });
 
+test('a mixed-script fragment in Indonesian prose raises a warning and preserves valid names, quotes and code', async () => {
+  const budget = {
+    raw: { text: 'Sisihkan Rp30.000 sebagai缓冲.' },
+    approved: { draft: 'Make an Indonesian budget table.', lang: 'Bahasa Indonesia', spec: { constraints: [] } },
+  };
+  const result = await adaptOutput({}, {}, budget, fixture({ answer: budget.raw.text, warnings: [] }, review));
+  assert.equal(result.status, 'warning');
+  assert.equal(result.critical, false);
+  assert.match(result.warnings[0], /缓冲/);
+
+  const quote = { ...budget, approved: { ...budget.approved, draft: 'Include the quotation “缓冲”.' } };
+  const quoted = await adaptOutput({}, {}, quote, fixture({ answer: 'Sisihkan Rp30.000 sebagai “缓冲”.', warnings: [] }, review));
+  assert.equal(quoted.status, 'validated');
+  const code = await adaptOutput({}, {}, budget, fixture({ answer: 'Rp30.000. Contoh kode: `缓冲`.', warnings: [] }, review));
+  assert.equal(code.status, 'validated');
+  const city = { raw: { text: 'Tokyo (東京) is in Japan.' }, approved: { ...budget.approved, draft: 'Describe Japanese cities with local names.' } };
+  const named = await adaptOutput({}, {}, city, fixture({ answer: 'Tokyo (東京) berada di Jepang.', warnings: [] }, review));
+  assert.equal(named.status, 'validated');
+});
+
 test('review findings flag a proper name change and incomplete audit cannot validate an answer', async () => {
   const changed = answer.replace('Maya', 'Naya');
   const result = await adaptOutput({}, {}, example, fixture({ answer: changed, warnings: [] }, {

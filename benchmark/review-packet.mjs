@@ -41,12 +41,12 @@ if (mode === 'prepare') {
   if (ratings.datasetVersion !== datasetVersion || reference.datasetVersion !== datasetVersion ||
     !Array.isArray(ratings.reviews)) throw Error('Versi penilaian tidak cocok.');
   const used = new Set();
-  const reviews = ratings.reviews.map(({ itemId, prompt, output, constraints, issues, critical }) => {
+  const reviews = ratings.reviews.map(({ itemId, prompt, output, promptConstraints, constraints, issues, critical }) => {
     if (typeof itemId !== 'string' || !Object.hasOwn(reference.identities, itemId) || used.has(itemId)) {
       throw Error('ID penilaian tidak dikenal atau terduplikasi.');
     }
     used.add(itemId);
-    return { ...reference.identities[itemId], prompt, output, constraints, issues, critical };
+    return { ...reference.identities[itemId], prompt, output, promptConstraints, constraints, issues, critical };
   });
   await write(destination, { datasetVersion, reportSha256: reference.reportSha256, reviews });
 }

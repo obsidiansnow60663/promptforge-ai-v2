@@ -43,8 +43,8 @@ test('only explicit transient responses are retried, with a bounded delay', asyn
     pause: async ms => delays.push(ms),
     send: async () => { calls++; return Response.json({}, { status: 503 }); },
   }), { code: 'provider_transient' });
-  assert.equal(calls, 2);
-  assert.deepEqual(delays, [250]);
+  assert.equal(calls, 3);
+  assert.deepEqual(delays, [250, 500]);
   for (const [status, expected] of [[401, 'provider_credentials'], [429, 'provider_quota'], [400, 'provider_rejected']]) {
     calls = 0;
     await assert.rejects(generateText(env, target, request, {
@@ -52,6 +52,30 @@ test('only explicit transient responses are retried, with a bounded delay', asyn
     }), error => error.code === expected && !error.message.includes('secret leakage'));
     assert.equal(calls, 1);
   }
+});
+
+test('provider respects a short Retry-After and rechecks cancellation before retrying', async () => {
+  let calls = 0;
+  const cancel = Object.assign(Error('cancelled'), { code: 'execution_cancelled' });
+  await assert.rejects(generateText(env, target, request, {
+    beforeAttempt: async () => { if (calls) throw cancel; },
+    pause: async ms => assert.equal(ms, 2000),
+    send: async () => {
+      calls++;
+      return Response.json({}, { status: 429, headers: { 'Retry-After': '2' } });
+    },
+  }), { code: 'execution_cancelled' });
+  assert.equal(calls, 1);
+  await assert.rejects(generateText(env, target, request, {
+    pause: async () => assert.fail('Never retry sooner than the provider requests'),
+    send: async () => Response.json({}, { status: 429, headers: { 'Retry-After': '60' } }),
+  }), { code: 'provider_rate_limit' });
+  await assert.rejects(generateText(env, target, request, {
+    pause: async () => assert.fail('Do not retry an exhausted daily allowance'),
+    send: async () => Response.json({ error: { code: 'key_daily_cap' } }, {
+      status: 429, headers: { 'Retry-After': '1' },
+    }),
+  }), { code: 'provider_quota' });
 });
 
 test('timeout and truncated output stay distinct from a successful response', async () => {
@@ -121,7 +145,10 @@ test('comparison can use one assessment target and owner-only feedback updates t
   assert.equal((await call('feedback', feedback, 'visitor')).status, 404);
   assert.equal((await call('feedback', feedback)).status, 200);
   const [record] = await (await call('executions?session=' + prompt.session + '&version=1')).json();
-  assert.deepEqual(record.feedback, { useful: false, comment: 'Perlu contoh.' });
+  assert.equal(record.feedback.useful, false);
+  assert.equal(record.feedback.comment, 'Perlu contoh.');
+  assert.equal(record.feedback.evaluation.status, 'failed');
+  assert.equal(record.feedback.evaluation.itemId, result.id);
 });
 
 

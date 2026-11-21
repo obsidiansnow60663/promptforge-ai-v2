@@ -4,6 +4,7 @@ const states = {
   unconfirmed: 'Status belum terkonfirmasi',
 };
 const operationNames = { generate: 'Penyusunan prompt', execute: 'Eksekusi model' };
+const phaseNames = { analysis: 'Menganalisis instruksi', draft: 'Menyusun draf', review: 'Meninjau draf' };
 const time = new Intl.DateTimeFormat('id-ID', { dateStyle: 'short', timeStyle: 'short' });
 
 export function cancelButton(item, escape, label = 'Batalkan') {
@@ -17,10 +18,13 @@ export function operationsView({ data, error, loading, escape }) {
   if (error) return '<p class="err" role="alert">' + escape(error) + '</p>' + refresh;
   if (!data?.length) return '<p>Belum ada proses server yang tercatat.</p>' + refresh;
   return refresh + data.map(item => {
+    const phase = phaseNames[item.phase];
     const state = item.kind === 'generate' && item.status === 'finished' && !item.version ?
       'Klarifikasi diminta' : states[item.status] ?? item.status;
+    const detail = item.status === 'running' && phase ? phase :
+      item.status === 'failed' && phase ? state + ' saat ' + phase.toLowerCase() : state;
     return '<div class="listrow"><span><strong>' + escape(operationNames[item.kind]) + '</strong><br><small>' +
-      escape(state) + ' · ' + escape(time.format(new Date(item.created))) + '</small></span><div class="actions">' +
+      escape(detail) + ' · ' + escape(time.format(new Date(item.created))) + '</small></span><div class="actions">' +
       (item.version ? '<button data-open="' + escape(item.session) + '" data-version="' +
         escape(item.version) + '">Buka versi</button>' : '') +
       (item.status === 'running' || item.status === 'unconfirmed' ? cancelButton(item, escape) : '') + '</div></div>';

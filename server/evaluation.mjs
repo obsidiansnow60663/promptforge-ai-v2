@@ -1,5 +1,9 @@
 import benchmark from '../benchmark/evidence-dod-v12.json' with { type: 'json' };
 
+export function evaluationMetadata(type, itemId, evaluatorType, status, created = new Date().toISOString()) {
+  return { id: crypto.randomUUID(), type, itemId, evaluatorType, status, created };
+}
+
 const benchmarkRuns = ['direct-id', 'literal-en', 'promptforge'].map(id => {
   const row = benchmark.liveSummary[id];
   return { id, cases: row.cases, answered: row.answered, markerFound: row.markerFound,

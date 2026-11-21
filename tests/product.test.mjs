@@ -21,11 +21,12 @@ test('a critical finding blocks approval despite a high weighted score', async (
   assert.equal(report.assessment.critical, true);
   assert.equal(report.stage, 'warning');
   assert.equal(report.revisions, 2);
+  assert.match(report.revisionReason, /perubahan kritis/);
 });
 
 test('custom instructions belong to one version and the evaluation API exposes only owner aggregates', async t => {
   const { call } = runtime(t, env);
-  const original = { ...existing(), systemInstructions: 'Use a formal tone.' };
+  const original = { ...existing(), mode: 'execute', inputLanguage: 'Bahasa Indonesia', systemInstructions: 'Use a formal tone.' };
   const hits = [];
   t.mock.method(globalThis, 'fetch', async (_url, options) => {
     const messages = JSON.parse(options.body).messages;
@@ -37,6 +38,13 @@ test('custom instructions belong to one version and the evaluation API exposes o
   assert.equal((await call('local', { ...original, report })).status, 200);
   const stored = await (await call('version?session=' + original.session + '&version=1')).json();
   assert.equal(stored.systemInstructions, original.systemInstructions);
+  assert.equal(stored.mode, 'execute');
+  assert.equal(stored.inputLanguage, 'Bahasa Indonesia');
+  assert.equal(stored.optimizedPromptLanguage, 'English');
+  assert.ok(stored.evaluation.id);
+  assert.equal(stored.evaluation.itemId, original.requestId);
+  assert.equal(stored.evaluation.evaluatorType, 'model-assisted');
+  assert.equal(stored.evaluation.status, 'passed');
   const executed = await (await call('execute', {
     session: original.session, version: 1, requestId: crypto.randomUUID(), target,
   })).json();
@@ -47,9 +55,23 @@ test('custom instructions belong to one version and the evaluation API exposes o
   const edited = await (await call('edit', { session: original.session, parent: 1,
     draft: 'A changed draft', requestId: crypto.randomUUID() })).json();
   assert.equal(edited.assessment, undefined);
+  assert.equal(edited.evaluation, undefined);
+  assert.equal(edited.optimizedPromptLanguage, undefined);
+  assert.equal(edited.revisionReason, 'Penyuntingan manual oleh pemilik.');
   assert.equal(edited.systemInstructions, original.systemInstructions);
   const bundle = await (await call('export?kind=versions')).json();
   assert.equal((await call('restore', bundle, 'restore-owner')).status, 200);
+  const reopened = await (await call('version?session=' + original.session + '&version=1', undefined, 'restore-owner')).json();
+  assert.equal(reopened.sessionCreated, bundle.rows[0].created);
+  assert.equal(reopened.sessionUpdated, bundle.rows[1].created);
+  const legacy = structuredClone(bundle);
+  for (const { payload } of legacy.rows) {
+    for (const field of ['mode', 'inputLanguage', 'optimizedPromptLanguage', 'revisionReason', 'evaluation']) delete payload[field];
+  }
+  assert.equal((await call('restore', legacy, 'legacy-owner')).status, 200);
+  const unsafe = structuredClone(bundle);
+  unsafe.rows[0].payload.assessment.critical = true;
+  assert.equal((await call('restore', unsafe, 'restore-owner')).status, 400);
   const dashboard = await (await call('evaluation')).json();
   assert.equal(dashboard.prompts.averageScore, 90);
   assert.equal(dashboard.prompts.scored, 1);
@@ -103,7 +125,10 @@ for (const kind of ['generate', 'execute']) {
     assert.equal(mock.mock.callCount(), 1);
     assert.deepEqual(await (await call('operations', undefined, 'other')).json(), []);
     if (kind === 'generate') assert.deepEqual(await (await call('history')).json(), []);
-    else assert.equal(result.output, undefined);
+    else {
+      assert.equal(result.output, undefined);
+      assert.ok(result.completed && result.completed >= result.created);
+    }
   });
 }
 

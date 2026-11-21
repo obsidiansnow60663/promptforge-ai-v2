@@ -12,13 +12,16 @@ test('restores version links and real record shape with provider fixtures under 
   const { call } = runtime(t, env);
   const original = existing();
   await call('existing', original);
-  await call('edit', { session: original.session, parent: 1, draft: 'Write a concise list of 5 points.', requestId: crypto.randomUUID() });
+  await call('edit', { session: original.session, parent: 1, draft: 'Write a concise list of 5 points.',
+    revisionReason: 'Perjelas format daftar.', requestId: crypto.randomUUID() });
+  let attempts = 0;
   const mock = t.mock.method(globalThis, 'fetch', async (_url, options) => {
     const call = JSON.parse(options.body);
     if (call.messages[0].content.startsWith('You adapt')) return arxReply(JSON.stringify({ answer: 'Rangkum.', warnings: [] }));
     if (call.messages[0].content.startsWith('Independently')) return arxReply(JSON.stringify({
       critical: false, issues: [], dimensions: Object.fromEntries(outputDimensions.map(key => [key, true])),
     }));
+    if (++attempts < 3) return Response.json({}, { status: 503 });
     return arxReply('Rangkum.');
   });
   const run = await (await call('execute', {
@@ -29,7 +32,17 @@ test('restores version links and real record shape with provider fixtures under 
   const versions = await page(call, 'versions');
   const executions = await page(call, 'executions');
   assert.equal(versions.rows[1].payload.parent, 1);
+  assert.equal(versions.rows[1].payload.revisionReason, 'Perjelas format daftar.');
+  assert.equal(executions.rows[0].payload.raw.attempts, 3);
+  assert.ok(run.created <= run.output.evaluation.created && run.output.evaluation.created <= run.completed);
+  assert.equal(run.output.evaluation.itemId, run.id);
+  assert.equal(run.output.evaluation.type, 'output');
+  assert.equal(run.output.evaluation.evaluatorType, 'model-assisted');
+  assert.equal(run.output.evaluation.status, 'passed');
   assert.equal(executions.rows[0].payload.feedback.comment, 'Ringkas.');
+  assert.equal(executions.rows[0].payload.feedback.evaluation.type, 'usefulness');
+  assert.equal(executions.rows[0].payload.feedback.evaluation.evaluatorType, 'human');
+  assert.equal(executions.rows[0].payload.completed, run.completed);
   assert.equal(await (await call('export?kind=versions', undefined, '')).status, 401);
   assert.deepEqual((await page(call, 'versions', 'recipient')).rows, []);
   assert.equal((await call('restore', executions, 'recipient')).status, 409);
@@ -39,7 +52,7 @@ test('restores version links and real record shape with provider fixtures under 
   assert.equal((await call('restore', executions, 'recipient')).status, 200);
   assert.deepEqual((await page(call, 'versions', 'recipient')).rows, versions.rows);
   assert.deepEqual((await page(call, 'executions', 'recipient')).rows, executions.rows);
-  assert.equal(mock.mock.callCount(), 3);
+  assert.equal(mock.mock.callCount(), 5);
   await call('delete', { session: original.session });
   assert.deepEqual((await page(call, 'executions')).rows, []);
   assert.equal((await page(call, 'executions', 'recipient')).rows.length, 1);

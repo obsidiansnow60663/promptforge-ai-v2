@@ -1625,12 +1625,12 @@ verified platform capabilities without weakening product outcomes.
 # 21. Final Project Definition
 
 PromptForge AI is an Indonesian-first prompt engineering and
-multi-provider execution Site built and hosted using ChatGPT Sites.
+configurable model execution Site built and hosted using ChatGPT Sites.
 
 It provides: - Intent and context understanding. - Domain-aware prompt
 construction. - Indonesian-to-English prompt translation and
 optimization. - Requirement-preservation review. - Generate Only and
-Generate & Execute workflows. - Multi-provider LLM integration. -
+Generate & Execute workflows. - ArxPay model execution. -
 Natural Indonesian output adaptation. - Independent prompt and output
 quality evaluation. - History and persistence within verified Sites
 capabilities. - Secure, reviewed, and controlled Site publishing.
@@ -1645,4 +1645,4 @@ them.
 > Preserve meaning first. Optimize second. Execute deliberately.
 > Validate the result. Demonstrate quality rather than assume it.
 
-**End of PromptForge AI --- ChatGPT Sites Blueprint & DoD v2.0.0**
+**End of PromptForge AI --- ChatGPT Sites Blueprint & DoD v2.1.0**

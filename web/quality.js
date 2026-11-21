@@ -17,5 +17,6 @@ export function promptAssessment(review, literalFailures) {
   const dimensions = hasPromptScores(review?.scores)
     ? Object.fromEntries(Object.keys(promptWeights).map(key => [key, review.scores[key]]))
     : null;
-  return { critical, dimensions, score: dimensions ? weightedPromptScore(dimensions) : null };
+  return { critical, dimensions, score: dimensions ? weightedPromptScore(dimensions) : null,
+    evaluatorType: review ? 'model-assisted' : 'deterministic' };
 }

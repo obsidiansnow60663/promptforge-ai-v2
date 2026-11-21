@@ -33,20 +33,23 @@ export async function generate(input,ask){
  delete spec.answerLanguage;
  delete spec.languageEvidence;
  delete spec.safeAssumptions;
- let draft='',issues=[],assessment;
+ let draft='',issues=[],assessment,revisionReason='';
  for(let attempt=0;attempt<=2;attempt++){
+  if(attempt>0)revisionReason=issues.join(' ').slice(0,1000).trim();
   const suggestion=await ask('Translate and optimize the instruction into natural, task-specific English. Include the requested answer language. Preserve exact numeric literals, names, URLs, quoted text, identifiers, constraints and required outputs. Do not execute. Return {draft:string}. Repair identified review issues.',{input,spec,previous:draft,issues},'draft');
   if(!str(suggestion?.draft,32000))throw malformed();
   draft=suggestion.draft;
   const literal=literalFailures([input.source,...input.answers.map(a=>a.answer)].join('\n'),draft);
   let review;
-  try{review=await ask('You review a translation of instructions, not the completed task. The candidate itself MUST be written in English. Compare what a future executor is asked to do in the candidate against the original request and clarification answers. The resolved input.lang states the requested language of the future answer only. A candidate saying "Write 5 points in Indonesian" preserves those requirements; do not demand the five points or Indonesian prose in the candidate. Look for changed intent, added obligations, missing deliverables, altered numbers/names/code, weak English or wrong response language. Return {pass:boolean,critical:boolean,issues:string[],scores:{intent,requirements,clarity,precision,alignment,integrity}}. Rate each dimension independently from 0 to 100 based on evidence, using 100 only when fully satisfied. Issues are in Indonesian. A critical failure always fails.',{input,draft},'review')}catch{return {stage:'warning',lang,spec,draft,issues:[...literal,'Peninjauan semantik belum selesai.'],assessment:promptAssessment(null,literal),revisions:attempt}}
-  if(typeof review?.pass!=='boolean'||!strings(review.issues))return {stage:'warning',lang,spec,draft,issues:[...literal,'Format laporan peninjauan tidak sah.'],assessment:promptAssessment(null,literal),revisions:attempt};
+  try{review=await ask('You review a translation of instructions, not the completed task. The candidate itself MUST be written in English. Compare what a future executor is asked to do in the candidate against the original request and clarification answers. The resolved input.lang states the requested language of the future answer only. A candidate saying "Write 5 points in Indonesian" preserves those requirements; do not demand the five points or Indonesian prose in the candidate. Look for changed intent, added obligations, missing deliverables, altered numbers/names/code, weak English or wrong response language. Return {pass:boolean,critical:boolean,issues:string[],scores:{intent,requirements,clarity,precision,alignment,integrity}}. Rate each dimension independently from 0 to 100 based on evidence, using 100 only when fully satisfied. Issues are in Indonesian. A critical failure always fails.',{input,draft},'review')}catch(error){
+   if(error?.code==='storage_failure'||error?.code==='generation_cancelled')throw error;
+   return {stage:'warning',lang,spec,draft,issues:[...literal,'Peninjauan semantik belum selesai.'],assessment:promptAssessment(null,literal),revisions:attempt,revisionReason}}
+  if(typeof review?.pass!=='boolean'||!strings(review.issues))return {stage:'warning',lang,spec,draft,issues:[...literal,'Format laporan peninjauan tidak sah.'],assessment:promptAssessment(null,literal),revisions:attempt,revisionReason};
   assessment=promptAssessment(review,literal);
   issues=[...literal,...review.issues];
-  if(review.pass&&!assessment.critical&&!issues.length)return {stage:'ready',lang,spec,draft,issues,assessment,revisions:attempt};
+  if(review.pass&&!assessment.critical&&!issues.length)return {stage:'ready',lang,spec,draft,issues,assessment,revisions:attempt,revisionReason};
   if(assessment.critical&&!issues.length)issues=['Peninjau menandai perubahan kritis pada instruksi.'];
   if(!issues.length)issues=['Peninjau belum dapat memastikan kesetiaan makna.'];
  }
- return {stage:'warning',lang,spec,draft,issues,assessment,revisions:2}
+ return {stage:'warning',lang,spec,draft,issues,assessment,revisions:2,revisionReason}
 }

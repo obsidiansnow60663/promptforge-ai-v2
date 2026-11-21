@@ -28,6 +28,20 @@ function onlyKeys(value, keys) {
     Object.keys(value).every(key => keys.includes(key));
 }
 
+function validTimestamp(value) {
+  return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T\d\d:\d\d:\d\d\.\d{3}Z$/.test(value) &&
+    Number.isFinite(Date.parse(value)) && new Date(value).toISOString() === value;
+}
+
+function validEvaluation(value, type, row) {
+  return onlyKeys(value, ['id', 'type', 'itemId', 'evaluatorType', 'status', 'created']) &&
+    uuid(value.id) && value.itemId === row.id && value.type === type &&
+    (type === 'usefulness' ? value.evaluatorType === 'human' :
+      ['model-assisted', 'deterministic'].includes(value.evaluatorType)) &&
+    ['passed', 'failed', 'unverified'].includes(value.status) &&
+    validTimestamp(value.created) && (type === 'usefulness' || value.created >= row.created);
+}
+
 // Preserve imports and history recorded before direct adapters were removed.
 function validTarget(target) {
   return onlyKeys(target, ['provider', 'model']) && ['openai', 'anthropic', 'gemini', 'arxpay'].includes(target.provider) && str(target.model, 120);
@@ -39,11 +53,11 @@ function validTrace(trace) {
     onlyKeys(trace.usage, ['input', 'output']) && validTarget({ provider: trace.provider, model: trace.requestedModel }) &&
     (trace.model === null || str(trace.model, 160)) && str(trace.finish, 100) &&
     Number.isSafeInteger(trace.latencyMs) && trace.latencyMs >= 0 &&
-    [1, 2].includes(trace.attempts) && count(trace.usage?.input) && count(trace.usage?.output);
+    [1, 2, 3].includes(trace.attempts) && count(trace.usage?.input) && count(trace.usage?.output);
 }
 
 function validOutput(output) {
-  return onlyKeys(output, ['status', 'warnings', 'text', 'critical', 'dimensions', 'adaptation', 'review']) &&
+  return onlyKeys(output, ['status', 'warnings', 'text', 'critical', 'dimensions', 'adaptation', 'review', 'evaluation']) &&
     ['validated', 'warning', 'unavailable', 'unverified'].includes(output.status) &&
     Array.isArray(output.warnings) && output.warnings.length <= 32 && output.warnings.every(item => str(item, 1000)) &&
     (output.text === undefined || str(output.text, 30000)) &&
@@ -57,15 +71,22 @@ function validOutput(output) {
 
 function validateExecution(row) {
   const data = row.payload;
-  if (!onlyKeys(data, ['target', 'assessmentTarget', 'language', 'raw', 'output', 'error', 'feedback']) ||
+  if (!onlyKeys(data, ['target', 'assessmentTarget', 'language', 'raw', 'output', 'error', 'feedback', 'completed']) ||
     !['complete', 'warning', 'failed'].includes(row.status) ||
     !validTarget(data.target) || (data.assessmentTarget !== undefined && !validTarget(data.assessmentTarget)) ||
     !['Bahasa Indonesia', 'English'].includes(data.language) ||
     (data.raw !== undefined && (!validTrace(data.raw) || !str(data.raw.text, 30000))) ||
     (data.output !== undefined && !validOutput(data.output)) ||
+    (data.completed !== undefined && (!validTimestamp(data.completed) || data.completed < row.created)) ||
+    (data.output?.evaluation !== undefined && (!validEvaluation(data.output.evaluation, 'output', row) ||
+      !data.output.text || !data.completed || data.output.evaluation.created > data.completed ||
+      data.output.evaluation.evaluatorType !== (data.output.review ? 'model-assisted' : 'deterministic') ||
+      (data.output.evaluation.status === 'passed') !== (data.output.status === 'validated'))) ||
     (data.error !== undefined && (!onlyKeys(data.error, ['code', 'message']) || !str(data.error.code, 100) || !str(data.error.message, 500))) ||
-    (data.feedback !== undefined && (!onlyKeys(data.feedback, ['useful', 'comment']) || typeof data.feedback.useful !== 'boolean' ||
-      typeof data.feedback.comment !== 'string' || data.feedback.comment.length > 1000))) invalid();
+    (data.feedback !== undefined && (!onlyKeys(data.feedback, ['useful', 'comment', 'evaluation']) || typeof data.feedback.useful !== 'boolean' ||
+      typeof data.feedback.comment !== 'string' || data.feedback.comment.length > 1000 ||
+      (data.feedback.evaluation !== undefined && (!validEvaluation(data.feedback.evaluation, 'usefulness', row) ||
+        data.feedback.evaluation.status !== (data.feedback.useful ? 'passed' : 'failed')))))) invalid();
   if ((row.status === 'complete' && (!data.raw || data.output?.status !== 'validated')) ||
     (row.status === 'warning' && (!data.raw || !data.output || data.output.status === 'validated')) ||
     (row.status === 'failed' && !data.error)) invalid();
@@ -74,9 +95,17 @@ function validateExecution(row) {
 function versionInsert(db, owner, row) {
   const { session, version, id, created, payload } = row;
   validateInput(payload);
-  validateReport(payload, true);
-  if (!onlyKeys(payload, ['source', 'domain', 'lang', 'answers', 'spec', 'draft', 'stage', 'issues', 'revisions', 'model', 'parent', 'systemInstructions', 'assessment']) ||
+  const report = validateReport(payload, true);
+  if (!onlyKeys(payload, ['source', 'domain', 'lang', 'answers', 'spec', 'draft', 'stage', 'issues', 'revisions', 'model', 'parent', 'systemInstructions',
+    'assessment', 'evaluation', 'revisionReason', 'mode', 'inputLanguage', 'optimizedPromptLanguage']) ||
+    report.stage !== payload.stage ||
+    (payload.mode === 'existing' && payload.stage !== 'edited') ||
+    (payload.optimizedPromptLanguage !== undefined && (payload.stage === 'edited' || payload.optimizedPromptLanguage !== 'English')) ||
     !onlyKeys(payload.spec, ['goal', 'context', 'requirements', 'constraints', 'deliverables', 'assumptions', 'questions']) ||
+    (payload.revisionReason !== undefined && !str(payload.revisionReason, 1000)) ||
+    (payload.evaluation !== undefined && (!validEvaluation(payload.evaluation, 'prompt', row) || !payload.assessment ||
+      payload.stage === 'edited' || (payload.evaluation.status === 'passed') !== (payload.stage === 'ready') ||
+      ((payload.stage === 'ready' || payload.assessment.dimensions) && payload.evaluation.evaluatorType !== 'model-assisted'))) ||
     !payload.answers.every(answer => onlyKeys(answer, ['question', 'answer']))) invalid();
   const parent = payload.parent ?? null;
   if (!str(payload.model, 160) || (parent !== null && (!validVersion(parent) || parent >= version))) invalid();
@@ -106,9 +135,7 @@ export async function restorePage(db, owner, input) {
   const { rows, schema, kind } = input;
   if (schema !== 1 || !Object.hasOwn(tables, kind) || !Array.isArray(rows) || !rows.length || rows.length > pageSize) invalid();
   for (const row of rows) {
-    if (!row || !uuid(row.session) || !uuid(row.id) || !validVersion(row.version) || typeof row.created !== 'string' ||
-      !/^\d{4}-\d{2}-\d{2}T\d\d:\d\d:\d\d\.\d{3}Z$/.test(row.created) ||
-      !Number.isFinite(Date.parse(row.created)) ||
+    if (!row || !uuid(row.session) || !uuid(row.id) || !validVersion(row.version) || !validTimestamp(row.created) ||
       !row.payload || typeof row.payload !== 'object' || Array.isArray(row.payload)) invalid();
   }
   const insert = kind === 'versions' ? versionInsert : executionInsert;

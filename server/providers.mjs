@@ -70,21 +70,43 @@ function providerError(status, body) {
   const type = body?.error?.code ?? body?.error?.type;
   if (status === 401 || status === 403) return new Problem(502, 'Provider menolak kredensial atau akses model. Periksa pengaturan Sites.', 'provider_credentials');
   if (status === 429) {
-    if (['insufficient_quota', 'billing_hard_limit_reached'].includes(type)) return new Problem(429, 'Kuota provider habis. Periksa tagihan provider.', 'provider_quota');
+    if (['insufficient_quota', 'billing_hard_limit_reached', 'key_daily_cap'].includes(type)) {
+      return new Problem(429, 'Kuota provider habis. Periksa batas penggunaan provider.', 'provider_quota');
+    }
     return new Problem(429, 'Provider membatasi permintaan. Periksa kuota atau coba lagi nanti.', 'provider_rate_limit');
   }
   if (status === 408 || status >= 500) return new Problem(502, 'Provider sedang mengalami gangguan. Coba kembali.', 'provider_transient');
   return new Problem(502, 'Provider menolak permintaan. Periksa model dan panjang prompt.', 'provider_rejected');
 }
 
-export async function generateText(env, target, { system, prompt, limit = 2048, json = false, thinking },
-  { send = (url, options) => globalThis.fetch(url, options), pause = ms => new Promise(resolve => setTimeout(resolve, ms)), timeout = 10000 } = {}) {
+function retryDelay(response, code, attempt) {
+  const header = response.headers.get('Retry-After');
+  const requested = !header ? 0 : /^\d+$/.test(header) ? Number(header) * 1000 : Date.parse(header) - Date.now();
+  if (requested > 3000) return null;
+  if (code === 'provider_transient' && response.status >= 500 ||
+      code === 'provider_rate_limit' && header && Number.isFinite(requested)) {
+    return Math.max(250 * 2 ** (attempt - 1), Number.isFinite(requested) ? requested : 0);
+  }
+  return null;
+}
+
+export async function generateText(env, target, { system, prompt, limit = 2048, json = false, thinking }, {
+  send = (url, options) => globalThis.fetch(url, options),
+  pause = ms => new Promise(resolve => setTimeout(resolve, ms)),
+  timeout = 10000,
+  beforeAttempt,
+} = {}) {
   requireTarget(env, target);
   const started = Date.now();
   const provider = providers[target.provider];
   const [url, headers, payload] = provider.request(target.model, env[provider.key], system, prompt, limit, json, thinking);
-  for (let attempt = 1; attempt <= 2; attempt++) {
-    const signal = AbortSignal.timeout(timeout);
+  const deadline = started + timeout * 2;
+  let lastIssue;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    await beforeAttempt?.();
+    const remaining = deadline - Date.now();
+    if (remaining <= 0) throw lastIssue ?? new Problem(502, 'Waktu tunggu provider habis.', 'provider_timeout');
+    const signal = AbortSignal.timeout(Math.min(timeout, remaining));
     let body, response;
     try {
       response = await send(url, {
@@ -106,8 +128,10 @@ export async function generateText(env, target, { system, prompt, limit = 2048, 
     }
     if (!response.ok) {
       const issue = providerError(response.status, body);
-      if (issue.code === 'provider_transient' && attempt === 1 && response.status !== 408) {
-        await pause(250);
+      const delay = retryDelay(response, issue.code, attempt);
+      if (attempt < 3 && delay !== null && Date.now() + delay < deadline) {
+        lastIssue = issue;
+        await pause(delay);
         continue;
       }
       throw issue;

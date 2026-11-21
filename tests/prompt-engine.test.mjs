@@ -109,3 +109,40 @@ test('an incomplete provider response gets one bounded structure repair', async 
   assert.equal(calls, 4);
   assert.equal(result.stage, 'ready');
 });
+
+test('failed generation resumes validated stages for the same owner and preserves the requested language', async t => {
+  const { call, sqlite } = runtime(t, configuration);
+  const body = { ...input, source: 'Tulis 5 poin tentang Git. Jawab dalam bahasa Inggris.',
+    session: crypto.randomUUID(), requestId: crypto.randomUUID() };
+  const analysis = { ...spec, answerLanguage: 'English', languageEvidence: 'Jawab dalam bahasa Inggris' };
+  const firstDraft = { draft: 'Explain Git in 5 points.' };
+  const revision = { draft: 'Explain Git in 5 points. Answer in English.' };
+  const replies = [analysis, firstDraft, { pass: false, issues: ['Sebutkan bahasa jawaban.'] },
+    null, analysis, { ...revision }, { pass: true, issues: [] }, revision, { pass: true, issues: [] }];
+  const sent = [];
+  const mock = t.mock.method(globalThis, 'fetch', async (_url, options) => {
+    sent.push(JSON.parse(options.body).messages[1].content);
+    const value = replies.shift();
+    if (!value) throw Error('fixture disconnect');
+    return reply(value);
+  });
+
+  const failed = await call('generate', body);
+  assert.equal(failed.status, 502);
+  const [job] = await (await call('operations')).json();
+  assert.equal(job.phase, 'draft');
+  assert.equal(job.status, 'failed');
+  assert.equal(job.code, 'provider_connection');
+  assert.equal(job.checkpoint, undefined);
+  assert.equal((await call('generate', { ...body, requestId: crypto.randomUUID() }, 'other')).status, 200);
+  assert.equal(mock.mock.callCount(), 7);
+
+  const saved = await (await call('generate', { ...body, requestId: crypto.randomUUID() })).json();
+  assert.equal(saved.stage, 'ready');
+  assert.equal(saved.lang, 'English');
+  assert.equal(saved.revisions, 1);
+  assert.equal(saved.draft, revision.draft);
+  assert.equal(sent[3], sent[7]);
+  assert.equal(mock.mock.callCount(), 9);
+  assert.equal(sqlite.prepare('SELECT COUNT(*) AS count FROM prompt_generations WHERE checkpoint IS NOT NULL').get().count, 0);
+});

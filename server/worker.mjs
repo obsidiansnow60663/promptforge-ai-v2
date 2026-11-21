@@ -1,23 +1,43 @@
 import { cancelOperation, listOperations } from './operations.mjs';
-import { readEvaluation } from './evaluation.mjs';
+import { evaluationMetadata, readEvaluation } from './evaluation.mjs';
 import { generatePrompt, promptAgent } from './prompt-engine.mjs';
 import { exportPage, restorePage } from './backups.mjs';
-import { invalid, str, uuid, validVersion, validateInput, validateReport, readJson } from './validation.mjs';
+import { invalid, str, uuid, validVersion, validateInput, validateReport, validateRevisionReason, readJson } from './validation.mjs';
 import { catalog, providerPresets, Problem } from './providers.mjs';
 import { execute, listExecutions, saveFeedback } from './executions.mjs';
 const MODEL='Qwen2.5-1.5B-Instruct-q4f32_1-MLC';
 const json=(value,status=200)=>new Response(JSON.stringify(value),{status,headers:{'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer'}});
 async function saveVersion(db,owner,b,data,generation=false){
  const guarded=generation?" HAVING EXISTS (SELECT 1 FROM prompt_generations WHERE owner=? AND request_id=? AND status='running')":'';
- const values=[owner,b.session,b.requestId,new Date().toISOString(),JSON.stringify(data),owner,b.session];
+ const created=new Date().toISOString();
+ const mode=data.stage!=='edited'&&data.mode==='existing'?'generate':data.mode??'generate';
+ const payload={...data,mode,inputLanguage:data.inputLanguage ?? (mode==='existing'?'Tidak ditentukan':'Bahasa Indonesia'),
+  ...(data.stage==='edited'?{}:{optimizedPromptLanguage:'English'}),
+  revisionReason:data.revisionReason || (data.revisions ? 'Perbaikan otomatis setelah peninjauan.' : 'Penyusunan prompt dari instruksi.')};
+ if(data.assessment){
+  const {evaluatorType=data.assessment.dimensions || data.stage==='ready' ? 'model-assisted' : 'deterministic',...assessment}=data.assessment;
+  const status=data.stage==='ready'?'passed':evaluatorType==='deterministic'&&!assessment.critical?'unverified':'failed';
+  payload.assessment=assessment;
+  payload.evaluation=evaluationMetadata('prompt',b.requestId,evaluatorType,status,created);
+ }
+ const values=[owner,b.session,b.requestId,created,JSON.stringify(payload),owner,b.session];
  if(generation)values.push(owner,b.requestId);
  const insert=db.prepare(`INSERT INTO versions(owner,session,version,request_id,created,payload)
   SELECT ?,?,COALESCE(MAX(version),0)+1,?,?,? FROM versions WHERE owner=? AND session=?${guarded}
   ON CONFLICT(owner,request_id) DO NOTHING`).bind(...values);
  if(generation){
-  await db.batch([insert,db.prepare("UPDATE prompt_generations SET status='finished' WHERE owner=? AND request_id=? AND status='running'").bind(owner,b.requestId)]);
+  try {
+   await db.batch([insert,db.prepare("UPDATE prompt_generations SET status='finished',checkpoint=NULL WHERE owner=? AND request_id=? AND status='running'").bind(owner,b.requestId)]);
+  }catch{
+   throw new Problem(503,'Versi prompt belum dapat disimpan. Coba kembali.','storage_failure');
+  }
  }else await insert.run();
- const saved=await db.prepare('SELECT session,version,payload FROM versions WHERE owner=? AND request_id=?').bind(owner,b.requestId).first();
+ let saved;
+ try{
+  saved=await db.prepare('SELECT session,version,payload FROM versions WHERE owner=? AND request_id=?').bind(owner,b.requestId).first();
+ }catch{
+  throw new Problem(503,'Penyimpanan versi belum terkonfirmasi. Kirim ulang permintaan yang sama.','version_save_unconfirmed');
+ }
  if(!saved||saved.session!==b.session)throw new Problem(409,'Penyimpanan belum terkonfirmasi untuk sesi ini.');
  return {...JSON.parse(saved.payload),version:saved.version};
 }
@@ -50,8 +70,13 @@ async function route(req,env){
   return json(await listExecutions(db,owner,session,version));
  }
  if(req.method==='GET'&&path==='/api/version'){
-  const row=await db.prepare('SELECT payload FROM versions WHERE owner=? AND session=? AND version=?').bind(owner,url.searchParams.get('session')||'',Number(url.searchParams.get('version'))||0).first();
-  if(!row)throw new Problem(404,'Versi tidak ditemukan.');return json(JSON.parse(row.payload));
+  const row=await db.prepare(`SELECT payload,
+   (SELECT min(created) FROM versions AS s WHERE s.owner=v.owner AND s.session=v.session) AS sessionCreated,
+   (SELECT max(created) FROM versions AS s WHERE s.owner=v.owner AND s.session=v.session) AS sessionUpdated
+   FROM versions AS v WHERE v.owner=? AND v.session=? AND v.version=?`)
+   .bind(owner,url.searchParams.get('session')||'',Number(url.searchParams.get('version'))||0).first();
+  if(!row)throw new Problem(404,'Versi tidak ditemukan.');
+  return json({...JSON.parse(row.payload),sessionCreated:row.sessionCreated,sessionUpdated:row.sessionUpdated});
  }
  if(req.method!=='POST'||req.headers.get('Origin')!==url.origin||
     req.headers.get('Content-Type')?.split(';',1)[0].trim().toLowerCase()!=='application/json'){
@@ -67,7 +92,7 @@ async function route(req,env){
   if(active)throw new Problem(409,'Tunggu penyusunan prompt selesai sebelum menghapus sesi.');
   await db.batch([
    db.prepare('DELETE FROM versions WHERE owner=? AND session=?').bind(owner,b.session),
-   db.prepare('UPDATE prompt_generations SET clarification=NULL WHERE owner=? AND session=?').bind(owner,b.session),
+   db.prepare('UPDATE prompt_generations SET clarification=NULL,checkpoint=NULL WHERE owner=? AND session=?').bind(owner,b.session),
   ]);
   return json({deleted:true});
  }
@@ -96,13 +121,15 @@ async function route(req,env){
   if(!str(b.draft,32000))invalid();
   data={...input,draft:b.draft,stage:'edited',issues:['Prompt yang Anda masukkan memerlukan persetujuan.'],
     spec:{goal:'Jalankan prompt yang sudah ada',context:'',requirements:[],constraints:[],deliverables:[],assumptions:[],questions:[]},
-    revisions:0,model:'Prompt manual'};
+    revisions:0,model:'Prompt manual',mode:'existing',revisionReason:'Penyimpanan prompt yang sudah ada.'};
  }else if(path==='/api/edit'){
   if(!str(b.draft,32000)||!validVersion(b.parent))invalid();
+  const revisionReason=validateRevisionReason(b.revisionReason) || 'Penyuntingan manual oleh pemilik.';
   const row=await db.prepare('SELECT payload FROM versions WHERE owner=? AND session=? AND version=?').bind(owner,b.session,Number(b.parent)||0).first();
   if(!row)throw new Problem(404,'Versi induk tidak ditemukan.');
-  const {assessment: _assessment,...original}=JSON.parse(row.payload);
-  data={...original,parent:b.parent,draft:b.draft,stage:'edited',issues:['Perubahan manual belum ditinjau.']};
+  const {assessment: _assessment,evaluation: _evaluation,optimizedPromptLanguage: _optimizedPromptLanguage,...original}=JSON.parse(row.payload);
+  if(!original.mode&&original.model==='Prompt manual')original.mode='existing';
+  data={...original,parent:b.parent,draft:b.draft,stage:'edited',issues:['Perubahan manual belum ditinjau.'],revisions:0,revisionReason};
  }else throw new Problem(404,'Operasi tidak ditemukan.');
  return json(await saveVersion(db,owner,b,data));
 }
