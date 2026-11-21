@@ -1,4 +1,3 @@
-import { diagnoseProvider } from './provider-diagnostic.mjs';
 import { generatePrompt, promptAgent } from './prompt-engine.mjs';
 import { exportPage, restorePage } from './backups.mjs';
 import { invalid, str, uuid, validVersion, validateInput, validateReport, readJson } from './validation.mjs';
@@ -19,10 +18,6 @@ async function route(req,env){
   if(!Object.hasOwn(assets,key))return new Response('Tidak ditemukan',{status:404});
   const type=key.endsWith('.js')?'text/javascript':key.endsWith('.css')?'text/css':key.endsWith('.html')?'text/html':'text/plain';
   return new Response(assets[key],{headers:{'Content-Type':type+'; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer','Content-Security-Policy':"default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; connect-src 'self' https://huggingface.co https://*.huggingface.co https://*.hf.co https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'self'"}});
- }
- if(path==='/api/diagnose-provider'&&req.method==='POST'){
-  const result=await diagnoseProvider(req,env);
-  if(result)return json(result);
  }
  const owner=req.headers.get('oai-authenticated-user-id');
  if(!owner)throw new Problem(401,'Masuk dengan ChatGPT untuk mengakses studio privat.');
