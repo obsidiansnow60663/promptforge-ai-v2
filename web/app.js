@@ -37,7 +37,7 @@ let work=newSession(),historyRows=[],historyError='',settings=null,settingsError
 let evaluation=null,evaluationError='',evaluationLoading=false;
 let operations=null,operationsError='',operationsLoading=false,activeOperations=[],operationNotice='';
 let namedModel='',modelNameDraft;
-let arxpayDirectory=null;
+let arxpayDirectory=null,catalogModel='';
 const links={hasil:'Tinjau prompt',klarifikasi:'Klarifikasi',...labels};
 const route=()=>Object.hasOwn(links,location.hash.slice(1))?location.hash.slice(1):'dasbor';
 function go(page){if(route()===page)render();else location.hash=page}
@@ -108,7 +108,7 @@ function arxpayCatalogPanel(){
   esc(modelName(settings,'arxpay',model))+'</span><button type="button" data-disable-arxpay-model="'+esc(model)+'" aria-label="'+
   esc('Nonaktifkan '+model)+'">Nonaktifkan</button></div>').join('');
  const selection=available?.length?'<form id="enableModel"><div class="group"><label for="catalogModel">ID model dari katalog</label>'+
-  '<select id="catalogModel" required>'+options(available,'')+'</select></div><button class="primary">Uji dan aktifkan</button></form>':
+  '<select id="catalogModel" required>'+options(available,catalogModel)+'</select></div><button class="primary">Uji dan aktifkan</button></form>':
   arxpayDirectory?'<p>'+(!arxpayDirectory.length?'Katalog ArxPay kosong.':'Semua model dalam katalog sudah aktif.')+'</p>':'';
  return '<section class="panel"><h2>Katalog model ArxPay</h2><p>Ambil daftar dari ArxPay. Studio menguji satu model yang Anda pilih sebelum menambahkannya ke eksekusi dan perbandingan.</p>'+
   '<button type="button" id="fetchArxpayModels">'+(arxpayDirectory?'Muat ulang daftar model':'Ambil daftar model')+'</button>'+
@@ -298,6 +298,7 @@ document.addEventListener('submit',e=>{
  e.preventDefault();
  if(e.target.id==='enableModel'){
   const model=e.target.querySelector('#catalogModel').value;
+  catalogModel=model;
   task('Menguji model ArxPay…',async()=>{
    await api('arxpay-model',{model,enabled:true});
    settings=await api('status');

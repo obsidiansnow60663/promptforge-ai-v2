@@ -63,3 +63,7 @@ Sites menerbitkan v15 dari commit `2d594f16fa3b155e0a22d35c1d8162aa61b3871d` den
 **Pengaturan → Katalog model ArxPay → Ambil daftar model** membaca `GET /v1/models` dari Worker memakai secret Sites. Studio menampilkan ID yang dikembalikan ArxPay. **Uji dan aktifkan** memeriksa satu model terpilih dengan respons JSON kecil sebelum memasukkannya ke pilihan eksekusi, perbandingan dan nama tampilan. Model tambahan tersimpan per pemilik dan dapat dinonaktifkan. Model bawaan penyusun prompt tetap ditentukan oleh konfigurasi Sites.
 
 Katalog nyata mengembalikan 19 ID saat diuji. Aktivasi, penolakan saat kuota habis, pemakaian ID asli, isolasi akun, dan penonaktifan lulus dengan respons tiruan. Chromium lokal menguji alur Pengaturan pada lebar 390 px, termasuk membaca kembali model aktif sesudah muat ulang.
+
+#### Galat akses saat aktivasi
+
+Log Sites pada v16 menunjukkan pengambilan katalog berhasil (HTTP 200) dan dua permintaan aktivasi gagal. Uji langsung terpisah pada model bawaan mengembalikan HTTP 429. Studio membedakan penolakan kredensial, izin katalog, izin model terpilih, dan batas penggunaan. Penolakan (HTTP 403) saat eksekusi dengan kredensial yang tidak dilaporkan invalid menampilkan ID model yang diminta. Pilihan model tetap terlihat sesudah galat. Alur ini diuji dengan respons tiruan dan tidak mengaktifkan model yang ditolak.

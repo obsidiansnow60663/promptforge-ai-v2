@@ -76,3 +76,35 @@ test('quota and redirects cannot enable a model or forward credentials', async t
   assert.equal(shifted.status, 502);
   assert.equal((await shifted.json()).code, 'provider_redirect');
 });
+
+test('catalog access, invalid credentials and selected model access have distinct errors', async t => {
+  const { call } = runtime(t, env);
+  let catalogDenied = true;
+  let invalidKey = false;
+  const mock = t.mock.method(globalThis, 'fetch', async url => {
+    if (url === endpoint + 'models') return catalogDenied ? Response.json({}, { status: 403 }) :
+      Response.json({ data: [{ id: model }] });
+    assert.equal(url, endpoint + 'chat/completions');
+    return Response.json({
+      error: { code: invalidKey ? 'invalid_api_key' : 'permission_denied', message: 'upstream detail' },
+    }, { status: 403 });
+  });
+  const denied = await (await call('arxpay-models')).json();
+  assert.equal(denied.code, 'provider_catalog_access');
+  assert.match(denied.error, /katalog model/);
+
+  catalogDenied = false;
+  const activation = { model, enabled: true };
+  const forbidden = await (await call('arxpay-model', activation)).json();
+  assert.equal(forbidden.code, 'provider_model_access');
+  assert.ok(forbidden.error.includes(model));
+  assert.doesNotMatch(forbidden.error, /upstream detail|ARXPAY_API_KEY/);
+  assert.equal(mock.mock.callCount(), 3);
+
+  invalidKey = true;
+  const credentials = await (await call('arxpay-model', activation)).json();
+  assert.equal(credentials.code, 'provider_credentials');
+  assert.doesNotMatch(credentials.error, /upstream detail/);
+  assert.deepEqual((await (await call('status')).json()).enabledArxPayModels, []);
+  assert.equal(mock.mock.callCount(), 5);
+});

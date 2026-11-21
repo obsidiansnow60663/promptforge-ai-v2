@@ -70,9 +70,18 @@ export function requireTarget(env, target) {
   return selected;
 }
 
-function providerError(status, body) {
+function providerError(status, body, model) {
   const type = body?.error?.code ?? body?.error?.type;
-  if (status === 401 || status === 403) return new Problem(502, 'Provider menolak kredensial atau akses model. Periksa pengaturan Sites.', 'provider_credentials');
+  if (status === 401 || (status === 403 && ['invalid_api_key', 'authentication_error'].includes(type))) {
+    return new Problem(502, 'ArxPay menolak kredensial API. Periksa secret ARXPAY_API_KEY di Sites.', 'provider_credentials');
+  }
+  if (status === 403) {
+    if (model) {
+      return new Problem(502, 'ArxPay menolak akses ke model ' + model +
+        ' (HTTP 403). Pilih model lain atau gunakan model yang sudah aktif.', 'provider_model_access');
+    }
+    return new Problem(502, 'ArxPay menolak akses ke katalog model (HTTP 403). Periksa izin katalog untuk kunci API.', 'provider_catalog_access');
+  }
   if (status === 429) {
     if (['insufficient_quota', 'billing_hard_limit_reached', 'key_daily_cap'].includes(type)) {
       return new Problem(429, 'Kuota provider habis. Periksa batas penggunaan provider.', 'provider_quota');
@@ -152,7 +161,7 @@ export async function generateText(env, target, { system, prompt, limit = 2048, 
       throw new Problem(502, 'Endpoint provider mengalihkan permintaan. Hubungi pengelola provider.', 'provider_redirect');
     }
     if (!response.ok) {
-      const issue = providerError(response.status, body);
+      const issue = providerError(response.status, body, target.model);
       const delay = retryDelay(response, issue.code, attempt);
       if (attempt < 3 && delay !== null && Date.now() + delay < deadline) {
         lastIssue = issue;
