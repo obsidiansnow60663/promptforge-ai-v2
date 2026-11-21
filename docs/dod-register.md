@@ -77,3 +77,9 @@ Ada 79 kasus dengan jawaban pada semua jalur. Audit literal berlaku pada kasus y
 Patch Node.js lulus pemeriksaan penerusan galat, pemisahan versi dan pemulihan. Draf mendapat persetujuan model sebelum eksekusi.
 
 Hasil per kasus, sidik laporan, uji D1 dan bukti uji ulang ada di `benchmark/evidence-dod-v12.json`. Semua penilaian manusia tetap kosong.
+
+### Uji timeout dan paket penilaian
+
+Uji ulang terpisah menurunkan konkurensi dari delapan ke dua untuk delapan kasus yang semula timeout. Enam menghasilkan jawaban, satu tetap timeout dan satu meminta klarifikasi. Hasil utama tetap 79 dari 100.
+
+Paket akhir menghasilkan 237 item dari 79 kasus yang mempunyai jawaban pada ketiga jalur. ID varian dipisah dan tidak ada pengiriman kepada penilai.

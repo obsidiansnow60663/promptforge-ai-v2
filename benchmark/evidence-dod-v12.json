@@ -1193,5 +1193,78 @@
       "failure": "clarify"
     }
   ],
-  "humanEvaluations": 0
+  "humanEvaluations": 0,
+  "timeoutRetest": {
+    "parallelCases": 2,
+    "summary": {
+      "answered": 6,
+      "evaluated": 0,
+      "missing": 8,
+      "failures": {
+        "provider_timeout": 1,
+        "clarify": 1
+      },
+      "humanReviewed": 0,
+      "criticalFailures": null,
+      "meanPromptScore": null,
+      "meanOutputDimensions": {
+        "taskSuccess": null,
+        "factualAccuracy": null,
+        "naturalness": null,
+        "format": null,
+        "terminology": null,
+        "audience": null,
+        "languageCompliance": null
+      },
+      "meanLatencyMs": 4373.166666666667,
+      "requirementPreservation": null
+    },
+    "rows": [
+      {
+        "caseId": "business-02",
+        "status": "prompt_not_approved",
+        "failure": "provider_timeout"
+      },
+      {
+        "caseId": "business-03",
+        "status": "answered"
+      },
+      {
+        "caseId": "business-05",
+        "status": "answered"
+      },
+      {
+        "caseId": "content-07",
+        "status": "answered"
+      },
+      {
+        "caseId": "content-08",
+        "status": "prompt_not_approved",
+        "failure": "clarify",
+        "optimizerFeedback": {
+          "questions": [
+            "Apa saja elemen visual yang terlihat jelas di gambar (misalnya susunan rak, jumlah buku, objek lain) agar alt text tidak menebak?",
+            "Apakah ada konteks penggunaan alt text (misalnya untuk situs web, media sosial, atau dokumen) yang memengaruhi panjang dan gaya?"
+          ]
+        }
+      },
+      {
+        "caseId": "content-12",
+        "status": "answered"
+      },
+      {
+        "caseId": "content-13",
+        "status": "answered"
+      },
+      {
+        "caseId": "content-14",
+        "status": "answered"
+      }
+    ]
+  },
+  "reviewPacket": {
+    "matchedCases": 79,
+    "reviewItems": 237,
+    "externalRecipients": 0
+  }
 }
