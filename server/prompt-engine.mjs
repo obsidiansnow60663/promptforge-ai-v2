@@ -1,5 +1,5 @@
 import { generationCancelled } from './operations.mjs';
-import { generate } from '../web/pipeline.js';
+import { generate, validPromptReview } from '../web/pipeline.js';
 import { configuredAgentModel, generateText, Problem } from './providers.mjs';
 import { str, strings, validateReport } from './validation.mjs';
 
@@ -12,11 +12,11 @@ const schemas = {
   draft: '{ "draft": "text" }',
   review: '{ "pass": true, "critical": false, "issues": [], "scores": { "intent": 100, "requirements": 100, "clarity": 100, "precision": 100, "alignment": 100, "integrity": 100 } }',
 };
-const checkpointVersion = 1;
+const checkpointVersion = 2;
 
 function validReply(stage, reply) {
   if (stage === 'draft') return str(reply?.draft, 32000);
-  if (stage === 'review') return typeof reply?.pass === 'boolean' && strings(reply.issues);
+  if (stage === 'review') return validPromptReview(reply);
   return str(reply?.goal, 2000) && typeof reply.context === 'string' && reply.context.length <= 5000 &&
     ['requirements', 'constraints', 'deliverables', 'assumptions', 'questions'].every(key => strings(reply[key])) &&
     reply.questions.length <= 3 && reply.questions.every(question => question.length <= 500);

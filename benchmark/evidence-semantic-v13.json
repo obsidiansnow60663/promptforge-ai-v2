@@ -1,0 +1,581 @@
+{
+  "datasetVersion": "promptforge-id-1.0.0",
+  "datasetSha256": "3d2f16aad692ac082a497df08c6845f5a53a1a9e8d1da2c70c4cfc5fd18000b5",
+  "source": {
+    "reportSha256": "6f9ee19670c10560cfe5871ec34099b5e834eebd14dffc5ffbcfd51909d64006",
+    "workflowCommit": "e90d4d6c6e1284a0829e08dd8d6a6a09b8bfb371",
+    "baseline": {
+      "sha256": "c0fd00aab724af0fb2a7187d2c08d85db50a6e5a901f6305bf50d68e464ba5f1",
+      "workflowCommit": "9106a873c765b88026ddd851af4bcabcb891fca6",
+      "variants": [
+        "direct-id",
+        "literal-en"
+      ]
+    },
+    "executionModelsByVariant": {
+      "direct-id": [
+        "deepseek-v4.1-flash"
+      ],
+      "literal-en": [
+        "deepseek-v4.1-flash"
+      ],
+      "promptforge": [
+        "deepseek-v4.1-flash"
+      ]
+    },
+    "candidateCount": 100
+  },
+  "review": {
+    "method": "Blinded variant labels and case grouping across three independent Codex agent reviewers",
+    "scope": "All complete matched cases from the v13 live report, raw model answers prior to Studio adaptation",
+    "categories": [
+      "programming"
+    ],
+    "matchedCases": 18,
+    "reviewedAnswers": 54,
+    "humanReviews": 0,
+    "rubric": {
+      "promptConstraints": "The prompt preserves all mandatory constraints",
+      "answerConstraints": "The answer meets all mandatory constraints",
+      "answerLanguage": "The answer uses the requested response language",
+      "taskSuccess": {
+        "0": "Mostly fails",
+        "1": "Partial with a material defect",
+        "2": "Meets the task without a material defect"
+      }
+    },
+    "limitations": [
+      "All matched cases are Programming; quota left other categories without paired answers.",
+      "A second reviewer calibrated one case. The other cases have single ratings, and the calibration does not estimate overall inter-rater agreement.",
+      "Prompt wording may hint at the variant despite hidden labels. No human grades were submitted.",
+      "Raw-answer results do not verify Studio adaptation, the full-dataset quality targets, or release readiness."
+    ]
+  },
+  "summary": {
+    "direct-id": {
+      "cases": 18,
+      "promptsPreservingConstraints": 18,
+      "answersMeetingConstraints": 15,
+      "answersInRequestedLanguage": 18,
+      "fullTaskSuccesses": 11,
+      "taskSuccessPoints": 29,
+      "maximumTaskSuccessPoints": 36
+    },
+    "literal-en": {
+      "cases": 18,
+      "promptsPreservingConstraints": 18,
+      "answersMeetingConstraints": 14,
+      "answersInRequestedLanguage": 18,
+      "fullTaskSuccesses": 10,
+      "taskSuccessPoints": 28,
+      "maximumTaskSuccessPoints": 36
+    },
+    "promptforge": {
+      "cases": 18,
+      "promptsPreservingConstraints": 18,
+      "answersMeetingConstraints": 17,
+      "answersInRequestedLanguage": 18,
+      "fullTaskSuccesses": 13,
+      "taskSuccessPoints": 31,
+      "maximumTaskSuccessPoints": 36
+    }
+  },
+  "calibration": {
+    "method": "Independent blind second rating of one case; primary scores unchanged",
+    "answers": [
+      {
+        "caseId": "programming-07",
+        "variant": "direct-id",
+        "differences": {
+          "answerConstraints": {
+            "primary": false,
+            "secondary": true
+          }
+        },
+        "secondaryReason": "Controls have labels and detected failures reach a focused error summary, but novalidate plus a nonempty-only email check lets malformed email bypass its stated error."
+      },
+      {
+        "caseId": "programming-07",
+        "variant": "literal-en",
+        "differences": {},
+        "secondaryReason": "Native controls, associated labels and visible descriptions support keyboard use and announcement when focus moves to the first invalid input."
+      },
+      {
+        "caseId": "programming-07",
+        "variant": "promptforge",
+        "differences": {},
+        "secondaryReason": "The static invalid-state example supplies keyboard-focusable controls, explicit labels and visible errors referenced by aria-describedby."
+      }
+    ]
+  },
+  "caseRatings": {
+    "programming-01": {
+      "group": 1,
+      "variants": {
+        "direct-id": {
+          "promptConstraints": true,
+          "answerConstraints": true,
+          "answerLanguage": true,
+          "taskSuccess": 2,
+          "reason": "Both Python implementations preserve separate occurrences and the examples demonstrate the empty input."
+        },
+        "literal-en": {
+          "promptConstraints": true,
+          "answerConstraints": true,
+          "answerLanguage": true,
+          "taskSuccess": 2,
+          "reason": "The Python function collapses adjacent runs without removing separated repeats and demonstrates an empty input."
+        },
+        "promptforge": {
+          "promptConstraints": true,
+          "answerConstraints": true,
+          "answerLanguage": true,
+          "taskSuccess": 2,
+          "reason": "The Python implementation and examples cover equal adjacent values, separated repeats and the empty list."
+        }
+      }
+    },
+    "programming-02": {
+      "group": 2,
+      "variants": {
+        "direct-id": {
+          "promptConstraints": true,
+          "answerConstraints": false,
+          "answerLanguage": true,
+          "taskSuccess": 1,
+          "reason": "The patch adds await and caller handling but deletes the whole data-fetch body, leaving a successful undefined result in place of the operation."
+        },
+        "literal-en": {
+          "promptConstraints": true,
+          "answerConstraints": true,
+          "answerLanguage": true,
+          "taskSuccess": 2,
+          "reason": "The patch awaits the rejection, preserves its cause, and lets the caller log it and signal failure."
+        },
+        "promptforge": {
+          "promptConstraints": true,
+          "answerConstraints": true,
+          "answerLanguage": true,
+          "taskSuccess": 1,
+          "reason": "The awaited rejection is logged, but the main fetch failure is caught without setting the advertised nonzero exit status or propagating it."
+        }
+      }
+    },
+    "programming-04": {
+      "group": 3,
+      "variants": {
+        "direct-id": {
+          "promptConstraints": true,
+          "answerConstraints": true,
+          "answerLanguage": true,
+          "taskSuccess": 2,
+          "reason": "Provides a self-contained pytest code block with ordinary and zero-divisor cases."
+        },
+        "literal-en": {
+          "promptConstraints": true,
+          "answerConstraints": true,
+          "answerLanguage": true,
+          "taskSuccess": 2,
+          "reason": "Provides a pytest code block with normal and zero-divisor cases and marks where to import the target function."
+        },
+        "promptforge": {
+          "promptConstraints": true,
+          "answerConstraints": true,
+          "answerLanguage": true,
+          "taskSuccess": 2,
+          "reason": "Provides a self-contained pytest example with normal, parametric, and zero-divisor cases."
+        }
+      }
+    },
+    "programming-05": {
+      "group": 1,
+      "variants": {
+        "direct-id": {
+          "promptConstraints": true,
+          "answerConstraints": false,
+          "answerLanguage": true,
+          "taskSuccess": 1,
+          "reason": "The converter produces ISO dates, but the failure CSV stores only the row number, date and error. It loses other fields from each failed row."
+        },
+        "literal-en": {
+          "promptConstraints": true,
+          "answerConstraints": false,
+          "answerLanguage": true,
+          "taskSuccess": 1,
+          "reason": "The script holds failed row data in memory, but the persisted failure CSV omits those original fields."
+        },
+        "promptforge": {
+          "promptConstraints": true,
+          "answerConstraints": true,
+          "answerLanguage": true,
+          "taskSuccess": 2,
+          "reason": "The converter and sample files retain all original columns in the separate failed-row report and show valid ISO dates."
+        }
+      }
+    },
+    "programming-06": {
+      "group": 2,
+      "variants": {
+        "direct-id": {
+          "promptConstraints": true,
+          "answerConstraints": true,
+          "answerLanguage": true,
+          "taskSuccess": 2,
+          "reason": "The TypeScript union and status-based narrowing correctly distinguish the two response shapes."
+        },
+        "literal-en": {
+          "promptConstraints": true,
+          "answerConstraints": true,
+          "answerLanguage": true,
+          "taskSuccess": 2,
+          "reason": "The TypeScript code models success and failure with status literals and uses the discriminator to narrow the union."
+        },
+        "promptforge": {
+          "promptConstraints": true,
+          "answerConstraints": true,
+          "answerLanguage": true,
+          "taskSuccess": 2,
+          "reason": "The two TypeScript types and disjoint status values support the shown narrowing and examples."
+        }
+      }
+    },
+    "programming-07": {
+      "group": 3,
+      "variants": {
+        "direct-id": {
+          "promptConstraints": true,
+          "answerConstraints": false,
+          "answerLanguage": true,
+          "taskSuccess": 1,
+          "reason": "Connected labels and error summary work for missing values. A malformed but nonempty email passes because novalidate disables native checks and the script only checks nonemptiness."
+        },
+        "literal-en": {
+          "promptConstraints": true,
+          "answerConstraints": true,
+          "answerLanguage": true,
+          "taskSuccess": 2,
+          "reason": "Explicit labels, keyboard focus, and linked validation messages form a complete accessible markup example."
+        },
+        "promptforge": {
+          "promptConstraints": true,
+          "answerConstraints": true,
+          "answerLanguage": true,
+          "taskSuccess": 2,
+          "reason": "The requested markup example exposes supplied error states through labels and described-by references during keyboard focus."
+        }
+      }
+    },
+    "programming-08": {
+      "group": 1,
+      "variants": {
+        "direct-id": {
+          "promptConstraints": true,
+          "answerConstraints": true,
+          "answerLanguage": true,
+          "taskSuccess": 2,
+          "reason": "The request and response sequence handles HTTP 412, preserves the draft and only resubmits after merging against the latest ETag."
+        },
+        "literal-en": {
+          "promptConstraints": true,
+          "answerConstraints": true,
+          "answerLanguage": true,
+          "taskSuccess": 1,
+          "reason": "The illustrated merge preserves both edits, but the suggested fallback GET can legitimately return 304 without a body when the client still needs the current representation."
+        },
+        "promptforge": {
+          "promptConstraints": true,
+          "answerConstraints": true,
+          "answerLanguage": true,
+          "taskSuccess": 2,
+          "reason": "The request sequence shows a stale If-Match rejection, preserved local changes, a fresh GET and a merged conditional retry."
+        }
+      }
+    },
+    "programming-09": {
+      "group": 2,
+      "variants": {
+        "direct-id": {
+          "promptConstraints": true,
+          "answerConstraints": true,
+          "answerLanguage": true,
+          "taskSuccess": 1,
+          "reason": "The formatter uses the required locale and API, but four default examples incorrectly expect two decimal digits despite both fraction digits being set to zero."
+        },
+        "literal-en": {
+          "promptConstraints": true,
+          "answerConstraints": true,
+          "answerLanguage": true,
+          "taskSuccess": 2,
+          "reason": "The formatter and examples use the required locale and API, and the explicitly added prefix matches the displayed results."
+        },
+        "promptforge": {
+          "promptConstraints": true,
+          "answerConstraints": true,
+          "answerLanguage": true,
+          "taskSuccess": 1,
+          "reason": "The formatter uses the required locale and API, but strict assertions expect ASCII spaces while the JavaScript runtime emits nonbreaking spaces after Rp."
+        }
+      }
+    },
+    "programming-10": {
+      "group": 3,
+      "variants": {
+        "direct-id": {
+          "promptConstraints": true,
+          "answerConstraints": true,
+          "answerLanguage": true,
+          "taskSuccess": 2,
+          "reason": "NUL-delimited paths support spaces without modifying files. A Bash fixture counted all three CSVs and excluded the nested CSV."
+        },
+        "literal-en": {
+          "promptConstraints": true,
+          "answerConstraints": true,
+          "answerLanguage": true,
+          "taskSuccess": 1,
+          "reason": "Handles spaces and only reads files, but a Bash fixture showed the glob excludes a hidden CSV and counts two instead of three."
+        },
+        "promptforge": {
+          "promptConstraints": true,
+          "answerConstraints": true,
+          "answerLanguage": true,
+          "taskSuccess": 1,
+          "reason": "Handles spaces and only reads files, but a Bash fixture showed the glob excludes a hidden CSV and counts two instead of three."
+        }
+      }
+    },
+    "programming-11": {
+      "group": 1,
+      "variants": {
+        "direct-id": {
+          "promptConstraints": true,
+          "answerConstraints": true,
+          "answerLanguage": true,
+          "taskSuccess": 2,
+          "reason": "The pseudocode computes each full seven-day window separately, skips missing values and returns null for entirely empty windows."
+        },
+        "literal-en": {
+          "promptConstraints": true,
+          "answerConstraints": false,
+          "answerLanguage": true,
+          "taskSuccess": 1,
+          "reason": "The pseudocode treats missing values, but its seven-day stride skips overlapping windows and its final window can contain fewer than seven days."
+        },
+        "promptforge": {
+          "promptConstraints": true,
+          "answerConstraints": true,
+          "answerLanguage": true,
+          "taskSuccess": 2,
+          "reason": "The pseudocode handles each complete seven-day window and explicitly treats partial and entirely missing observations."
+        }
+      }
+    },
+    "programming-12": {
+      "group": 2,
+      "variants": {
+        "direct-id": {
+          "promptConstraints": true,
+          "answerConstraints": true,
+          "answerLanguage": true,
+          "taskSuccess": 2,
+          "reason": "The tree separates routes, logic and data access with a framework-free option and conditionally permits an existing framework."
+        },
+        "literal-en": {
+          "promptConstraints": true,
+          "answerConstraints": false,
+          "answerLanguage": true,
+          "taskSuccess": 1,
+          "reason": "The tree separates routes, services and repositories, but assumes Express setup without any evidence that the project already uses it."
+        },
+        "promptforge": {
+          "promptConstraints": true,
+          "answerConstraints": true,
+          "answerLanguage": true,
+          "taskSuccess": 2,
+          "reason": "The folder tree separates HTTP routes, business services and repositories, and mentions Express only if it is already present."
+        }
+      }
+    },
+    "programming-13": {
+      "group": 3,
+      "variants": {
+        "direct-id": {
+          "promptConstraints": true,
+          "answerConstraints": true,
+          "answerLanguage": true,
+          "taskSuccess": 2,
+          "reason": "Uses DisallowUnknownFields, checks that a second decode reaches EOF, and displays file or decode errors on stderr."
+        },
+        "literal-en": {
+          "promptConstraints": true,
+          "answerConstraints": false,
+          "answerLanguage": true,
+          "taskSuccess": 1,
+          "reason": "Rejects unknown fields and reports initial read errors. More is not an EOF validation and can accept malformed trailing closing delimiters despite the stated validation guarantee."
+        },
+        "promptforge": {
+          "promptConstraints": true,
+          "answerConstraints": false,
+          "answerLanguage": true,
+          "taskSuccess": 1,
+          "reason": "Rejects unknown fields and reports initial read errors. More is not an EOF validation and can accept malformed trailing closing delimiters despite the stated validation guarantee."
+        }
+      }
+    },
+    "programming-14": {
+      "group": 1,
+      "variants": {
+        "direct-id": {
+          "promptConstraints": true,
+          "answerConstraints": true,
+          "answerLanguage": true,
+          "taskSuccess": 2,
+          "reason": "The CSS Grid example switches to one column at the specified 600 px breakpoint and has Indonesian comments."
+        },
+        "literal-en": {
+          "promptConstraints": true,
+          "answerConstraints": true,
+          "answerLanguage": true,
+          "taskSuccess": 2,
+          "reason": "The requested code-only CSS block uses Grid and switches to one column at and below 600 px. It contains no natural-language prose."
+        },
+        "promptforge": {
+          "promptConstraints": true,
+          "answerConstraints": true,
+          "answerLanguage": true,
+          "taskSuccess": 2,
+          "reason": "The requested CSS block uses Grid and a 600 px breakpoint. The supplementary explanation is in Indonesian."
+        }
+      }
+    },
+    "programming-15": {
+      "group": 2,
+      "variants": {
+        "direct-id": {
+          "promptConstraints": true,
+          "answerConstraints": true,
+          "answerLanguage": true,
+          "taskSuccess": 1,
+          "reason": "The main migration and rollback are sound for the stated assumptions, but the optional SQL claims MySQL compatibility while using unsupported COMMENT ON COLUMN syntax."
+        },
+        "literal-en": {
+          "promptConstraints": true,
+          "answerConstraints": true,
+          "answerLanguage": true,
+          "taskSuccess": 1,
+          "reason": "The main PostgreSQL migration is nullable with no backfill, but the rollback is incorrectly described as lossless for populated values, and deleting CONCURRENTLY does not make the partial index portable to MySQL."
+        },
+        "promptforge": {
+          "promptConstraints": true,
+          "answerConstraints": true,
+          "answerLanguage": true,
+          "taskSuccess": 2,
+          "reason": "The forward migration adds the nullable column with no row updates, and the rollback removes it. The archive update is shown separately as later usage."
+        }
+      }
+    },
+    "programming-17": {
+      "group": 3,
+      "variants": {
+        "direct-id": {
+          "promptConstraints": true,
+          "answerConstraints": true,
+          "answerLanguage": true,
+          "taskSuccess": 2,
+          "reason": "The example includes version 1.2.0 and renders separate additions and fixes in Markdown."
+        },
+        "literal-en": {
+          "promptConstraints": true,
+          "answerConstraints": true,
+          "answerLanguage": true,
+          "taskSuccess": 2,
+          "reason": "The sample preserves version 1.2.0 and uses independent headings for additions and fixes."
+        },
+        "promptforge": {
+          "promptConstraints": true,
+          "answerConstraints": true,
+          "answerLanguage": true,
+          "taskSuccess": 2,
+          "reason": "The sample preserves version 1.2.0 and separates additions and fixes using Markdown headings."
+        }
+      }
+    },
+    "programming-18": {
+      "group": 1,
+      "variants": {
+        "direct-id": {
+          "promptConstraints": true,
+          "answerConstraints": true,
+          "answerLanguage": true,
+          "taskSuccess": 1,
+          "reason": "The compound pagination query works, but the advice misstates that Base64 prevents cursor misuse and that events inserted after page one cannot appear on page two."
+        },
+        "literal-en": {
+          "promptConstraints": true,
+          "answerConstraints": true,
+          "answerLanguage": true,
+          "taskSuccess": 1,
+          "reason": "The stable ordering and tie-breaking query are correct, but the guidance presents Base64 encoding as protection against manually editing a cursor."
+        },
+        "promptforge": {
+          "promptConstraints": true,
+          "answerConstraints": true,
+          "answerLanguage": true,
+          "taskSuccess": 2,
+          "reason": "The keyset queries carry the same time and id order in cursor and comparison, with a working tie-breaker and index example."
+        }
+      }
+    },
+    "programming-19": {
+      "group": 2,
+      "variants": {
+        "direct-id": {
+          "promptConstraints": true,
+          "answerConstraints": true,
+          "answerLanguage": true,
+          "taskSuccess": 2,
+          "reason": "The Rust function returns Result and tests the boundary of one, zero and negative quantities."
+        },
+        "literal-en": {
+          "promptConstraints": true,
+          "answerConstraints": true,
+          "answerLanguage": true,
+          "taskSuccess": 2,
+          "reason": "The Rust function returns a typed Result and includes tests above, at, and below one."
+        },
+        "promptforge": {
+          "promptConstraints": true,
+          "answerConstraints": true,
+          "answerLanguage": true,
+          "taskSuccess": 2,
+          "reason": "The Rust handler returns a structured Result, accepts one and above, and rejects zero."
+        }
+      }
+    },
+    "programming-20": {
+      "group": 3,
+      "variants": {
+        "direct-id": {
+          "promptConstraints": true,
+          "answerConstraints": true,
+          "answerLanguage": true,
+          "taskSuccess": 1,
+          "reason": "Contains npm ci and marks the Node.js version unspecified, but same-length inner fences break the enclosing README fence and its copyable structure."
+        },
+        "literal-en": {
+          "promptConstraints": true,
+          "answerConstraints": true,
+          "answerLanguage": true,
+          "taskSuccess": 2,
+          "reason": "Provides a usable Markdown README with npm ci and an explicit unspecified Node.js version."
+        },
+        "promptforge": {
+          "promptConstraints": true,
+          "answerConstraints": true,
+          "answerLanguage": true,
+          "taskSuccess": 1,
+          "reason": "Contains npm ci and marks the Node.js version unspecified, but same-length inner fences break the enclosing README fence and its copyable structure."
+        }
+      }
+    }
+  }
+}

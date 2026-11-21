@@ -2,11 +2,26 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { outputDimensions } from '../server/output.mjs';
 import { agentModel, catalog, generateText } from '../server/providers.mjs';
+import { comparisonView } from '../web/comparison.js';
 import { existing, arxReply, runtime } from './runtime.mjs';
 
 const env = { ARXPAY_API_KEY: 'fixture-arxpay', ARXPAY_MODELS: 'fixture,review-fixture' };
 const target = { provider: 'arxpay', model: 'fixture' };
 const request = { prompt: 'Say hello', system: 'Use Indonesian' };
+
+test('comparison distinguishes requested IDs from actual models reported by ArxPay', () => {
+  const settings = { providers: [{ id: 'arxpay', configured: true, label: 'ArxPay', models: ['first', 'second'] }] };
+  const history = [{ session: 'sample', version: 1, title: 'Prompt' }];
+  const result = (requested, model) => ({ target: { provider: 'arxpay', model: requested }, status: 'complete',
+    raw: { model, text: 'Halo', latencyMs: 123, usage: {} } });
+  const render = (...runs) => comparisonView({ settings, history, comparison: { version: 1, runs, errors: [] }, escape: String });
+  const aliases = render(result('first', 'same'), result('second', 'same'));
+  assert.match(aliases, /value="arxpay\/first" selected/);
+  assert.match(aliases, /value="arxpay\/second" selected/);
+  assert.match(aliases, /Kedua pilihan mengarah ke model aktual yang sama/);
+  assert.match(render(result('first', null), result('second', 'distinct')), /Perbandingan model belum terverifikasi/);
+  assert.doesNotMatch(render(result('first', 'first-actual'), result('second', 'second-actual')), /model aktual yang sama|belum terverifikasi/);
+});
 
 test('execution normalizes ArxPay and sends credentials only to its fixed origin', async () => {
   const result = await generateText(env, target, request, {

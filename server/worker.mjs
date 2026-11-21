@@ -6,6 +6,7 @@ import { ownerModelEnvironment, scanArxPayModels, setArxPayModel } from './model
 import { invalid, str, uuid, validVersion, validateInput, validateReport, validateRevisionReason, readJson } from './validation.mjs';
 import { catalog, providerPresets, Problem } from './providers.mjs';
 import { execute, listExecutions, saveFeedback } from './executions.mjs';
+import { hasApprovedPromptReview } from '../web/quality.js';
 const MODEL='Qwen2.5-1.5B-Instruct-q4f32_1-MLC';
 const json=(value,status=200)=>new Response(JSON.stringify(value),{status,headers:{'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer'}});
 async function saveVersion(db,owner,b,data,generation=false){
@@ -134,7 +135,12 @@ async function route(req,env){
  if(path==='/api/local'){
   const input=validateInput(b);
   const lang=['Bahasa Indonesia','English'].includes(b.report?.lang)?b.report.lang:input.lang;
-  data={...input,lang,...validateReport(b.report),model:MODEL};
+  const report=validateReport(b.report);
+  if(report.stage==='ready'&&!hasApprovedPromptReview(report)){
+   report.stage='warning';
+   report.issues=['Rincian penilaian model belum lengkap.'];
+  }
+  data={...input,lang,...report,model:MODEL};
  }else if(path==='/api/existing'){
   const input=validateInput(b);
   if(!str(b.draft,32000))invalid();

@@ -1,7 +1,14 @@
-import { promptAssessment } from './quality.js';
+import { hasPromptScores, promptAssessment } from './quality.js';
 
 function str(x,max){return typeof x==='string' && x.trim().length>0 && x.length<=max}
 function strings(x){return Array.isArray(x)&&x.length<=40&&x.every(v=>str(v,2000))}
+export function validPromptReview(review){
+ return typeof review?.pass==='boolean'&&typeof review.critical==='boolean'&&strings(review.issues)&&hasPromptScores(review.scores);
+}
+function boundedIssues(issues){
+ const entries=[...new Set(issues.map(issue=>issue.slice(0,2000)))];
+ return entries.length>40?[...entries.slice(0,39),`${entries.length-39} temuan lain tidak ditampilkan.`]:entries;
+}
 const malformed=()=>new Error('Respons mesin bahasa belum dapat divalidasi. Instruksi asli tetap tersedia.');
 export function criticalTokens(text){
  const pattern=/https?:\/\/[^\s<>"\])]+|\x60[^\x60\n]+\x60|\b[A-Z]{1,8}[ _-]?\d{1,12}\b|\b\d+(?:[.,:/-]\d+)*(?:%|\b)/gu;
@@ -43,10 +50,10 @@ export async function generate(input,ask){
   let review;
   try{review=await ask('You review a translation of instructions, not the completed task. The candidate itself MUST be written in English. Compare what a future executor is asked to do in the candidate against the original request and clarification answers. The resolved input.lang states the requested language of the future answer only. A candidate saying "Write 5 points in Indonesian" preserves those requirements; do not demand the five points or Indonesian prose in the candidate. Look for changed intent, added obligations, missing deliverables, altered numbers/names/code, weak English or wrong response language. Return {pass:boolean,critical:boolean,issues:string[],scores:{intent,requirements,clarity,precision,alignment,integrity}}. Rate each dimension independently from 0 to 100 based on evidence, using 100 only when fully satisfied. Issues are in Indonesian. A critical failure always fails.',{input,draft},'review')}catch(error){
    if(error?.code==='storage_failure'||error?.code==='generation_cancelled')throw error;
-   return {stage:'warning',lang,spec,draft,issues:[...literal,'Peninjauan semantik belum selesai.'],assessment:promptAssessment(null,literal),revisions:attempt,revisionReason}}
-  if(typeof review?.pass!=='boolean'||!strings(review.issues))return {stage:'warning',lang,spec,draft,issues:[...literal,'Format laporan peninjauan tidak sah.'],assessment:promptAssessment(null,literal),revisions:attempt,revisionReason};
+   return {stage:'warning',lang,spec,draft,issues:boundedIssues(['Peninjauan semantik belum selesai.',...literal]),assessment:promptAssessment(null,literal),revisions:attempt,revisionReason}}
+  if(!validPromptReview(review))return {stage:'warning',lang,spec,draft,issues:boundedIssues(['Format laporan peninjauan tidak sah.',...literal]),assessment:promptAssessment(null,literal),revisions:attempt,revisionReason};
   assessment=promptAssessment(review,literal);
-  issues=[...literal,...review.issues];
+  issues=boundedIssues([...literal,...review.issues]);
   if(review.pass&&!assessment.critical&&!issues.length)return {stage:'ready',lang,spec,draft,issues,assessment,revisions:attempt,revisionReason};
   if(assessment.critical&&!issues.length)issues=['Peninjau menandai perubahan kritis pada instruksi.'];
   if(!issues.length)issues=['Peninjau belum dapat memastikan kesetiaan makna.'];

@@ -7,6 +7,10 @@ export function hasPromptScores(value) {
     Number.isInteger(value[key]) && value[key] >= 0 && value[key] <= 100);
 }
 
+export function hasApprovedPromptReview(report) {
+  return report.stage === 'ready' && report.assessment?.critical === false && Boolean(hasPromptScores(report.assessment.dimensions));
+}
+
 export function weightedPromptScore(dimensions) {
   const total = Object.entries(promptWeights).reduce((sum, [key, weight]) => sum + dimensions[key] * weight, 0);
   return total / 100;

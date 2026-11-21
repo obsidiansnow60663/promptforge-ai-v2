@@ -2,10 +2,11 @@ import { DatabaseSync } from 'node:sqlite';
 import { readFileSync, readdirSync } from 'node:fs';
 import worker from '../dist/server/index.js';
 
-export function runtime(t, config = {}) {
+export function runtime(t, config = {}, { beforeMigration } = {}) {
   const sqlite = new DatabaseSync(':memory:');
   t.after(() => sqlite.close());
   for (const name of readdirSync('drizzle').filter(name => name.endsWith('.sql')).sort()) {
+    if (name === beforeMigration?.name) beforeMigration.seed(sqlite);
     sqlite.exec(readFileSync('drizzle/' + name, 'utf8'));
   }
   const DB = {

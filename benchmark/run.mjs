@@ -134,7 +134,7 @@ async function runCase(item) {
     const fixtures = [{
       goal: item.intent, context: '', requirements: item.constraints, constraints: item.constraints,
       deliverables: [item.format], assumptions: [], questions: [],
-    }, { draft: candidate }, { pass: true, issues: [] }];
+    }, { draft: candidate }, { pass: true, critical: false, issues: [], scores: fixtureScore(Object.keys(promptWeights)) }];
     const input = { source: item.source, lang: item.language, domain: item.category, answers: [] };
     const useHostedAgent = !fixture && optimizer.provider === 'arxpay' && optimizer.model === configuredAgentModel(process.env);
     const optimized = useHostedAgent ?

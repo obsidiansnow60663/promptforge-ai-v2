@@ -4,6 +4,8 @@ import { runPromptAgent } from '../server/prompt-engine.mjs';
 import { agentModel } from '../server/providers.mjs';
 import { runtime } from './runtime.mjs';
 
+const scores = { intent: 100, requirements: 100, clarity: 100, precision: 100, alignment: 100, integrity: 100 };
+const passedReview = { pass: true, critical: false, issues: [], scores };
 const configuration = { ARXPAY_API_KEY: 'fixture-not-a-secret' };
 const input = { source: 'Tulis 5 poin tentang Git.', domain: 'Pemrograman', lang: 'Bahasa Indonesia', answers: [] };
 const spec = { goal: 'Jelaskan Git', context: '', requirements: [], constraints: ['5 poin'], deliverables: ['Daftar'],
@@ -15,7 +17,7 @@ const reply = data => Response.json({
 
 test('the server agent corrects invalid JSON shape and uses the existing semantic revision loop', async () => {
   const answers = [{ ...spec, context: {} }, spec, { draft: 'Explain Git in 15 points.' },
-    { pass: true, issues: [] }, draft, { pass: true, issues: [] }];
+    passedReview, draft, passedReview];
   let requests = 0;
   const result = await runPromptAgent(configuration, input, async (_env, target, request) => {
     assert.deepEqual(target, { provider: 'arxpay', model: agentModel });
@@ -34,7 +36,7 @@ test('the server agent corrects invalid JSON shape and uses the existing semanti
 test('the hosted route scopes credentials, saves a reviewed version, and coalesces an in-flight retry', async t => {
   const { call } = runtime(t, configuration);
   const body = { ...input, session: crypto.randomUUID(), requestId: crypto.randomUUID() };
-  const steps = [spec, draft, { pass: true, issues: [] }];
+  const steps = [spec, draft, passedReview];
   let notifyInitial, continueInitial;
   const initial = new Promise(resolve => { notifyInitial = resolve; });
   const hold = new Promise(resolve => { continueInitial = resolve; });
@@ -71,7 +73,7 @@ test('clarification is repeatable and leaves no draft until the owner supplies a
   const { call } = runtime(t, configuration);
   const body = { ...input, session: crypto.randomUUID(), requestId: crypto.randomUUID() };
   const question = 'Ditujukan kepada siapa?';
-  const steps = [{ ...spec, questions: [question] }, spec, draft, { pass: true, issues: [] }];
+  const steps = [{ ...spec, questions: [question] }, spec, draft, passedReview];
   const mock = t.mock.method(globalThis, 'fetch', async () => reply(steps.shift()));
   const clarification = { stage: 'clarify', spec: { questions: [question] } };
   assert.deepEqual(await (await call('generate', body)).json(), clarification);
@@ -104,7 +106,7 @@ test('an incomplete provider response gets one bounded structure repair', async 
       return { text: JSON.stringify(spec) };
     }
     assert.equal(request.limit, calls === 3 ? 2500 : 4096);
-    return { text: JSON.stringify(calls === 3 ? draft : { pass: true, issues: [] }) };
+    return { text: JSON.stringify(calls === 3 ? draft : passedReview) };
   });
   assert.equal(calls, 4);
   assert.equal(result.stage, 'ready');
@@ -117,8 +119,8 @@ test('failed generation resumes validated stages for the same owner and preserve
   const analysis = { ...spec, answerLanguage: 'English', languageEvidence: 'Jawab dalam bahasa Inggris' };
   const firstDraft = { draft: 'Explain Git in 5 points.' };
   const revision = { draft: 'Explain Git in 5 points. Answer in English.' };
-  const replies = [analysis, firstDraft, { pass: false, issues: ['Sebutkan bahasa jawaban.'] },
-    null, analysis, { ...revision }, { pass: true, issues: [] }, revision, { pass: true, issues: [] }];
+  const replies = [analysis, firstDraft, { ...passedReview, pass: false, issues: ['Sebutkan bahasa jawaban.'] },
+    null, analysis, { ...revision }, passedReview, revision, passedReview];
   const sent = [];
   const mock = t.mock.method(globalThis, 'fetch', async (_url, options) => {
     sent.push(JSON.parse(options.body).messages[1].content);
@@ -145,4 +147,17 @@ test('failed generation resumes validated stages for the same owner and preserve
   assert.equal(sent[3], sent[7]);
   assert.equal(mock.mock.callCount(), 9);
   assert.equal(sqlite.prepare('SELECT COUNT(*) AS count FROM prompt_generations WHERE checkpoint IS NOT NULL').get().count, 0);
+});
+
+test('incomplete hosted review receives one repair then saves an unapproved warning draft', async t => {
+  const { call } = runtime(t, configuration);
+  const incomplete = { pass: true, issues: [] };
+  const replies = [spec, draft, incomplete, incomplete];
+  const mock = t.mock.method(globalThis, 'fetch', async () => reply(replies.shift()));
+  const saved = await (await call('generate', { ...input, session: crypto.randomUUID(), requestId: crypto.randomUUID() })).json();
+  assert.equal(mock.mock.callCount(), 4);
+  assert.equal(saved.stage, 'warning');
+  assert.equal(saved.draft, draft.draft);
+  assert.equal(saved.evaluation.status, 'unverified');
+  assert.match(saved.issues[0], /Peninjauan semantik belum selesai/);
 });

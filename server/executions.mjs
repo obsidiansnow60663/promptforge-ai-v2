@@ -2,6 +2,7 @@ import { executionCancelled } from './operations.mjs';
 import { evaluationMetadata } from './evaluation.mjs';
 import { adaptOutput } from './output.mjs';
 import { generateText, Problem, requireTarget } from './providers.mjs';
+import { hasApprovedPromptReview } from '../web/quality.js';
 
 function present(row) {
   return { ...JSON.parse(row.payload), id: row.request_id, created: row.created, status: row.status };
@@ -43,7 +44,7 @@ export async function execute(db, env, owner, input) {
     .bind(owner, session, version).first();
   if (!row) throw new Problem(404, 'Versi prompt tidak ditemukan.');
   const approved = JSON.parse(row.payload);
-  if (approved.stage !== 'ready' && input.confirm !== true) {
+  if (!hasApprovedPromptReview(approved) && input.confirm !== true) {
     throw new Problem(409, 'Setujui versi prompt dan peringatannya sebelum menjalankan.', 'confirmation_required');
   }
 

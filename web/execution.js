@@ -23,7 +23,7 @@ export function modelName(settings, provider, model) {
   return provider === 'arxpay' && names && Object.hasOwn(names, model) ? names[model] : model;
 }
 
-export function targets(settings, escape, {auto = false} = {}) {
+export function targets(settings, escape, {auto = false, selectedModel} = {}) {
   const presets = settings?.presets?.map(item => '<option value="' + escape(item.id + '/' + item.provider + '/' + modelValue(item.model)) +
     '">' + escape(item.label + ' · ' + modelName(settings, item.provider, item.model)) + '</option>').join('');
   const selected = settings?.defaultTarget;
@@ -32,7 +32,9 @@ export function targets(settings, escape, {auto = false} = {}) {
     escape(modelName(settings, selected.provider, selected.model)) + '</option>' : '';
   return automatic + (presets ? '<optgroup label="Profil">' + presets + '</optgroup>' : '') + (settings?.providers ?? []).filter(provider => provider.configured).map(provider =>
     '<optgroup label="' + escape(provider.label) + '">' + provider.models.map(model =>
-      '<option value="' + escape(provider.id + '/' + modelValue(model)) + '">' + escape(modelName(settings, provider.id, model)) + '</option>').join('') + '</optgroup>').join('');
+      '<option value="' + escape(provider.id + '/' + modelValue(model)) + '"' +
+      (selectedModel?.provider === provider.id && selectedModel.model === model ? ' selected' : '') + '>' +
+      escape(modelName(settings, provider.id, model)) + '</option>').join('') + '</optgroup>').join('');
 }
 
 export function selectedTarget(element) {

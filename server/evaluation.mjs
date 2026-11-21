@@ -13,14 +13,22 @@ const benchmarkRuns = ['direct-id', 'literal-en', 'promptforge'].map(id => {
 export async function readEvaluation(db, owner) {
   const since = new Date(Date.now() - 30 * 86400000).toISOString();
   const [prompts, executions, models] = await Promise.all([
-    db.prepare(`SELECT count(*) AS total,
-      count(CASE WHEN json_extract(payload,'$.stage')='ready' THEN 1 END) AS ready,
-      count(CASE WHEN json_extract(payload,'$.stage')='warning' THEN 1 END) AS warnings,
-      count(CASE WHEN json_extract(payload,'$.stage')='edited' THEN 1 END) AS edited,
-      count(CASE WHEN json_extract(payload,'$.assessment.critical')=1 THEN 1 END) AS critical,
-      count(CASE WHEN json_extract(payload,'$.stage')='ready' THEN json_extract(payload,'$.assessment.score') END) AS scored,
-      avg(CASE WHEN json_extract(payload,'$.stage')='ready' THEN json_extract(payload,'$.assessment.score') END) AS averageScore
-      FROM versions WHERE owner=? AND created>=?`).bind(owner, since).first(),
+    db.prepare(`WITH reviewed AS (
+      SELECT json_extract(payload,'$.stage') AS stage,
+        json_extract(payload,'$.assessment.critical') AS critical,
+        json_extract(payload,'$.assessment.score') AS score
+      FROM versions WHERE owner=? AND created>=?
+    ), summarized AS (
+      SELECT CASE WHEN stage='ready' AND (score IS NULL OR critical IS NOT 0) THEN 'warning' ELSE stage END AS stage,
+        critical, score FROM reviewed
+    ) SELECT count(*) AS total,
+      count(CASE WHEN stage='ready' THEN 1 END) AS ready,
+      count(CASE WHEN stage='warning' THEN 1 END) AS warnings,
+      count(CASE WHEN stage='edited' THEN 1 END) AS edited,
+      count(CASE WHEN critical=1 THEN 1 END) AS critical,
+      count(CASE WHEN stage='ready' THEN score END) AS scored,
+      avg(CASE WHEN stage='ready' THEN score END) AS averageScore
+      FROM summarized`).bind(owner, since).first(),
     db.prepare(`SELECT count(*) AS total,
       count(CASE WHEN status='complete' THEN 1 END) AS validated,
       count(CASE WHEN status='warning' THEN 1 END) AS warnings,

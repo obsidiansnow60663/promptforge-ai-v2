@@ -73,3 +73,7 @@ Log Sites pada v16 menunjukkan pengambilan katalog berhasil (HTTP 200) dan dua p
 **Pengaturan → Katalog model ArxPay → Periksa ketersediaan model** membaca katalog lalu menjalankan permintaan JSON singkat. Pemilih hanya memuat ID yang lolos. Worker memeriksa model bawaan terlebih dahulu, menghentikan batch berikutnya saat kuota atau batas permintaan tercapai, dan menampilkan jumlah yang diperiksa, lolos, dan belum diperiksa. Satu pemeriksaan menguji hingga 20 ID dalam batas waktu total. Aktivasi memakai kembali hasil sukses terbaru selama dua menit, atau menguji model satu kali bila hasilnya sudah kedaluwarsa.
 
 Uji Worker lokal dengan ArxPay nyata membaca 19 ID dan mendapat galat kuota pada pemeriksaan pertama. Studio mengembalikan 0 model lolos dan menghentikan 18 pemeriksaan tersisa. Uji Chromium lokal dengan respons tiruan memverifikasi model gagal tidak tampil, model lolos dapat diaktifkan tanpa pengujian duplikat, dan konfigurasi aktif tetap terbaca setelah muat ulang. Sebanyak 49 tes otomatis lulus.
+
+### Penutupan temuan review dan migrasi
+
+Register aktif v2.1 mencatat bukti DoD dan skenario penerimaan terbaru di [register v2.1](dod-register-v21.md). Review yang tidak lengkap kini menghasilkan peringatan. Persetujuan eksplisit diperlukan sebelum menjalankan versi historis yang tidak memiliki rincian skor. Laporan dengan banyak temuan tetap menyimpan draf. Perbandingan memperingatkan apabila dua ID mengarah ke satu model aktual atau identitas aktual belum bisa dibuktikan.
