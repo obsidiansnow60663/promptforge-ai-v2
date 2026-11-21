@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { outputDimensions } from '../server/output.mjs';
 import { catalog, generateText } from '../server/providers.mjs';
 import { existing, openaiReply, runtime } from './runtime.mjs';
 
@@ -87,8 +88,14 @@ test('execution requires confirmation, persists by owner/version and reuses its 
   let calls = 0;
   t.mock.method(globalThis, 'fetch', async (_url, options) => {
     calls++;
-    assert.equal(JSON.parse(options.body).input, prompt.draft);
-    return openaiReply('Halo');
+    if (calls === 1) {
+      assert.equal(JSON.parse(options.body).input, prompt.draft);
+      return openaiReply('Halo');
+    }
+    if (calls === 2) return openaiReply(JSON.stringify({ answer: 'Halo', warnings: [] }));
+    return openaiReply(JSON.stringify({
+      critical: false, issues: [], dimensions: Object.fromEntries(outputDimensions.map(key => [key, true])),
+    }));
   });
   assert.equal((await call('existing', prompt)).status, 200);
   assert.equal((await call('execute', execution)).status, 409);
@@ -97,7 +104,8 @@ test('execution requires confirmation, persists by owner/version and reuses its 
   assert.equal(result.status, 'complete');
   assert.equal(result.raw.text, 'Halo');
   assert.deepEqual(await (await call('execute', { ...execution, confirm: true })).json(), result);
-  assert.equal(calls, 1);
+  assert.equal(calls, 3);
+  assert.equal(result.output.status, 'validated');
   const path = 'executions?session=' + prompt.session + '&version=1';
   assert.equal((await (await call(path)).json()).length, 1);
   assert.deepEqual(await (await call(path, undefined, 'pengunjung')).json(), []);

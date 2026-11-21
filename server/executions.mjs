@@ -1,3 +1,4 @@
+import { adaptOutput } from './output.mjs';
 import { generateText, Problem, requireTarget } from './providers.mjs';
 
 function present(row) {
@@ -63,7 +64,10 @@ export async function execute(db, env, owner, input) {
         '. No external tools are available. Do not claim to have used tools or verified external sources.',
       prompt: approved.draft,
     });
-    status = 'complete';
+    await db.prepare("UPDATE executions SET payload=? WHERE owner=? AND request_id=? AND status='running'")
+      .bind(JSON.stringify(data), owner, requestId).run();
+    data.output = await adaptOutput(env, target, { raw: data.raw, approved });
+    status = data.output.status === 'validated' ? 'complete' : 'warning';
   } catch (error) {
     data.error = error instanceof Problem ? { code: error.code, message: error.message } :
       { code: 'execution_error', message: 'Eksekusi belum berhasil. Coba kembali.' };
