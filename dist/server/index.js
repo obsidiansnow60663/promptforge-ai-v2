@@ -705,7 +705,7 @@ async function execute(db, env, owner, input) {
   let status;
   try {
     data.raw = await generateText(env, target2, {
-      system: "Answer the approved prompt below. Follow its task and format. Write the answer in " + approved.lang + ". Preserve all requested counts and format. Include assumptions only when needed and label them. Keep unrequested explanation concise and make technical examples complete enough to follow. No external tools are available. Do not claim external verification. Do not invent precise factual statistics, quotations, or attributions without supplied evidence. Clearly label illustrative or fictional figures and distinguish them from source facts.",
+      system: "Answer the approved prompt below. Follow its task and format. Write the answer in " + approved.lang + ". Preserve all requested counts and format. Include assumptions only when needed and label them. Keep unrequested explanation concise and make technical examples complete enough to follow. No external tools are available. Do not claim external verification. Do not invent precise factual statistics, quotations, or attributions without supplied evidence. Clearly label illustrative or fictional figures and distinguish them from source facts. When the output contract specifies a serialization or an exact schema, return that format and only the requested fields. Do not wrap a requested bare JSON object in Markdown or add inferred contract fields.",
       prompt: approved.draft,
       limit: target2.provider === "arxpay" ? 6144 : 2048,
       thinking: false

@@ -78,7 +78,9 @@ export async function execute(db, env, owner, input) {
         'Keep unrequested explanation concise and make technical examples complete enough to follow. ' +
         'No external tools are available. Do not claim external verification. ' +
         'Do not invent precise factual statistics, quotations, or attributions without supplied evidence. ' +
-        'Clearly label illustrative or fictional figures and distinguish them from source facts.',
+        'Clearly label illustrative or fictional figures and distinguish them from source facts. ' +
+        'When the output contract specifies a serialization or an exact schema, return that format and only the requested fields. ' +
+        'Do not wrap a requested bare JSON object in Markdown or add inferred contract fields.',
       prompt: approved.draft,
       limit: target.provider === 'arxpay' ? 6144 : 2048, thinking: false,
     }, { timeout: target.provider === 'arxpay' ? 40000 : 10000 });

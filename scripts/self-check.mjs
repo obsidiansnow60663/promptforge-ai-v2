@@ -38,6 +38,19 @@ const fixtures = [
       !/\b\d+(?:[.,]\d+)?\s*(?:liter|juta|miliar)\b/i.test(answer),
   },
   {
+    name: 'strict-json-contract', domain: 'Otomasi',
+    source: 'Buat prompt untuk mengelompokkan tiket dengan tag `billing`, `technical`, atau `other`. Identifier tiket harus disalin persis. Kembalikan satu objek JSON tanpa Markdown dan hanya dua field, `prompt` berisi instruksi Bahasa Indonesia dan `allowedTags` berisi tiga tag.',
+    lang: 'Bahasa Indonesia', draftChecks: [/billing/, /technical/, /other/, /allowedTags/, /JSON/],
+    answerCheck(answer) {
+      try {
+        const data = JSON.parse(answer);
+        return Object.keys(data).sort().join() === 'allowedTags,prompt' &&
+          Array.isArray(data.allowedTags) && [...data.allowedTags].sort().join() === 'billing,other,technical' &&
+          typeof data.prompt === 'string' && /identifi|ticket_id|ID tiket/i.test(data.prompt);
+      } catch { return false; }
+    },
+  },
+  {
     name: 'patch-after-source', domain: 'Pemrograman',
     source: 'Perbaiki aplikasi Node.js yang menelan galat saat Promise ditolak. Jangan abaikan galat. Sebutkan await. Berikan patch dan alasan. Potongan kode belum diberikan.',
     lang: 'Bahasa Indonesia', draftChecks: [/await/i, /patch/i],
@@ -46,7 +59,7 @@ const fixtures = [
   },
   {
     name: 'compare-after-articles', domain: 'Riset',
-    source: 'Buat matriks untuk menguji pernyataan dalam dua artikel pangan. Pisahkan klaim dan bukti. Jangan ciptakan sitasi. Saya belum memberikan isi artikel.',
+    source: 'Buat matriks berisi hasil penilaian berdasarkan isi dua artikel pangan. Pisahkan klaim dan bukti. Jangan ciptakan sitasi atau beri templat kosong. Minta isi artikel jika belum tersedia.',
     lang: 'Bahasa Indonesia', draftChecks: [/matrix/i, /claims?/i, /evidence/i],
     clarification: 'Dua artikel sintetis. Artikel A menyatakan penyimpanan dingin memperpanjang kesegaran, tetapi tidak memberikan data. Artikel B menyatakan kemasan tertutup mengurangi kontak udara dan menyebut pengamatan laboratorium tanpa ukuran sampel. Gunakan hanya isi ini.',
     answerCheck: answer => /Artikel A/i.test(answer) && /Artikel B/i.test(answer) && /klaim/i.test(answer) && /bukti/i.test(answer),
