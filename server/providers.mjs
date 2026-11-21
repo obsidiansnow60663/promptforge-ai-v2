@@ -83,6 +83,15 @@ export function catalog(env) {
   });
 }
 
+export function providerPresets(env) {
+  const providers = catalog(env);
+  return [['QUALITY', 'Kualitas'], ['BALANCED', 'Seimbang'], ['FAST', 'Cepat']].flatMap(([key, label]) => {
+    const [provider, model, extra] = (env['PROMPTFORGE_' + key + '_MODEL'] ?? '').split('/');
+    return !extra && providers.some(item => item.id === provider && item.configured && item.models.includes(model)) ?
+      [{ id: key.toLowerCase(), label, provider, model }] : [];
+  });
+}
+
 export function requireTarget(env, target) {
   const selected = catalog(env).find(item => item.id === target?.provider);
   if (!selected) throw new Problem(400, 'Pilih provider yang tersedia.', 'invalid_provider');
@@ -137,7 +146,7 @@ export async function generateText(env, target, { system, prompt, limit = 2048 }
     }
     return {
       ...normalized, provider: target.provider, requestedModel: target.model,
-      model: typeof normalized.model === 'string' ? normalized.model.slice(0, 160) : null,
+      model: typeof normalized.model === 'string' && normalized.model.trim() ? normalized.model.slice(0, 160) : null,
       latencyMs: Date.now() - started, attempts: attempt,
     };
   }

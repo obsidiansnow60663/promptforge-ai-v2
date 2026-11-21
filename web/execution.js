@@ -18,13 +18,15 @@ function adaptedAnswer(output, language, escape) {
 const locale = new Intl.NumberFormat('id-ID');
 
 export function targets(settings, escape) {
-  return (settings?.providers ?? []).filter(provider => provider.configured).map(provider =>
+  const presets = settings?.presets?.map(item => '<option value="' + escape(item.id + '/' + item.provider + '/' + item.model) +
+    '">' + escape(item.label + ' · ' + item.model) + '</option>').join('');
+  return (presets ? '<optgroup label="Profil">' + presets + '</optgroup>' : '') + (settings?.providers ?? []).filter(provider => provider.configured).map(provider =>
     '<optgroup label="' + escape(provider.label) + '">' + provider.models.map(model =>
       '<option value="' + escape(provider.id + '/' + model) + '">' + escape(model) + '</option>').join('') + '</optgroup>').join('');
 }
 
 export function selectedTarget(element) {
-  const [provider, model] = element.value.split('/');
+  const [provider, model] = element.value.split('/').slice(-2);
   return { provider, model };
 }
 

@@ -49,3 +49,9 @@ Referensi model: https://webllm.mlc.ai/models/
 ### Uji mesin nyata melalui endpoint kompatibel
 
 D1 deployment privat menyediakan binding DB dan tabel versions. URL privat meminta login ChatGPT. Pipeline juga dijalankan dengan adapter pengujian terhadap endpoint dan model deepseek-v4.1-flash-bansos yang ditentukan pemilik, hanya dengan instruksi sintetis. Pada kasus pengenalan Git, uji pertama berhenti dengan peringatan setelah dua revisi: peninjau meminta jawaban akhir saat menilai prompt Inggris. Setelah tugas peninjau diperjelas, pengujian yang sama menghasilkan tiga respons HTTP 200 dan status ready tanpa revisi. Prompt akhir mempertahankan tepat 5 poin, maksimum 20 kata per poin, audiens mahasiswa baru, Git, dan bahasa jawaban Indonesia. Sampel tunggal ini tidak mengukur mutu Qwen lokal. Endpoint pengujian dan kredensial tidak digunakan oleh aplikasi.
+
+## PF-003 · Fase 3–6 · 21 November 2026
+
+Implementasi mempertahankan Worker native, WebLLM, dan binding D1 `DB`. Build membundel modul server menjadi entrypoint Worker. Provider memakai HTTPS dengan endpoint tetap dan katalog model per lingkungan. Sites menyimpan rahasia, sementara browser menerima nama dan ketersediaan provider. Daftar konfigurasi produksi kosong ketika diperiksa. Akses HTTPS dari Worker ke provider masih belum dibuktikan oleh panggilan nyata. Streaming berada di luar alur ini.
+
+D1 menyimpan eksekusi yang tertaut pada versi prompt, hasil mentah, status adaptasi/peninjauan, metrik, dan umpan balik. Impor dan ekspor JSON berbasis pemilik mencakup record tersebut. Riwayat versi privat ditinjau melalui kontrol akses Sites. Bukti pengujian, prosedur rotasi serta pemulihan, dan kriteria yang masih terbuka dicatat di [dokumen verifikasi](docs/verification.md).

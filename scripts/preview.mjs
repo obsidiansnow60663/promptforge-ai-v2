@@ -7,7 +7,11 @@ const migrations=new URL('../drizzle/',import.meta.url);
 for(const name of readdirSync(migrations).filter(name=>name.endsWith('.sql')).sort()){
  sqlite.exec(readFileSync(new URL(name,migrations),'utf8'));
 }
-const DB={prepare(sql){const stmt=sqlite.prepare(sql);return {bind(...args){return {all:()=>({results:stmt.all(...args)}),first:()=>stmt.get(...args),run:()=>stmt.run(...args)}}}}};
+const DB={batch(statements){
+ sqlite.exec('BEGIN');
+ try{const results=statements.map(statement=>statement.run());sqlite.exec('COMMIT');return results}
+ catch(error){sqlite.exec('ROLLBACK');throw error}
+},prepare(sql){const stmt=sqlite.prepare(sql);return {bind(...args){return {all:()=>({results:stmt.all(...args)}),first:()=>stmt.get(...args),run:()=>stmt.run(...args)}}}}};
 const index=process.argv.indexOf('--port');
 const port=Number(process.env.PORT||(index<0?4173:process.argv[index+1]));
 createServer(async (req,res)=>{

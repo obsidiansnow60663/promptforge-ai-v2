@@ -51,11 +51,16 @@ export async function execute(db, env, owner, input) {
     assessmentTarget: { provider: assessmentTarget.provider, model: assessmentTarget.model },
     language: approved.lang,
   };
+  if (await db.prepare('SELECT 1 FROM execution_limits WHERE owner=? AND request_id=?').bind(owner, requestId).first()) {
+    throw new Problem(409, 'ID eksekusi sudah digunakan. Periksa riwayat sebelum menjalankan ulang.');
+  }
+  await db.prepare('DELETE FROM execution_limits WHERE owner=? AND created<?')
+    .bind(owner, new Date(Date.now() - 86400000).toISOString()).run();
   const claim = await db.prepare(
     `INSERT INTO executions(owner,session,version,request_id,created,status,payload)
      SELECT ?,?,?,?,?, 'running', ?
      WHERE EXISTS (SELECT 1 FROM versions WHERE owner=? AND session=? AND version=?)
-       AND (SELECT count(*) FROM executions WHERE owner=? AND created>=?) < 12
+       AND (SELECT count(*) FROM execution_limits WHERE owner=? AND created>=?) < 12
        AND (SELECT count(*) FROM executions WHERE owner=? AND status='running' AND created>=?) < 3
      ON CONFLICT(owner,request_id) DO NOTHING`,
   ).bind(owner, session, version, requestId, created, JSON.stringify(data), owner, session, version,
