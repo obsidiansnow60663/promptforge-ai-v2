@@ -38,6 +38,28 @@ const fixtures = [
       !/\b\d+(?:[.,]\d+)?\s*(?:liter|juta|miliar)\b/i.test(answer),
   },
   {
+    name: 'patch-after-source', domain: 'Pemrograman',
+    source: 'Perbaiki aplikasi Node.js yang menelan galat saat Promise ditolak. Jangan abaikan galat. Sebutkan await. Berikan patch dan alasan. Potongan kode belum diberikan.',
+    lang: 'Bahasa Indonesia', draftChecks: [/await/i, /patch/i],
+    clarification: 'Kode sintetis untuk diuji: async function load() { try { return await fetchData(); } catch (error) { return null; } }. Pertahankan API async, dan teruskan error asli dengan throw agar pemanggil menanganinya.',
+    answerCheck: answer => /await/.test(answer) && /throw\s+error/.test(answer),
+  },
+  {
+    name: 'compare-after-articles', domain: 'Riset',
+    source: 'Buat matriks untuk menguji pernyataan dalam dua artikel pangan. Pisahkan klaim dan bukti. Jangan ciptakan sitasi. Saya belum memberikan isi artikel.',
+    lang: 'Bahasa Indonesia', draftChecks: [/matrix/i, /claims?/i, /evidence/i],
+    clarification: 'Dua artikel sintetis. Artikel A menyatakan penyimpanan dingin memperpanjang kesegaran, tetapi tidak memberikan data. Artikel B menyatakan kemasan tertutup mengurangi kontak udara dan menyebut pengamatan laboratorium tanpa ukuran sampel. Gunakan hanya isi ini.',
+    answerCheck: answer => /Artikel A/i.test(answer) && /Artikel B/i.test(answer) && /klaim/i.test(answer) && /bukti/i.test(answer),
+  },
+  {
+    name: 'priorities-after-notes', domain: 'Umum',
+    source: 'Ubah catatan tugas menjadi agenda tepat 3 prioritas bernomor. Minta catatan bila kosong. Saya belum mengirim catatan.',
+    lang: 'Bahasa Indonesia', draftChecks: [/\b3\b/, /priorit/i],
+    clarification: 'Catatan sintetis: bayar tagihan listrik hari ini; kirim draf laporan besok; rapikan arsip jika dua tugas pertama sudah selesai. Tulis hanya 3 prioritas bernomor.',
+    answerCheck: answer => [...answer.matchAll(/^\s*([123])\.[ 	]+/gm)].map(row => row[1]).join() === '1,2,3' &&
+      /listrik/i.test(answer) && /laporan/i.test(answer) && /arsip/i.test(answer),
+  },
+  {
     name: 'clarify-and-table', domain: 'Riset',
     source: 'Ringkas hasil survei internal kami dalam tabel. Data belum saya berikan. Jangan mengarang data.',
     lang: 'Bahasa Indonesia', draftChecks: [/surve/i, /table/i, /25/, /40/],
@@ -106,8 +128,11 @@ async function check(fixture) {
   return summary;
 }
 
+const selectors = process.argv[3]?.split(',');
+const selected = selectors ? fixtures.filter(item => selectors.includes(item.name)) : fixtures;
+if (selected.length === 0 || (selectors && new Set(selectors).size !== selected.length)) throw Error('Unknown self-check case.');
 try {
-  const rows = await Promise.all(fixtures.map(check));
+  const rows = await Promise.all(selected.map(check));
   await writeFile(process.argv[2], JSON.stringify({ model: agentModel, environment: 'local Worker/SQLite, live provider', rows }, null, 2) + '\n');
   if (rows.some(row => row.failure)) process.exitCode = 1;
 } finally {

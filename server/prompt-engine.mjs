@@ -56,9 +56,9 @@ export async function runPromptAgent(env, input, ask = generateText) {
       const extra = corrective ?
         ' The previous response was incomplete or did not match the JSON schema. Return a shorter valid object that preserves the original instruction.' : '';
       const response = await ask(env, target, {
-        system: instruction + extra, prompt, limit: corrective ? 4096 : 2500, json: true,
+        system: instruction + extra, prompt, limit: corrective || stage === 'review' ? 4096 : 2500, json: true,
         thinking: corrective && stage === 'analysis' ? false : undefined,
-      }, { timeout: Math.min(28000, Math.floor(remaining / 2)) });
+      }, { timeout: Math.min(stage === 'review' ? 34000 : 28000, Math.floor(remaining / 2)) });
       actualModel = response.model ?? actualModel;
       try {
         return JSON.parse(response.text.trim().replace(/^\x60\x60\x60(?:json)?\s*([\s\S]*?)\s*\x60\x60\x60$/i, '$1'));

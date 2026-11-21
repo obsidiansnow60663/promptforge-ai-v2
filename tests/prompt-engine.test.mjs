@@ -103,7 +103,7 @@ test('an incomplete provider response gets one bounded structure repair', async 
       assert.equal(request.thinking, false);
       return { text: JSON.stringify(spec) };
     }
-    assert.equal(request.limit, 2500);
+    assert.equal(request.limit, calls === 3 ? 2500 : 4096);
     return { text: JSON.stringify(calls === 3 ? draft : { pass: true, issues: [] }) };
   });
   assert.equal(calls, 4);
