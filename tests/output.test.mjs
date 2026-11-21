@@ -50,3 +50,9 @@ test('adapter failure exposes the raw result separately from any adapted answer'
   assert.equal(result.text, undefined);
   assert.equal((await adaptOutput({}, {}, example, fixture({ answer: '<script>', warnings: null }))).status, 'unavailable');
 });
+
+test('an incomplete review schema gets one correction without changing the adapted answer', async () => {
+  const result = await adaptOutput({}, {}, example, fixture({ answer, warnings: [] }, {}, review));
+  assert.equal(result.status, 'validated');
+  assert.equal(result.text, answer);
+});
