@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { outputDimensions } from '../server/output.mjs';
-import { catalog, generateText } from '../server/providers.mjs';
+import { agentModel, catalog, generateText } from '../server/providers.mjs';
 import { existing, openaiReply, runtime } from './runtime.mjs';
 
 const env = {
@@ -137,4 +137,22 @@ test('comparison can use one assessment target and owner-only feedback updates t
   assert.equal((await call('feedback', feedback)).status, 200);
   const [record] = await (await call('executions?session=' + prompt.session + '&version=1')).json();
   assert.deepEqual(record.feedback, { useful: false, comment: 'Perlu contoh.' });
+});
+
+
+test('ArxPay disables thinking only when the caller requests it for the configured agent model', async () => {
+  const requests = [];
+  const send = async (url, options) => {
+    assert.equal(new URL(url).hostname, 'arxpay.my.id');
+    requests.push(JSON.parse(options.body));
+    return Response.json({ model: 'actual', choices: [{ finish_reason: 'stop', message: { content: 'A complete response.' } }] });
+  };
+  const arxpay = { provider: 'arxpay', model: agentModel };
+  await generateText(env, arxpay, request, { send });
+  await generateText(env, arxpay, { ...request, thinking: false }, { send });
+  await generateText({ ...env, ARXPAY_MODELS: 'alternate' }, { ...arxpay, model: 'alternate' },
+    { ...request, thinking: false }, { send });
+  assert.equal(requests[0].thinking, undefined);
+  assert.deepEqual(requests[1].thinking, { type: 'disabled' });
+  assert.equal(requests[2].thinking, undefined);
 });

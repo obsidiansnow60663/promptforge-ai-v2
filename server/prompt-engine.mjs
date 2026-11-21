@@ -35,7 +35,7 @@ export async function runPromptAgent(env, input, ask = generateText) {
       'Combine related questions. Keep non-critical preferences optional as assumptions. If prior answers supply the audience, purpose and scope, ' +
       'proceed and choose illustrative examples without treating their exact subject as a blocker. For a general learning plan, ' +
       'a stated audience, topic, duration and deliverable are sufficient. Do not require hours or a specialization unless the user makes them necessary.' :
-      stage === 'draft' ? 'The draft must be ready to execute immediately. Do not put workflow instructions about waiting or generating a prompt inside it. ' +
+      stage === 'draft' ? 'The draft value itself must be in English and ready to execute immediately. Do not put workflow instructions about waiting or generating a prompt inside it. ' +
         'Use concise natural English and translate units; preserve the digits and true identifiers exactly. Avoid repeating constraints.' :
         'Mark any draft that asks the executor to wait, rewrite the prompt, or defer the user task as a critical failure.');
     const request = async extra => {

@@ -44,6 +44,7 @@ test('the hosted route scopes credentials, saves a reviewed version, and coalesc
     assert.equal(options.redirect, 'error');
     const body = JSON.parse(options.body);
     assert.deepEqual(body.response_format, { type: 'json_object' });
+    assert.equal(body.thinking, undefined);
     assert.deepEqual(body.messages.map(message => message.role), ['system', 'user']);
     if (steps.length === 3) { notifyInitial(); await hold; }
     return reply(steps.shift());

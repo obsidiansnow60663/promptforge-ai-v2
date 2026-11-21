@@ -19,10 +19,11 @@ const arxpay = {
   label: 'ArxPay',
   key: 'ARXPAY_API_KEY',
   models: 'ARXPAY_MODELS',
-  request(model, key, system, prompt, limit, json) {
+  request(model, key, system, prompt, limit, json, thinking) {
     return ['https://arxpay.my.id/v1/chat/completions', { Authorization: 'Bearer ' + key }, {
       model, messages: [{ role: 'system', content: system }, { role: 'user', content: prompt }],
       max_tokens: limit, ...(json ? { response_format: { type: 'json_object' } } : {}),
+      ...(model === agentModel && thinking === false ? { thinking: { type: 'disabled' } } : {}),
     }];
   },
   response(body) {
@@ -134,12 +135,12 @@ function providerError(status, body) {
   return new Problem(502, 'Provider menolak permintaan. Periksa model dan panjang prompt.', 'provider_rejected');
 }
 
-export async function generateText(env, target, { system, prompt, limit = 2048, json = false },
+export async function generateText(env, target, { system, prompt, limit = 2048, json = false, thinking },
   { send = fetch, pause = ms => new Promise(resolve => setTimeout(resolve, ms)), timeout = 10000 } = {}) {
   requireTarget(env, target);
   const started = Date.now();
   const provider = providers[target.provider];
-  const [url, headers, payload] = provider.request(target.model, env[provider.key], system, prompt, limit, json);
+  const [url, headers, payload] = provider.request(target.model, env[provider.key], system, prompt, limit, json, thinking);
   for (let attempt = 1; attempt <= 2; attempt++) {
     const signal = AbortSignal.timeout(timeout);
     let body, response;

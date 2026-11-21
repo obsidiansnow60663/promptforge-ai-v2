@@ -46,8 +46,8 @@ export async function adaptOutput(env, target, { raw, approved }, ask = generate
         'Keep already suitable wording. Never add facts, fill gaps, or resolve inconsistencies by guessing. ' +
         'Return only JSON with answer (string) and warnings (array of Indonesian strings for ambiguity or inconsistencies).',
       prompt: JSON.stringify(context),
-      limit: 3072, json: true,
-    }, { timeout: target.provider === 'arxpay' ? 20000 : 10000 });
+      limit: target.provider === 'arxpay' ? 6144 : 3072, json: true, thinking: false,
+    }, { timeout: target.provider === 'arxpay' ? 30000 : 10000 });
     const parsed = modelObject(adaptation.text);
     if (typeof parsed.answer !== 'string' || !parsed.answer.trim() || parsed.answer.length > 30000) throw Error('Invalid answer');
     output = { text: parsed.answer, warnings: warnings(parsed.warnings), adaptation: trace(adaptation) };
@@ -66,7 +66,7 @@ export async function adaptOutput(env, target, { raw, approved }, ask = generate
         'Each dimension must be a boolean: ' + outputDimensions.join(', ') + '.',
       prompt: JSON.stringify({ ...context, adaptedAnswer: output.text }),
       limit: target.provider === 'arxpay' ? 2500 : 1600, json: true,
-    }, { timeout: target.provider === 'arxpay' ? 20000 : 10000 });
+    }, { timeout: target.provider === 'arxpay' ? 30000 : 10000 });
     const review = modelObject(judged.text);
     const issues = warnings(review.issues);
     if (typeof review.critical !== 'boolean' ||

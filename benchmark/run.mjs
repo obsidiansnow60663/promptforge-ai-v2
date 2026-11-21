@@ -26,7 +26,7 @@ const target = prefix => ({ provider: process.env[prefix + '_PROVIDER'], model: 
 const executor = target('BENCH_EXEC');
 const optimizer = target('BENCH_OPT');
 const judge = target('BENCH_JUDGE');
-const maximumTokens = 2048;
+const maximumTokens = !fixture && executor.provider === 'arxpay' ? 6144 : 2048;
 if (!fixture && !sourceReport) {
   for (const model of [executor, optimizer, judge]) requireTarget(process.env, model);
   if ([executor, optimizer].some(model => model.provider === judge.provider && model.model === judge.model)) {
@@ -36,13 +36,13 @@ if (!fixture && !sourceReport) {
 
 const stages = new Map();
 const record = async (env, model, request, options) => {
-  const result = await generateText(env, model, request, { timeout: 25000, ...options });
+  const result = await generateText(env, model, request, { timeout: model.provider === 'arxpay' ? 40000 : 25000, ...options });
   const { text, ...trace } = result;
   stages.get(model).push(trace);
   return result;
 };
-const call = async (model, system, prompt, limit = maximumTokens, json = false) =>
-  (await record(process.env, model, { system, prompt, limit, json })).text;
+const call = async (model, system, prompt, limit = maximumTokens, json = false, thinking) =>
+  (await record(process.env, model, { system, prompt, limit, json, thinking })).text;
 const object = text => JSON.parse(text.trim().replace(/^```(?:json)?\s*([\s\S]*?)\s*```$/i, '$1'));
 function validateRatings(review, item) {
   const score = value => Number.isInteger(value) && value >= 0 && value <= 100;
@@ -96,7 +96,7 @@ for (const item of sourceReport ? [] : selected) {
     row.prompt = prompt;
     try {
       const system = 'Answer the approved prompt. Use ' + item.language + '. No external tools are available.';
-      row.answer = fixture ? 'Respons sintetis ' + item.marker : await call(executor, system, prompt);
+      row.answer = fixture ? 'Respons sintetis ' + item.marker : await call(executor, system, prompt, maximumTokens, false, false);
       row.automated = { markerPresent: row.answer.includes(item.marker) };
       const trace = fixture ? { model: 'fixture', latencyMs: 0, usage: { input: null, output: null } } : stages.get(executor).at(-1);
       row.execution = trace;

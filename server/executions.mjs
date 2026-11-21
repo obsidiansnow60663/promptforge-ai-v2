@@ -75,9 +75,11 @@ export async function execute(db, env, owner, input) {
     data.raw = await generateText(env, target, {
       system: 'Answer the approved prompt below. Follow its task and format. Write the answer in ' + approved.lang +
         '. Preserve all requested counts and format. Include assumptions only when needed and label them. ' +
-        'Make technical examples complete enough to follow. No external tools are available. Do not claim external verification.',
+        'Keep unrequested explanation concise and make technical examples complete enough to follow. ' +
+        'No external tools are available. Do not claim external verification.',
       prompt: approved.draft,
-    }, { timeout: target.provider === 'arxpay' ? 25000 : 10000 });
+      limit: target.provider === 'arxpay' ? 6144 : 2048, thinking: false,
+    }, { timeout: target.provider === 'arxpay' ? 40000 : 10000 });
     await db.prepare("UPDATE executions SET payload=? WHERE owner=? AND request_id=? AND status='running'")
       .bind(JSON.stringify(data), owner, requestId).run();
     data.output = await adaptOutput(env, assessmentTarget, { raw: data.raw, approved });
