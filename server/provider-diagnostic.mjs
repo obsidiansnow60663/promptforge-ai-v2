@@ -27,10 +27,15 @@ export async function diagnoseProvider(req, env) {
   const detached = fetch;
   const [redirectMode, receiver] = await Promise.all([
     check('https://arxpay.my.id/v1/models', { redirect: 'error' }),
-    detached('https://arxpay.my.id/v1/models', { redirect: 'manual' }).then(
-      async response => { await response.body?.cancel().catch(() => {}); return { status: response.status }; },
-      error => ({ issue: error.name, message: String(error.message).slice(0, 150) }),
-    ),
+    (async () => {
+      try {
+        const response = await detached('https://arxpay.my.id/v1/models', { redirect: 'manual' });
+        await response.body?.cancel().catch(() => {});
+        return { status: response.status };
+      } catch (error) {
+        return { issue: error.name, message: String(error.message).slice(0, 150) };
+      }
+    })(),
   ]);
   let pipeline;
   const started = Date.now();
