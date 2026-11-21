@@ -51,8 +51,8 @@ const fixtures = [
     },
   },
   {
-    name: 'patch-after-source', domain: 'Pemrograman',
-    source: 'Perbaiki aplikasi Node.js yang menelan galat saat Promise ditolak. Jangan abaikan galat. Sebutkan await. Berikan patch dan alasan. Potongan kode belum diberikan.',
+    name: 'patch-after-source', domain: 'Pemrograman', confirmIfReviewUnavailable: true,
+    source: 'Perbaiki aplikasi Node.js yang menelan galat saat Promise ditolak. Jangan abaikan galat. Sebutkan await. Berikan patch dan alasan berdasarkan potongan kode aktual. Saya belum memberi kode. Minta kodenya sebelum menyusun patch dan jangan memakai kode contoh.',
     lang: 'Bahasa Indonesia', draftChecks: [/await/i, /patch/i],
     clarification: 'Kode sintetis untuk diuji: async function load() { try { return await fetchData(); } catch (error) { return null; } }. Pertahankan API async, dan teruskan error asli dengan throw agar pemanggil menanganinya.',
     answerCheck: answer => /await/.test(answer) && /throw\s+error/.test(answer),
@@ -105,16 +105,22 @@ async function check(fixture) {
     summary.generationStatus = generated.data.stage ?? generated.data.code;
     summary.draft = generated.data.draft;
     summary.promptIssues = generated.data.issues ?? [];
-    assert.equal(generated.data.stage, 'ready', JSON.stringify(generated));
+    const acceptsWarning = fixture.confirmIfReviewUnavailable && generated.data.stage === 'warning' &&
+      summary.promptIssues.length === 1 && summary.promptIssues[0] === 'Peninjauan semantik belum selesai.';
+    assert.ok(generated.data.stage === 'ready' || acceptsWarning, JSON.stringify(generated));
     assert.equal(generated.data.lang, fixture.lang);
     assert.ok(fixture.draftChecks.every(pattern => pattern.test(generated.data.draft)));
     const retried = await request(owner, 'generate', state);
     assert.deepEqual(retried, generated);
 
     const version = generated.data.version;
-    const execution = await request(owner, 'execute', {
-      session: state.session, version, requestId: crypto.randomUUID(), target,
-    });
+    const executionRequest = { session: state.session, version, requestId: crypto.randomUUID(), target };
+    if (acceptsWarning) {
+      const denied = await request(owner, 'execute', executionRequest);
+      assert.equal(denied.status, 409);
+      summary.warningConfirmed = true;
+    }
+    const execution = await request(owner, 'execute', { ...executionRequest, ...(acceptsWarning ? { confirm: true } : {}) });
     const result = execution.data;
     summary.executionStatus = result.status ?? result.code;
     summary.outputStatus = result.output?.status;

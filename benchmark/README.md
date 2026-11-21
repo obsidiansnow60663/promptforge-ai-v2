@@ -36,3 +36,13 @@ node scripts/self-check.mjs REPORT_E2E.json
 Uji end-to-end memerlukan `ARXPAY_API_KEY` dari environment. Ia memakai Worker dan database SQLite sementara dengan instruksi sintetis, tanpa mengambil data Studio. Uji mencakup klarifikasi, bahasa yang dipilih di instruksi, batasan persis, restore dan isolasi pemilik. Runner lama dan versi perbaikan dicatat dengan commit masing-masing.
 
 Setelah mengubah optimizer, `--reuse-baselines REPORT.json` menjalankan ulang jalur teroptimasi sambil mempertahankan dua baseline identik. Runner memeriksa snapshot dataset, model, batas token dan sampling, serta merekam sidik laporan baseline.
+
+## Menyiapkan penilaian manusia
+
+```sh
+node benchmark/review-packet.mjs prepare REPORT.json PACKET.json KEY.json
+node benchmark/review-packet.mjs resolve RATINGS.json HUMAN.json KEY.json
+node benchmark/run.mjs --report REPORT.json --human HUMAN.json --out REVIEWED.json
+```
+
+Paket memuat kasus yang mempunyai jawaban dari ketiga jalur, dengan urutan acak dan ID tanpa nama varian. Isi prompt dapat tetap memperlihatkan perbedaan bahasa. Berikan paket saja kepada penilai yang telah diotorisasi. Simpan KEY untuk menyambungkan ID penilaian ke laporan sumber. RATINGS berisi `datasetVersion` dan `reviews` dengan `itemId` dan dimensi rubrik yang digunakan runner. Pembuatan paket atau pengujian impor tidak mengisi penilaian manusia.
