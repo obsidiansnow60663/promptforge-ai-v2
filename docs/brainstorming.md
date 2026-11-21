@@ -47,3 +47,11 @@ Benchmark ArxPay untuk kode v13 mencoba jalur optimasi pada 100 kasus dan memaka
 Sites menerbitkan v14 dari commit `d9200ae70f93e91c4543df9fce98ea5e4bebeee8` pada environment revisi 5. Akses terverifikasi hanya untuk pemilik. Uji HTTP produksi mendapat 200 untuk aset aplikasi, evaluasi, proses, templat, dan benchmark melalui akses layanan. Akses anonim ke halaman utama, serta permintaan layanan tanpa identitas pengunjung ke API evaluasi, proses, dan pembatalan mendapat 401. Binding D1 terdeteksi melalui Sites. Browser bersama gagal dimulai, sehingga pengujian penyimpanan dari browser produksi sebagai pemilik masih terbuka.
 
 Seluruh 44 tes lokal lulus. Uji Chromium lokal diulang pada kode rilis dengan respons provider tiruan. Bukti ArxPay nyata memakai kode v13; pengujian proyek dengan kasus sintetis dan data benchmark tidak dihitung sebagai penilaian manusia. Ketiga belas alias ArxPay alternatif yang dicoba belum menghasilkan respons yang dapat dipakai sebagai model kedua.
+
+### Nama model ArxPay dan subbidang sesi
+
+Pemilik dapat menyimpan nama tampilan per ID model terkonfigurasi melalui **Pengaturan → Nama tampilan model ArxPay**. Nama tersimpan di D1 untuk akun tersebut dan muncul pada pemilih eksekusi, perbandingan, dan riwayat eksekusi. Mengosongkan nama mengembalikan tampilan ke ID model. Permintaan provider, allowlist, dan metadata eksekusi menggunakan ID asli. Cadangan sesi tetap berisi versi dan hasil eksekusi.
+
+Generator menerima subbidang opsional dan menyimpannya bersama versi prompt (§9.2). Subbidang mengikuti versi saat diekspor atau dipulihkan. Arsip lama tanpa subbidang tetap didukung.
+
+45 tes lokal lulus. Chromium lokal dengan respons provider tiruan menguji penyimpanan nama, pembacaan sesudah muat ulang, nama tampilan di pilihan eksekusi, nilai ID asli yang dipilih, penghapusan nama, dan pembukaan kembali hasil. Uji ArxPay nyata terpisah mengembalikan HTTP 429 `key_daily_cap` tanpa waktu reset pada pemeriksaan satu panggilan. Bukti benchmark lengkap, penilaian manusia, pembandingan dua model nyata, dan sesi browser produksi sebagai pemilik masih terbuka.

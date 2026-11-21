@@ -180,3 +180,33 @@ test('a provider redirect is rejected without following or forwarding credential
   }), { code: 'provider_redirect' });
   assert.equal(attempts, 1);
 });
+
+test('ArxPay display names are private, editable, and never used as model identifiers', async t => {
+  const { call } = runtime(t, env);
+  const model = target.model;
+  assert.equal((await call('model-name', { model, name: 'Analisis cepat' }, '')).status, 401);
+  assert.equal((await call('model-name', { model, name: 'Analisis cepat' }, 'pemilik', { Origin: 'https://other.test' })).status, 403);
+  assert.equal((await call('model-name', { model: 'unknown', name: 'Analisis cepat' })).status, 400);
+  assert.equal((await call('model-name', { model, name: 'a'.repeat(81) })).status, 400);
+  assert.deepEqual(await (await call('model-name', { model, name: ' Analisis cepat ' })).json(), { name: 'Analisis cepat' });
+  const status = await (await call('status')).json();
+  assert.deepEqual(status.modelNames, { [model]: 'Analisis cepat' });
+  assert.equal(status.providers[0].models.includes(model), true);
+  assert.deepEqual((await (await call('status', undefined, 'pengunjung')).json()).modelNames, {});
+
+  const saved = existing();
+  assert.equal((await call('existing', { ...saved, subdomain: ' Git ' })).status, 200);
+  const versionPath = 'version?session=' + saved.session + '&version=1';
+  assert.equal((await (await call(versionPath)).json()).subdomain, 'Git');
+  const options = { session: saved.session, version: 1, requestId: crypto.randomUUID(), confirm: true };
+  assert.equal((await call('execute', { ...options, target: { ...target, model: 'Analisis cepat' } })).status, 400);
+  const mock = t.mock.method(globalThis, 'fetch', async (_url, request) => {
+    assert.equal(JSON.parse(request.body).model, model);
+    return Response.json({ error: { code: 'insufficient_quota' } }, { status: 429 });
+  });
+  assert.equal((await (await call('execute', { ...options, target })).json()).target.model, model);
+  assert.equal(mock.mock.callCount(), 1);
+
+  assert.equal((await call('model-name', { model, name: '   ' })).status, 200);
+  assert.deepEqual((await (await call('status')).json()).modelNames, {});
+});

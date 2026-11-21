@@ -54,7 +54,11 @@ async function route(req,env){
  const db=env.DB;
  if(path==='/api/status'&&req.method==='GET'){
   const agent=promptAgent(env);
-  return json({configured:true,model:MODEL,providers:catalog(env),presets:providerPresets(env),promptAgent:agent,
+  const providers=catalog(env);
+  const names=db?(await db.prepare('SELECT model,name FROM arxpay_model_names WHERE owner=?').bind(owner).all()).results:[];
+  const arxpay=providers.find(item=>item.id==='arxpay');
+  const modelNames=Object.fromEntries(names.filter(item=>arxpay?.models.includes(item.model)).map(item=>[item.model,item.name]));
+  return json({configured:true,model:MODEL,providers,presets:providerPresets(env),promptAgent:agent,modelNames,
    defaultTarget:agent.configured?{provider:'arxpay',model:agent.model}:null});
  }
  if(!db)throw new Problem(503,'Penyimpanan sesi belum tersedia.');
@@ -83,6 +87,16 @@ async function route(req,env){
   throw new Problem(403,'Permintaan tidak diizinkan.');
  }
  const b=await readJson(req,path==='/api/restore'?2*1024*1024:256*1024);
+ if(path==='/api/model-name'){
+  const arxpay=catalog(env).find(item=>item.id==='arxpay'&&item.configured);
+  if(!arxpay?.models.includes(b?.model)||typeof b.name!=='string'||b.name.length>80||/[\u0000-\u001f\u007f]/u.test(b.name))invalid();
+  const name=b.name.trim();
+  if(name){
+   await db.prepare(`INSERT INTO arxpay_model_names(owner,model,name) VALUES (?,?,?)
+     ON CONFLICT(owner,model) DO UPDATE SET name=excluded.name`).bind(owner,b.model,name).run();
+  }else await db.prepare('DELETE FROM arxpay_model_names WHERE owner=? AND model=?').bind(owner,b.model).run();
+  return json({name});
+ }
  if(path==='/api/cancel')return json(await cancelOperation(db,owner,b));
  if(path==='/api/restore')return json(await restorePage(db,owner,b));
  if(!b||!uuid(b.session))invalid();

@@ -19,7 +19,7 @@ export function comparisonView({ settings, history, comparison, escape }) {
     'Satu model melakukan adaptasi dan penilaian kedua jawaban. Setiap eksekusi tersimpan di versi promptnya.</p>' + input +
     '</section>' + (comparison ? '<section class="section"><h2>Hasil perbandingan · Versi ' + escape(comparison.version) + '</h2>' +
       '<p class="muted">Latensi dan token pada kartu mengukur permintaan jawaban awal.</p>' +
-      '<div class="grid compare-grid">' + executionCards(comparison.runs, escape, { feedback: false }) +
+      '<div class="grid compare-grid">' + executionCards(comparison.runs, escape, { feedback: false, settings }) +
       comparison.errors.map(error => '<p class="err">' + escape(error) + '</p>').join('') +
       '</div></section>' : '') +
     '<section class="section panel"><h2>Evaluasi benchmark</h2><p>100 kasus bahasa Indonesia dalam enam kategori. ' +

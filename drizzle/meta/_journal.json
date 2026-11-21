@@ -43,6 +43,13 @@
       "when": 1795266240000,
       "tag": "0005_generation_progress",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1795266300000,
+      "tag": "0006_model_names",
+      "breakpoints": true
     }
   ]
 }

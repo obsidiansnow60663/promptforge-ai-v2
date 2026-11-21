@@ -17,15 +17,21 @@ function adaptedAnswer(output, language, escape) {
 
 const locale = new Intl.NumberFormat('id-ID');
 
+export function modelName(settings, provider, model) {
+  const names = settings?.modelNames;
+  return provider === 'arxpay' && names && Object.hasOwn(names, model) ? names[model] : model;
+}
+
 export function targets(settings, escape, {auto = false} = {}) {
   const presets = settings?.presets?.map(item => '<option value="' + escape(item.id + '/' + item.provider + '/' + item.model) +
-    '">' + escape(item.label + ' · ' + item.model) + '</option>').join('');
+    '">' + escape(item.label + ' · ' + modelName(settings, item.provider, item.model)) + '</option>').join('');
   const selected = settings?.defaultTarget;
   const automatic = auto && selected ?
-    '<option value="auto/' + escape(selected.provider + '/' + selected.model) + '">Otomatis · ' + escape(selected.model) + '</option>' : '';
+    '<option value="auto/' + escape(selected.provider + '/' + selected.model) + '">Otomatis · ' +
+    escape(modelName(settings, selected.provider, selected.model)) + '</option>' : '';
   return automatic + (presets ? '<optgroup label="Profil">' + presets + '</optgroup>' : '') + (settings?.providers ?? []).filter(provider => provider.configured).map(provider =>
     '<optgroup label="' + escape(provider.label) + '">' + provider.models.map(model =>
-      '<option value="' + escape(provider.id + '/' + model) + '">' + escape(model) + '</option>').join('') + '</optgroup>').join('');
+      '<option value="' + escape(provider.id + '/' + model) + '">' + escape(modelName(settings, provider.id, model)) + '</option>').join('') + '</optgroup>').join('');
 }
 
 export function selectedTarget(element) {
@@ -46,12 +52,14 @@ function feedbackForm(record, escape) {
     '</textarea></div><button>Simpan umpan balik</button></form></details>';
 }
 
-export function executionCards(records, escape, { feedback = true } = {}) {
+export function executionCards(records, escape, { feedback = true, settings } = {}) {
   return records.map(record => {
     const raw = record.raw;
     const exceptional = record.status === 'failed' || record.status === 'warning';
     const state = record.error?.code === 'execution_cancelled' ? 'Dibatalkan' : { running: 'Sedang diproses', complete: 'Validasi otomatis selesai', warning: 'Periksa peringatan', failed: 'Eksekusi gagal' }[record.status];
-    return '<article class="panel execution"><h3>' + escape(record.target.provider + ' / ' + record.target.model) + '</h3>' +
+    const name = modelName(settings, record.target.provider, record.target.model);
+    return '<article class="panel execution"><h3>' + escape(record.target.provider + ' / ' + name) + '</h3>' +
+      (name !== record.target.model ? '<p class="muted">ID model · ' + escape(record.target.model) + '</p>' : '') +
       '<p class="' + (exceptional ? 'note' : 'muted') + '">' + escape(state) + '</p>' +
       '<p class="muted">' + escape('Mulai ' + new Date(record.created).toLocaleString('id-ID') +
         (record.completed ? ' · Selesai ' + new Date(record.completed).toLocaleString('id-ID') : '')) + '</p>' +

@@ -10,7 +10,7 @@ const page = async (call, kind, owner, cursor = 0) =>
 
 test('restores version links and real record shape with provider fixtures under a new owner', async t => {
   const { call } = runtime(t, env);
-  const original = existing();
+  const original = { ...existing(), subdomain: 'Version control' };
   await call('existing', original);
   await call('edit', { session: original.session, parent: 1, draft: 'Write a concise list of 5 points.',
     revisionReason: 'Perjelas format daftar.', requestId: crypto.randomUUID() });
@@ -32,6 +32,7 @@ test('restores version links and real record shape with provider fixtures under 
   const versions = await page(call, 'versions');
   const executions = await page(call, 'executions');
   assert.equal(versions.rows[1].payload.parent, 1);
+  assert.equal(versions.rows[1].payload.subdomain, 'Version control');
   assert.equal(versions.rows[1].payload.revisionReason, 'Perjelas format daftar.');
   assert.equal(executions.rows[0].payload.raw.attempts, 3);
   assert.ok(run.created <= run.output.evaluation.created && run.output.evaluation.created <= run.completed);

@@ -15,12 +15,15 @@ export function validateSystemInstructions(value) {
 
 export function validateInput(body) {
   if (!str(body?.source, 12000) || !str(body.domain, 80) || !['Bahasa Indonesia', 'English'].includes(body.lang) ||
+    (body.subdomain !== undefined && (typeof body.subdomain !== 'string' || body.subdomain.length > 80)) ||
     (body.mode !== undefined && !['generate', 'execute', 'existing'].includes(body.mode)) ||
     (body.inputLanguage !== undefined && !['Bahasa Indonesia', 'English', 'Tidak ditentukan'].includes(body.inputLanguage)) ||
     !Array.isArray(body.answers) || body.answers.length > 12 ||
     !body.answers.every(item => item && str(item.question, 500) && str(item.answer, 1500))) invalid();
   const systemInstructions = validateSystemInstructions(body.systemInstructions);
+  const subdomain = body.subdomain?.trim();
   return { source: body.source, domain: body.domain, lang: body.lang, ...(systemInstructions ? { systemInstructions } : {}),
+    ...(subdomain ? { subdomain } : {}),
     ...(body.mode ? { mode: body.mode } : {}), ...(body.inputLanguage ? { inputLanguage: body.inputLanguage } : {}),
     answers: body.answers.map(({ question, answer }) => ({ question, answer })) };
 }

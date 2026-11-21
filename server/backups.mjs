@@ -96,7 +96,7 @@ function versionInsert(db, owner, row) {
   const { session, version, id, created, payload } = row;
   validateInput(payload);
   const report = validateReport(payload, true);
-  if (!onlyKeys(payload, ['source', 'domain', 'lang', 'answers', 'spec', 'draft', 'stage', 'issues', 'revisions', 'model', 'parent', 'systemInstructions',
+  if (!onlyKeys(payload, ['source', 'domain', 'subdomain', 'lang', 'answers', 'spec', 'draft', 'stage', 'issues', 'revisions', 'model', 'parent', 'systemInstructions',
     'assessment', 'evaluation', 'revisionReason', 'mode', 'inputLanguage', 'optimizedPromptLanguage']) ||
     report.stage !== payload.stage ||
     (payload.mode === 'existing' && payload.stage !== 'edited') ||
