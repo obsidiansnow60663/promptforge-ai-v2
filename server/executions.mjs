@@ -76,7 +76,9 @@ export async function execute(db, env, owner, input) {
       system: 'Answer the approved prompt below. Follow its task and format. Write the answer in ' + approved.lang +
         '. Preserve all requested counts and format. Include assumptions only when needed and label them. ' +
         'Keep unrequested explanation concise and make technical examples complete enough to follow. ' +
-        'No external tools are available. Do not claim external verification.',
+        'No external tools are available. Do not claim external verification. ' +
+        'Do not invent precise factual statistics, quotations, or attributions without supplied evidence. ' +
+        'Clearly label illustrative or fictional figures and distinguish them from source facts.',
       prompt: approved.draft,
       limit: target.provider === 'arxpay' ? 6144 : 2048, thinking: false,
     }, { timeout: target.provider === 'arxpay' ? 40000 : 10000 });

@@ -31,6 +31,13 @@ const fixtures = [
     answerCheck: answer => /\bL-12\b/.test(answer) && /21\/11\/2026/.test(answer) && /15%/.test(answer) && !/\bRp\s*\d/i.test(answer),
   },
   {
+    name: 'timed-video-without-invented-statistics', domain: 'Konten',
+    source: 'Buat naskah video hemat air untuk remaja selama tepat 60 detik. Sajikan dengan penanda waktu. Hindari angka statistik atau klaim faktual spesifik yang tidak disertai sumber.',
+    lang: 'Bahasa Indonesia', draftChecks: [/\b60\b/, /teen/i, /statistic|claims|evidence/i],
+    answerCheck: answer => /(?:1:00|60\s*(?:detik|s)\b)/i.test(answer) && /0:00|00:00/.test(answer) &&
+      !/\b\d+(?:[.,]\d+)?\s*(?:liter|juta|miliar)\b/i.test(answer),
+  },
+  {
     name: 'clarify-and-table', domain: 'Riset',
     source: 'Ringkas hasil survei internal kami dalam tabel. Data belum saya berikan. Jangan mengarang data.',
     lang: 'Bahasa Indonesia', draftChecks: [/surve/i, /table/i, /25/, /40/],
