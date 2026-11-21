@@ -1,4 +1,5 @@
-import {readdir, readFile, mkdir, writeFile} from 'node:fs/promises';
+import {readdir, readFile, mkdir} from 'node:fs/promises';
+import {build} from 'esbuild';
 const assets={};
 for(const prefix of ['', 'simulasi/']){
  for(const name of await readdir('web/'+prefix,{withFileTypes:true})){
@@ -6,4 +7,12 @@ for(const prefix of ['', 'simulasi/']){
  }
 }
 await mkdir('dist/server',{recursive:true});
-await writeFile('dist/server/index.js','const assets='+JSON.stringify(assets)+';\n'+await readFile('server/worker.mjs','utf8'));
+await build({
+ entryPoints:['server/worker.mjs'],
+ outfile:'dist/server/index.js',
+ bundle:true,
+ format:'esm',
+ target:'es2022',
+ banner:{js:'const assets='+JSON.stringify(assets)+';'},
+ legalComments:'none',
+});

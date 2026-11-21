@@ -1,1 +1,13 @@
-{"name":"promptforge-studio","private":true,"type":"module","scripts":{"dev":"node scripts/preview.mjs","build":"node scripts/build.mjs","test":"node --test tests/phase2.test.mjs"}}
+{
+  "name": "promptforge-studio",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/preview.mjs",
+    "build": "node scripts/build.mjs",
+    "test": "npm run build && node --test tests/*.test.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2"
+  }
+}
