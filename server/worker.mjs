@@ -2,9 +2,9 @@ import { cancelOperation, listOperations } from './operations.mjs';
 import { evaluationMetadata, readEvaluation } from './evaluation.mjs';
 import { generatePrompt, promptAgent } from './prompt-engine.mjs';
 import { exportPage, restorePage } from './backups.mjs';
-import { ownerModelEnvironment, setArxPayModel } from './model-settings.mjs';
+import { ownerModelEnvironment, scanArxPayModels, setArxPayModel } from './model-settings.mjs';
 import { invalid, str, uuid, validVersion, validateInput, validateReport, validateRevisionReason, readJson } from './validation.mjs';
-import { catalog, fetchArxPayModels, providerPresets, Problem } from './providers.mjs';
+import { catalog, providerPresets, Problem } from './providers.mjs';
 import { execute, listExecutions, saveFeedback } from './executions.mjs';
 const MODEL='Qwen2.5-1.5B-Instruct-q4f32_1-MLC';
 const json=(value,status=200)=>new Response(JSON.stringify(value),{status,headers:{'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer'}});
@@ -65,7 +65,6 @@ async function route(req,env){
    defaultTarget:agent.configured?{provider:'arxpay',model:agent.model}:null});
  }
  if(!db)throw new Problem(503,'Penyimpanan sesi belum tersedia.');
- if(req.method==='GET'&&path==='/api/arxpay-models')return json({models:await fetchArxPayModels(env)});
  if(req.method==='GET'&&path==='/api/operations')return json(await listOperations(db,owner));
  if(req.method==='GET'&&path==='/api/evaluation')return json(await readEvaluation(db,owner));
  if(req.method==='GET'&&path==='/api/export')return json(await exportPage(db,owner,url.searchParams));
@@ -91,6 +90,7 @@ async function route(req,env){
   throw new Problem(403,'Permintaan tidak diizinkan.');
  }
  const b=await readJson(req,path==='/api/restore'?2*1024*1024:256*1024);
+ if(path==='/api/arxpay-models')return json(await scanArxPayModels(db,env,owner));
  if(path==='/api/arxpay-model')return json(await setArxPayModel(db,env,owner,b));
  if(path==='/api/model-name'){
   const arxpay=catalog(await ownerModelEnvironment(db,env,owner)).find(item=>item.id==='arxpay'&&item.configured);

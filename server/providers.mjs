@@ -129,6 +129,7 @@ export async function generateText(env, target, { system, prompt, limit = 2048, 
   pause = ms => new Promise(resolve => setTimeout(resolve, ms)),
   timeout = 10000,
   beforeAttempt,
+  maxAttempts = 3,
 } = {}) {
   requireTarget(env, target);
   const started = Date.now();
@@ -136,7 +137,7 @@ export async function generateText(env, target, { system, prompt, limit = 2048, 
   const [url, headers, payload] = provider.request(target.model, env[provider.key], system, prompt, limit, json, thinking);
   const deadline = started + timeout * 2;
   let lastIssue;
-  for (let attempt = 1; attempt <= 3; attempt++) {
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     await beforeAttempt?.();
     const remaining = deadline - Date.now();
     if (remaining <= 0) throw lastIssue ?? new Problem(502, 'Waktu tunggu provider habis.', 'provider_timeout');
@@ -163,7 +164,7 @@ export async function generateText(env, target, { system, prompt, limit = 2048, 
     if (!response.ok) {
       const issue = providerError(response.status, body, target.model);
       const delay = retryDelay(response, issue.code, attempt);
-      if (attempt < 3 && delay !== null && Date.now() + delay < deadline) {
+      if (attempt < maxAttempts && delay !== null && Date.now() + delay < deadline) {
         lastIssue = issue;
         await pause(delay);
         continue;

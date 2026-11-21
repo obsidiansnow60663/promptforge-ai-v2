@@ -57,6 +57,13 @@
       "when": 1795266360000,
       "tag": "0007_arxpay_enabled_models",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1795266420000,
+      "tag": "0008_arxpay_catalog_scans",
+      "breakpoints": true
     }
   ]
 }

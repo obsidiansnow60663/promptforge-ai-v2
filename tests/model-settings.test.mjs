@@ -20,17 +20,19 @@ test('owner can fetch, verify, use and remove a model from the ArxPay catalog', 
     }
     assert.equal(url, endpoint + 'chat/completions');
     const body = JSON.parse(options.body);
-    assert.equal(body.model, model);
     if (body.messages[1].content === 'Verify JSON support.') {
+      assert.ok([agentModel, model].includes(body.model));
       assert.deepEqual(body.response_format, { type: 'json_object' });
       return arxReply('{"ready":true}');
     }
+    assert.equal(body.model, model);
     return Response.json({ error: { code: 'key_daily_cap' } }, { status: 429 });
   });
 
-  assert.equal((await call('arxpay-models', undefined, '')).status, 401);
+  assert.equal((await call('arxpay-models', {}, '')).status, 401);
+  assert.equal((await call('arxpay-models', {}, 'pemilik', { Origin: 'https://elsewhere.test' })).status, 403);
   assert.equal((await call('arxpay-model', { model, enabled: true }, 'pemilik', { Origin: 'https://elsewhere.test' })).status, 403);
-  assert.deepEqual(await (await call('arxpay-models')).json(), { models: [agentModel, model] });
+  assert.deepEqual(await (await call('arxpay-models', {})).json(), { models: [agentModel, model], checked: 2, total: 2, stoppedBy: null });
   assert.equal((await call('arxpay-model', { model: 'absent', enabled: true })).status, 400);
   assert.deepEqual(await (await call('arxpay-model', { model, enabled: true })).json(), { model, enabled: true });
   assert.equal(requests.length, 4);
@@ -72,7 +74,7 @@ test('quota and redirects cannot enable a model or forward credentials', async t
   assert.equal((await blocked.json()).code, 'provider_quota');
   assert.deepEqual((await (await call('status')).json()).enabledArxPayModels, []);
   redirect = true;
-  const shifted = await call('arxpay-models');
+  const shifted = await call('arxpay-models', {});
   assert.equal(shifted.status, 502);
   assert.equal((await shifted.json()).code, 'provider_redirect');
 });
@@ -89,7 +91,7 @@ test('catalog access, invalid credentials and selected model access have distinc
       error: { code: invalidKey ? 'invalid_api_key' : 'permission_denied', message: 'upstream detail' },
     }, { status: 403 });
   });
-  const denied = await (await call('arxpay-models')).json();
+  const denied = await (await call('arxpay-models', {})).json();
   assert.equal(denied.code, 'provider_catalog_access');
   assert.match(denied.error, /katalog model/);
 
@@ -107,4 +109,31 @@ test('catalog access, invalid credentials and selected model access have distinc
   assert.doesNotMatch(credentials.error, /upstream detail/);
   assert.deepEqual((await (await call('status')).json()).enabledArxPayModels, []);
   assert.equal(mock.mock.callCount(), 5);
+});
+
+test('catalog scan exposes only successful probes and stops before other models when quota is exhausted', async t => {
+  const { call } = runtime(t, env);
+  const models = [agentModel, 'aaa-rejected', 'bbb-malformed', model];
+  let quota = false;
+  const probes = [];
+  t.mock.method(globalThis, 'fetch', async (url, options) => {
+    if (url === endpoint + 'models') return Response.json({ data: models.map(id => ({ id })) });
+    const { model: selected } = JSON.parse(options.body);
+    probes.push(selected);
+    if (quota) return Response.json({ error: { code: 'key_daily_cap' } }, { status: 429 });
+    if (selected === 'aaa-rejected') return Response.json({}, { status: 403 });
+    if (selected === 'bbb-malformed') return arxReply('Hello');
+    return arxReply('{"ready":true}');
+  });
+
+  const filtered = await (await call('arxpay-models', {})).json();
+  assert.deepEqual(filtered, { models: [agentModel, model], checked: 4, total: 4, stoppedBy: null });
+  assert.equal(probes[0], agentModel);
+  assert.equal(probes.length, 4);
+
+  quota = true;
+  const quotaResult = { models: [], checked: 1, total: 4, stoppedBy: 'provider_quota' };
+  assert.deepEqual(await (await call('arxpay-models', {}, 'second-owner')).json(), quotaResult);
+  assert.deepEqual(await (await call('arxpay-models', {}, 'second-owner')).json(), quotaResult);
+  assert.deepEqual(probes.slice(4), [agentModel]);
 });

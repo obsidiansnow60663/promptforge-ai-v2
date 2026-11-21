@@ -103,16 +103,26 @@ function modelNameForm(){
 function arxpayCatalogPanel(){
  const arxpay=settings?.providers?.find(item=>item.id==='arxpay'&&item.configured);
  if(!arxpay)return '';
- const available=arxpayDirectory?.filter(model=>!arxpay.models.includes(model));
+ const available=arxpayDirectory?.models.filter(model=>!arxpay.models.includes(model));
  const added=(settings.enabledArxPayModels??[]).map(model=>'<div class="listrow"><span>'+
   esc(modelName(settings,'arxpay',model))+'</span><button type="button" data-disable-arxpay-model="'+esc(model)+'" aria-label="'+
   esc('Nonaktifkan '+model)+'">Nonaktifkan</button></div>').join('');
- const selection=available?.length?'<form id="enableModel"><div class="group"><label for="catalogModel">ID model dari katalog</label>'+
-  '<select id="catalogModel" required>'+options(available,catalogModel)+'</select></div><button class="primary">Uji dan aktifkan</button></form>':
-  arxpayDirectory?'<p>'+(!arxpayDirectory.length?'Katalog ArxPay kosong.':'Semua model dalam katalog sudah aktif.')+'</p>':'';
- return '<section class="panel"><h2>Katalog model ArxPay</h2><p>Ambil daftar dari ArxPay. Studio menguji satu model yang Anda pilih sebelum menambahkannya ke eksekusi dan perbandingan.</p>'+
-  '<button type="button" id="fetchArxpayModels">'+(arxpayDirectory?'Muat ulang daftar model':'Ambil daftar model')+'</button>'+
-  selection+(added?'<h3>Model tambahan aktif</h3>'+added:'')+'</section>';
+ const selection=available?.length?'<form id="enableModel"><div class="group"><label for="catalogModel">Model yang lolos uji</label>'+
+  '<select id="catalogModel" required>'+options(available,catalogModel)+'</select></div><button class="primary">Aktifkan model</button></form>':'';
+ const reasons={provider_quota:'Kuota ArxPay habis.',provider_rate_limit:'ArxPay sedang membatasi permintaan.',
+  provider_credentials:'ArxPay menolak kredensial API.',provider_redirect:'ArxPay mengalihkan permintaan pengujian.'};
+ let summary='';
+ if(arxpayDirectory){
+  const {models,checked,total,stoppedBy}=arxpayDirectory;
+  const reason=Object.hasOwn(reasons,stoppedBy)?' '+reasons[stoppedBy]:'';
+  const pending=checked<total?' '+(total-checked)+' belum diperiksa.':'';
+  const counts=total?checked+' dari '+total+' model diperiksa. '+models.length+' lolos.':'Katalog ArxPay kosong.';
+  summary='<p role="status">'+esc(counts+reason+pending)+'</p>'+
+   (models.length&&!available.length?'<p>Model yang lolos sudah aktif.</p>':'');
+ }
+ return '<section class="panel"><h2>Katalog model ArxPay</h2><p>Studio mengirim permintaan singkat ke ArxPay dan menampilkan model yang lolos pada saat diperiksa.</p>'+
+  '<button type="button" id="fetchArxpayModels">'+(arxpayDirectory?'Periksa ulang model':'Periksa ketersediaan model')+'</button>'+
+  summary+selection+(added?'<h3>Model tambahan aktif</h3>'+added:'')+'</section>';
 }
 function subdomainField(){
  return '<div class="group"><label for="subdomain">Subbidang (opsional)</label><input id="subdomain" maxlength="80" value="'+esc(work.subdomain)+'"></div>';
@@ -373,7 +383,10 @@ document.addEventListener('click',async e=>{
  if(busy&&b.hash!=='#proses'){if(!b.href||b.hash)e.preventDefault();return}
  if(b.id==='new'||b.dataset.mode){e.preventDefault();work=newSession();work.mode=b.dataset.mode??'generate';error='';go('generator')}
  if(b.id==='fetchArxpayModels'){
-  await task('Memuat katalog ArxPay…',async()=>{arxpayDirectory=(await api('arxpay-models')).models});
+  await task('Memeriksa ketersediaan model ArxPay…',async()=>{
+   arxpayDirectory=null;
+   arxpayDirectory=await api('arxpay-models',{});
+  });
   return;
  }
  if(b.dataset.disableArxpayModel){

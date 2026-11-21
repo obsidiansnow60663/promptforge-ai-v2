@@ -67,3 +67,9 @@ Katalog nyata mengembalikan 19 ID saat diuji. Aktivasi, penolakan saat kuota hab
 #### Galat akses saat aktivasi
 
 Log Sites pada v16 menunjukkan pengambilan katalog berhasil (HTTP 200) dan dua permintaan aktivasi gagal. Uji langsung terpisah pada model bawaan mengembalikan HTTP 429. Studio membedakan penolakan kredensial, izin katalog, izin model terpilih, dan batas penggunaan. Penolakan (HTTP 403) saat eksekusi dengan kredensial yang tidak dilaporkan invalid menampilkan ID model yang diminta. Pilihan model tetap terlihat sesudah galat. Alur ini diuji dengan respons tiruan dan tidak mengaktifkan model yang ditolak.
+
+#### Pemeriksaan ketersediaan sebelum menampilkan model
+
+**Pengaturan → Katalog model ArxPay → Periksa ketersediaan model** membaca katalog lalu menjalankan permintaan JSON singkat. Pemilih hanya memuat ID yang lolos. Worker memeriksa model bawaan terlebih dahulu, menghentikan batch berikutnya saat kuota atau batas permintaan tercapai, dan menampilkan jumlah yang diperiksa, lolos, dan belum diperiksa. Satu pemeriksaan menguji hingga 20 ID dalam batas waktu total. Aktivasi memakai kembali hasil sukses terbaru selama dua menit, atau menguji model satu kali bila hasilnya sudah kedaluwarsa.
+
+Uji Worker lokal dengan ArxPay nyata membaca 19 ID dan mendapat galat kuota pada pemeriksaan pertama. Studio mengembalikan 0 model lolos dan menghentikan 18 pemeriksaan tersisa. Uji Chromium lokal dengan respons tiruan memverifikasi model gagal tidak tampil, model lolos dapat diaktifkan tanpa pengujian duplikat, dan konfigurasi aktif tetap terbaca setelah muat ulang. Sebanyak 49 tes otomatis lulus.
