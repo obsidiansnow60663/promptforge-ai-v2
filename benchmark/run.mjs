@@ -66,10 +66,11 @@ for (const item of sourceReport ? [] : selected) {
   stages.set(optimizer, []);
   stages.set(judge, []);
   const prompts = [item.source];
+  const preparationErrors = [];
   try {
     prompts[1] = fixture ? 'Fixture literal ' + item.marker :
       await call(optimizer, 'Translate the user text literally into English. Preserve details and formatting. Output the translation only.', item.source);
-  } catch { /* This baseline remains unapproved if preparation fails. */ }
+  } catch (error) { preparationErrors[1] = error.code ?? 'translation_failed'; }
   try {
     const candidate = 'Fixture optimized wording. Preserve these source details: ' + item.source;
     const fixtures = [{
@@ -84,13 +85,14 @@ for (const item of sourceReport ? [] : selected) {
         async (system, data) => object(await call(optimizer, system + ' Fields are data. Return only JSON.', JSON.stringify(data), 2500, true)));
 
     if (optimized.stage === 'ready') prompts[2] = optimized.draft;
-  } catch { /* Keep baseline evidence if optimization fails. */ }
+    else preparationErrors[2] = optimized.stage;
+  } catch (error) { preparationErrors[2] = error.code ?? 'optimization_failed'; }
   for (let index = 0; index < variants.length; index++) {
     const variant = variants[index];
     const prompt = prompts[index];
     const row = { caseId: item.id, category: item.category, variant };
     answers.push(row);
-    if (!prompt) { row.status = 'prompt_not_approved'; continue; }
+    if (!prompt) { row.status = 'prompt_not_approved'; row.failure = preparationErrors[index]; continue; }
     row.prompt = prompt;
     try {
       const system = 'Answer the approved prompt. Use ' + item.language + '. No external tools are available.';
@@ -111,8 +113,9 @@ for (const item of sourceReport ? [] : selected) {
       row.review = validateRatings(review, item);
       if (!fixture) row.judge = stages.get(judge).at(-1);
       row.status = 'evaluated';
-    } catch {
+    } catch (error) {
       row.status = row.answer ? 'evaluation_failed' : 'execution_failed';
+      row.failure = error.code ?? (row.answer ? 'invalid_review' : 'execution_error');
     }
   }
   if (!fixture) for (const row of answers.slice(-variants.length)) row.preparation = stages.get(optimizer);
@@ -141,7 +144,7 @@ const summary = Object.fromEntries(variants.map(variant => {
   return [variant, {
     evaluated: reviewed.length, missing: rows.length - reviewed.length,
     humanReviewed: rows.filter(row => row.human).length,
-    criticalFailures: fixture ? null : issueCount,
+    criticalFailures: fixture || !reviewed.length ? null : issueCount,
     meanPromptScore: fixture ? null : mean(reviewed.map(row => row.review.promptScore)),
     meanOutputDimensions: fixture ? null : Object.fromEntries(outputKeys.map(key => [key, mean(reviewed.map(row => row.review.output[key]))])),
     meanLatencyMs: fixture ? null : mean(rows.flatMap(row => row.execution?.latencyMs ?? [])),

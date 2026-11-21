@@ -33,7 +33,8 @@ export async function runPromptAgent(env, input, ask = generateText) {
       '. Every array contains only strings. Use an empty string for absent context and empty arrays for absent items. ' +
       (stage === 'analysis' ? 'Ask only the questions whose answers materially change the outcome. Prefer one or two and use at most three. ' +
       'Combine related questions. Keep non-critical preferences optional as assumptions. If prior answers supply the audience, purpose and scope, ' +
-      'proceed and choose illustrative examples without treating their exact subject as a blocker.' :
+      'proceed and choose illustrative examples without treating their exact subject as a blocker. For a general learning plan, ' +
+      'a stated audience, topic, duration and deliverable are sufficient. Do not require hours or a specialization unless the user makes them necessary.' :
       stage === 'draft' ? 'The draft must be ready to execute immediately. Do not put workflow instructions about waiting or generating a prompt inside it. ' +
         'Use concise natural English and translate units; preserve the digits and true identifiers exactly. Avoid repeating constraints.' :
         'Mark any draft that asks the executor to wait, rewrite the prompt, or defer the user task as a critical failure.');
@@ -42,7 +43,7 @@ export async function runPromptAgent(env, input, ask = generateText) {
       if (remaining < 1000) throw new Problem(502, 'Waktu penyusunan prompt habis.', 'prompt_timeout');
       const response = await ask(env, target, {
         system: instruction + extra, prompt, limit: 2500, json: true,
-      }, { timeout: Math.min(18000, Math.floor(remaining / 2)) });
+      }, { timeout: Math.min(25000, Math.floor(remaining / 2)) });
       actualModel = response.model ?? actualModel;
       try {
         return JSON.parse(response.text.trim().replace(/^```(?:json)?\s*([\s\S]*?)\s*```$/i, '$1'));
