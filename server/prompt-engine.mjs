@@ -9,7 +9,7 @@ export function promptAgent(env) {
 }
 
 const schemas = {
-  analysis: '{ "goal": "text", "context": "text", "requirements": [], "constraints": [], "deliverables": [], "assumptions": [], "questions": [], "answerLanguage": "", "languageEvidence": "" }',
+  analysis: '{ "goal": "text", "context": "text", "requirements": [], "constraints": [], "deliverables": [], "assumptions": [], "questions": [], "answerLanguage": "", "languageEvidence": "", "safeAssumptions": [] }',
   draft: '{ "draft": "text" }',
   review: '{ "pass": true, "issues": [] }',
 };
@@ -37,7 +37,8 @@ export async function runPromptAgent(env, input, ask = generateText) {
       'a stated audience, topic, duration and deliverable are sufficient. Do not require hours or a specialization unless the user makes them necessary. ' +
       'For examples, templates, methods, or starter code, use clearly labelled synthetic data and placeholders when concrete details are unspecified. ' +
       'Ask for missing material only when the task requires editing, analyzing, or summarizing specific real material that has not been provided, or proceeding would violate a constraint. ' +
-      'Keep explicit scope and constraints separate from optional implementation choices.' :
+      'Keep explicit scope and constraints separate from optional implementation choices. Only safeAssumptions can contain objects with question and answer strings. ' +
+      'Never offer a substitute for missing real data or a source that must be reviewed.' :
       stage === 'draft' ? 'The draft value itself must be in English and ready to execute immediately. Do not put workflow instructions about waiting or generating a prompt inside it. ' +
         'Use concise natural English and translate units; preserve the digits and true identifiers exactly. Avoid repeating constraints. ' +
         'Do not turn examples, unrequested technical choices, or default assumptions into mandatory scope restrictions. ' +
@@ -76,7 +77,7 @@ export async function runPromptAgent(env, input, ask = generateText) {
     }
     return reply;
   });
-  if (report.stage === 'clarify') return { stage: 'clarify', spec: { questions: report.spec.questions } };
+  if (report.stage === 'clarify') return { stage: 'clarify', spec: { questions: report.spec.questions, ...(report.spec.safeAssumptions.length ? { safeAssumptions: report.spec.safeAssumptions } : {}) } };
   return { ...input, lang: report.lang, ...validateReport(report), model: actualModel ?? agentModel };
 }
 

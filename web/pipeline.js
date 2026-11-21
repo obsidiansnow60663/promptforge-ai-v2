@@ -17,15 +17,20 @@ function resolveLanguage(input,spec){
  return source.some(text=>text.toLowerCase().includes(evidence))?answerLanguage:input.lang;
 }
 export async function generate(input,ask){
- const spec=await ask('Extract exact intent. Return {goal,context,requirements:[],constraints:[],deliverables:[],assumptions:[],questions:[]}. Use Indonesian. Ask only independent materially blocking questions; never ask answered questions. Treat selected output language as default. If the user explicitly specifies the answer language, return answerLanguage as English or Bahasa Indonesia and languageEvidence as the exact quoted phrase directing that language. Otherwise leave both fields empty. Do not invent constraints.',input,'analysis');
+ const spec=await ask('Extract exact intent. Return {goal,context,requirements:[],constraints:[],deliverables:[],assumptions:[],questions:[]}. Use Indonesian. Ask only independent materially blocking questions; never ask answered questions. Treat selected output language as default. If the user explicitly specifies the answer language, return answerLanguage as English or Bahasa Indonesia and languageEvidence as the exact quoted phrase directing that language. Otherwise leave both fields empty. If clarification is needed, optional safeAssumptions is an array of {question,answer} objects. Offer an assumption only when that choice can be left to the user, preserves the task, and needs no invented fact or missing source. Do not invent constraints.',input,'analysis');
  if(!spec||!str(spec.goal,2000)||typeof spec.context!=='string'||spec.context.length>5000||!['requirements','constraints','deliverables','assumptions','questions'].every(k=>strings(spec[k]))||spec.questions.length>6||spec.questions.some(q=>q.length>500))throw malformed();
  spec.questions=spec.questions.filter(q=>!input.answers.some(a=>a.question.trim().toLowerCase()===q.trim().toLowerCase()));
- if(spec.questions.length)return {stage:'clarify',spec};
+ if(spec.questions.length){
+  const options=Array.isArray(spec.safeAssumptions)?spec.safeAssumptions.slice(0,6):[];
+  spec.safeAssumptions=options.filter(item=>item&&spec.questions.includes(item.question)&&str(item.answer,500));
+  return {stage:'clarify',spec};
+ }
  const source=input;
  const lang=resolveLanguage(source,spec);
  input={...source,lang};
  delete spec.answerLanguage;
  delete spec.languageEvidence;
+ delete spec.safeAssumptions;
  let draft='',issues=[];
  for(let attempt=0;attempt<=2;attempt++){
   const suggestion=await ask('Translate and optimize the instruction into natural, task-specific English. Include the requested answer language. Preserve exact numeric literals, names, URLs, quoted text, identifiers, constraints and required outputs. Do not execute. Return {draft:string}. Repair identified review issues.',{input,spec,previous:draft,issues},'draft');

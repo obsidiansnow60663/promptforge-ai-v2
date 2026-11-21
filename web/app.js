@@ -21,7 +21,7 @@ const domains=['Umum','Pemrograman','Otomasi','Riset','Bisnis','Konten','Analisi
 const languages=['Bahasa Indonesia','English'];
 let defaultLanguage='Bahasa Indonesia';
 let useLocalPromptEngine=false;
-function newSession(){return {session:crypto.randomUUID(),source:'',domain:'Umum',lang:defaultLanguage,answers:[],questions:[],result:null,requestId:null,mode:'generate',runs:[],runError:'',target:null}}
+function newSession(){return {session:crypto.randomUUID(),source:'',domain:'Umum',lang:defaultLanguage,answers:[],questions:[],safeAssumptions:[],result:null,requestId:null,mode:'generate',runs:[],runError:'',target:null}}
 let work=newSession(),historyRows=[],historyError='',settings=null,settingsError='',busy='',error='',notice='',pendingDelete=null,comparison=null,comparisonVersion=null,backupDownload=null,backupFilename='';
 const links={hasil:'Tinjau prompt',klarifikasi:'Klarifikasi',...labels};
 const route=()=>Object.hasOwn(links,location.hash.slice(1))?location.hash.slice(1):'dasbor';
@@ -74,7 +74,10 @@ function generator(){
  '<form id="existing" class="panel"><div class="group"><label for="source">Prompt Anda</label><textarea id="source" required maxlength="12000">'+esc(work.source)+'</textarea></div><div class="group"><label for="lang">Bahasa jawaban</label><select id="lang">'+options(languages,work.lang)+'</select></div>'+message()+'<button class="primary">Simpan dan tinjau</button></form>';
  return title('Generator prompt','Tulis instruksi asli dan tentukan bahasa jawaban yang diinginkan.')+'<form class="panel" id="generate"><h2>Instruksi asli</h2><div class="group"><label for="source">Apa yang ingin Anda kerjakan?</label><textarea id="source" required maxlength="12000" placeholder="Misalnya, rangkum laporan ini untuk tim operasional dalam 5 poin.">'+esc(work.source)+'</textarea></div><div class="grid"><div class="group"><label for="domain">Bidang</label><select id="domain">'+options(domains,work.domain)+'</select></div><div class="group"><label for="lang">Bahasa jawaban</label><select id="lang">'+options(languages,work.lang)+'</select></div></div><p class="muted" id="engineNotice" aria-live="polite">'+esc(availability())+'</p>'+message()+'<div class="actions"><button class="primary">'+(work.mode==='execute'?'Susun prompt untuk dijalankan':'Susun & tinjau prompt')+'</button><a href="/simulasi/#generator">Coba simulasi lokal</a></div></form>';
 }
-function clarification(){return title('Klarifikasi','Lengkapi detail yang memengaruhi hasil. Jawaban sebelumnya dapat disunting.')+'<form id="clarify" class="panel"><details><summary>Instruksi asli</summary><p>'+esc(work.source)+'</p></details>'+work.answers.map((a,i)=>'<div class="group"><label for="q'+i+'">'+esc(a.question)+'</label><input id="q'+i+'" data-answer="'+i+'" required maxlength="1500" value="'+esc(a.answer)+'"></div>').join('')+message()+'<div class="actions"><button class="primary">Lanjutkan peninjauan</button><a href="#generator">Ubah instruksi</a></div></form>'}
+function clarification(){return title('Klarifikasi','Lengkapi detail yang memengaruhi hasil. Jawaban sebelumnya dapat disunting.')+'<form id="clarify" class="panel"><details><summary>Instruksi asli</summary><p>'+esc(work.source)+'</p></details>'+work.answers.map((a,i)=>'<div class="group"><label for="q'+i+'">'+esc(a.question)+'</label><input id="q'+i+'" data-answer="'+i+'" required maxlength="1500" value="'+esc(a.answer)+'"></div>').join('')+(work.safeAssumptions.length?'<details><summary>Asumsi yang dapat digunakan</summary><ul>'+
+ work.safeAssumptions.map(item=>'<li>'+esc(item.question)+' '+esc(item.answer)+'</li>').join('')+
+ '</ul><button type="button" id="fillAssumptions">Isi jawaban dengan asumsi ini</button></details>':'')+
+ message()+'<div class="actions"><button class="primary">Lanjutkan peninjauan</button><a href="#generator">Ubah instruksi</a></div></form>'}
 function items(values){return values.length?'<ul>'+values.map(s=>'<li>'+esc(s)+'</li>').join('')+'</ul>':'<p class="muted">Tidak teridentifikasi.</p>'}
 function promptVersions(r){
  const others=historyRows.filter(row=>row.session===work.session&&row.version!==r.version);
@@ -142,6 +145,7 @@ async function submit(){
     throw Error('Terlalu banyak detail belum jelas. Perinci instruksi asli.');
    }
    work.requestId=null;
+   work.safeAssumptions=report.spec.safeAssumptions??[];
    go('klarifikasi');
    return;
   }
@@ -228,12 +232,20 @@ document.addEventListener('submit',e=>{
  }
  submit();
 });
-document.addEventListener('input',e=>{const el=e.target;if(el.id==='promptEngine'){useLocalPromptEngine=el.value==='local';work.requestId=null;render();return}if(el.id==='target'){work.target=el.value;return}if(el.id==='defaultLang'){defaultLanguage=el.value;return}if(['source','domain','lang'].includes(el.id)){work.requestId=null;if(el.id==='source'&&el.value!==work.source)work.answers=[];work.unsaved=null;work[el.id]=el.value}else if(el.dataset.answer!==undefined){work.requestId=null;work.answers[Number(el.dataset.answer)].answer=el.value}else if(el.id==='draft'){work.requestId=null;work.edited=el.value;document.querySelector('#review').className='note';document.querySelector('#review').textContent='Suntingan belum ditinjau.';const run=document.querySelector('#run');if(run)run.disabled=el.value!==work.result.draft}});
+document.addEventListener('input',e=>{const el=e.target;if(el.id==='promptEngine'){useLocalPromptEngine=el.value==='local';work.requestId=null;render();return}if(el.id==='target'){work.target=el.value;return}if(el.id==='defaultLang'){defaultLanguage=el.value;return}if(['source','domain','lang'].includes(el.id)){work.requestId=null;if(el.id==='source'&&el.value!==work.source){work.answers=[];work.safeAssumptions=[];}work.unsaved=null;work[el.id]=el.value}else if(el.dataset.answer!==undefined){work.requestId=null;work.answers[Number(el.dataset.answer)].answer=el.value}else if(el.id==='draft'){work.requestId=null;work.edited=el.value;document.querySelector('#review').className='note';document.querySelector('#review').textContent='Suntingan belum ditinjau.';const run=document.querySelector('#run');if(run)run.disabled=el.value!==work.result.draft}});
 document.addEventListener('click',async e=>{
  const b=e.target.closest('button,a');if(!b)return;
  if(b.matches('.skip')){e.preventDefault();main.focus();return}
  if(busy){if(!b.href||b.hash)e.preventDefault();return}
  if(b.id==='new'||b.dataset.mode){e.preventDefault();work=newSession();work.mode=b.dataset.mode??'generate';error='';go('generator')}
+ if(b.id==='fillAssumptions'){
+  for(const item of work.safeAssumptions){
+   const destination=work.answers.find(answer=>answer.question===item.question);
+   if(destination&&!destination.answer.trim())destination.answer=item.answer;
+  }
+  work.requestId=null;
+  render();
+ }
  if(b.dataset.compareVersion){
   await task('Membuka versi pembanding…',async()=>{
    const version=Number(b.dataset.compareVersion);

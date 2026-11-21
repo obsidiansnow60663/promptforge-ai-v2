@@ -55,6 +55,7 @@ async function check(fixture) {
       assert.equal(generated.data.stage, 'clarify', JSON.stringify(generated));
       summary.questions = generated.data.spec.questions;
       assert.ok(summary.questions.length >= 1 && summary.questions.length <= 3);
+      assert.equal(generated.data.spec.safeAssumptions?.length ?? 0, 0, 'Missing source data must not receive fabricated assumptions');
       state.answers = summary.questions.map(question => ({ question, answer: fixture.clarification }));
       state.requestId = crypto.randomUUID();
       generated = await request(owner, 'generate', state);

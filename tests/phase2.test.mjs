@@ -51,3 +51,11 @@ test('critical alphanumeric identifiers and percentages prevent approval', async
  assert.ok(result.issues.some(issue=>issue.includes('R77')));
  assert.ok(result.issues.some(issue=>issue.includes('15%')));
 });
+
+test('clarification offers only bounded assumptions tied to a pending question', async()=>{
+ const question='Gunakan tabel atau daftar?';
+ const options=[{question,answer:'Asumsikan keluaran berupa tabel.'},{question:'Pertanyaan lain',answer:'Tidak ditawarkan.'}];
+ const result=await generate(input,seq([{...spec,questions:[question],safeAssumptions:options}]));
+ assert.equal(result.stage,'clarify');
+ assert.deepEqual(result.spec.safeAssumptions,[options[0]]);
+});
